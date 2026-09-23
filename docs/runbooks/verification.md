@@ -17,7 +17,8 @@ Exit code 0 and a final `GATE: PASS` line mean the repo standard holds.
 
 1. Required files exist: `README.md`, `LICENSE`, `CHANGELOG.md`, `SECURITY.md`,
    `CODE_OF_CONDUCT.md`, `CLAUDE.md`, `.editorconfig`, `.gitignore`.
-2. No unfilled double-brace template placeholders remain outside `docs/legal/`.
+2. No unfilled double-brace template placeholders remain in text files outside
+   `docs/legal/` (binary files are skipped).
 3. `CLAUDE.md` stays under 200 lines (§2 context-hygiene rule).
 4. No env files are committed (`.env.example` excepted) and no private-key material
    appears anywhere in the tree (§5).

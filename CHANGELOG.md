@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- `scripts/gate.sh` failed on `main` after the handoff archive was uploaded (`cafe6f3`): the placeholder check matched the double-brace sequence inside the archive's compressed bytes. The check now skips binary files (`grep -I`) and still catches placeholders in text files.
+
 ## [0.1.0] - 2026-09-23
 
 ### Added

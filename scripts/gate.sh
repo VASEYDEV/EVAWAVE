@@ -15,8 +15,10 @@ for f in "${required[@]}"; do
   fi
 done
 
-# Unfilled template placeholders (bootstrap protocol) — docs/legal/ and this script excepted
-if grep -rn --exclude-dir=.git --exclude-dir=legal --exclude=gate.sh '{{' .; then
+# Unfilled template placeholders (bootstrap protocol) — docs/legal/ and this script excepted.
+# -I skips binary files: compressed bytes (e.g. an uploaded .zip) can contain the
+# sequence by chance and are not templates.
+if grep -rnI --exclude-dir=.git --exclude-dir=legal --exclude=gate.sh '{{' .; then
   echo "Unfilled template placeholders found (see lines above)"
   fail=1
 fi
