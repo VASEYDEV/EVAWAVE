@@ -29,6 +29,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - `scripts/gate.sh` failed on `main` after the handoff archive was uploaded (`cafe6f3`): the placeholder check matched the double-brace sequence inside the archive's compressed bytes. The check now skips binary files (`grep -I`) and still catches placeholders in text files.
 - The `src/core/**` import boundary missed dynamic `import("next/server")`, computed `import()` specifiers and `import("…")` type queries. `no-restricted-syntax` now blocks them, with regression probes for each form.
+- The Flow engine profile listed Seed after BPM and Length. Its own verified Compose-sheet order is Seed, BPM, Length, and a new data test ties `order` to that list.
 - The placeholder check failed on the verbatim Build Brief, which quotes the check itself. It now matches only closed double-brace tokens in non-code text files, excluding GitHub Actions expressions. The placeholder and private-key scans no longer read `node_modules/` or `.next/`.
 
 ## [0.1.0] - 2026-09-23

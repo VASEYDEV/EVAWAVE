@@ -48,7 +48,7 @@
       "label": "BPM",
       "kind": "number",
       "serializesFrom": ["D6"],
-      "order": 4,
+      "order": 5,
       "notes": "Numeric field, 'auto' when empty. Written from Form.tempo. Lock strength unverified; tempo is also restated in Sound."
     },
     {
@@ -56,7 +56,7 @@
       "label": "Length",
       "kind": "number",
       "serializesFrom": ["D7", "D10"],
-      "order": 5,
+      "order": 6,
       "notes": "'Auto' or a duration. Written from the runtime target computed by bar math."
     },
     {
@@ -64,7 +64,7 @@
       "label": "Seed",
       "kind": "number",
       "serializesFrom": ["D10"],
-      "order": 6,
+      "order": 4,
       "notes": "Reproducibility handle. Empty on first render; stored on every Take; printed when reproducing a kept take."
     },
     {
