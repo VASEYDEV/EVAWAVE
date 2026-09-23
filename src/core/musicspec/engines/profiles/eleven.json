@@ -1,0 +1,150 @@
+{
+  "id": "eleven",
+  "displayName": "ElevenLabs Music",
+  "version": "music_v2",
+  "verifiedOn": "2026-09-16",
+  "confidence": "partial",
+  "status": "live",
+  "verification": {
+    "method": "Official ElevenLabs documentation (composition plans guide, music quickstart, Eleven Music API page, elevenlabs/skills api_reference.md) read 2026-09-16. The API surface is verified; the web-app (ElevenCreative) form is not, so the web paste path is marked partial.",
+    "verified": [
+      "music_v2 is the default model; composition plans are chunk-based and require model_id='music_v2'; music_v1 plans use positive_global_styles / negative_global_styles / sections (legacy)",
+      "A composition plan is an ordered list of up to 30 chunks; each GenerationChunk has text, duration_ms, positive_styles, negative_styles, context_adherence, and optional conditioning_ref + condition_strength; AudioRefChunk references audio",
+      "The first chunk's styles set the overall tone and genre for the whole song",
+      "Chunk text grammar: section name in [square brackets], lyrics as plain lines separated by \\n, phonetic sounds in (parentheses), short inline directions in {curly braces}; broad characteristics go in positive_styles",
+      "Styles must be English (lyrics any language); up to 50 style qualities; use negative styles liberally",
+      "Composition plans and text prompts are mutually exclusive per request",
+      "music_length_ms from 3,000 to 600,000; sections 3 s to 2 min each (API marketing page)",
+      "Artist/band names or copyrighted lyrics return bad_prompt / bad_composition_plan with a suggested replacement",
+      "In-painting via source_from in composition plans exists; enterprise-only as of 2026-08",
+      "Cleared for broad commercial use; licensed training (press and docs)"
+    ],
+    "unverified": [
+      "Web-app field set, labels and character limits (prompt box, instrumental toggle, length picker, plan editor)",
+      "Whether the web app exposes chunk-level editing of a pasted plan",
+      "force_instrumental parameter name on v2 (v1-era name; confirm)",
+      "Text prompt character limit",
+      "Whether chunks under 3,000 ms are rejected or clamped"
+    ]
+  },
+  "fields": [
+    {
+      "id": "prompt",
+      "label": "Prompt (simple mode)",
+      "kind": "text",
+      "serializesFrom": ["D1", "D2", "D4", "D5", "D6", "D8", "D9", "D10"],
+      "order": 1,
+      "notes": "One-shot mode; mutually exclusive with composition_plan. Used for the web-app paste and for quick auditions. Same priority order as Suno Style; negatives inline ('instrumental only, no vocals')."
+    },
+    {
+      "id": "composition_plan",
+      "label": "Composition plan (music_v2)",
+      "kind": "json",
+      "serializesFrom": ["D1", "D2", "D3", "D4", "D5", "D6", "D7", "D8", "D9", "D10"],
+      "order": 2,
+      "notes": "Primary EVAWAVE target for this engine. {\"chunks\": [GenerationChunk...]}, ≤30 chunks. One chunk per Section; duration_ms = bars × barSec rounded; contrast phrases become their own chunk; pickups and silence drops fold into the preceding chunk's text as {inline directions}. First chunk positive_styles carries the song-wide palette and the meter lock; every chunk's negative_styles carries the negative-space classes."
+    },
+    {
+      "id": "music_length_ms",
+      "label": "Length (ms)",
+      "kind": "number",
+      "hardLimit": 600000,
+      "serializesFrom": ["D7", "D10"],
+      "order": 3,
+      "notes": "3,000–600,000. Written from Structure.derived.runtimeSec × 1000; must equal the sum of chunk durations when a plan is used."
+    },
+    {
+      "id": "model_id",
+      "label": "Model",
+      "kind": "text",
+      "serializesFrom": [],
+      "order": 4,
+      "notes": "'music_v2' for chunk plans. Never 'music_v1' from EVAWAVE."
+    },
+    {
+      "id": "force_instrumental",
+      "label": "Instrumental",
+      "kind": "boolean",
+      "serializesFrom": ["D8"],
+      "order": 5,
+      "notes": "v1-era parameter name; verify on v2. In plans, instrumental sections also carry {instrumental break} and negative 'lead vocals'."
+    }
+  ],
+  "toggles": [
+    {
+      "id": "instrumental",
+      "label": "Instrumental",
+      "effect": "Web-app toggle (label unverified). API: force_instrumental (verify on v2)."
+    }
+  ],
+  "selectors": [
+    {
+      "id": "model",
+      "label": "Model",
+      "affects": "render",
+      "options": [
+        { "value": "music_v2", "note": "Default; chunk-based composition plans, mid-track transitions, embedded SFX", "default": true },
+        { "value": "music_v1", "note": "Legacy; global styles + sections plan shape. Not targeted by EVAWAVE." }
+      ]
+    }
+  ],
+  "driftWords": [
+    "shuffle", "shuffled", "swing", "swung", "triplet feel", "waltz", "rubato", "trance rhythm",
+    "two cycles per bar", "karsilama", "samai", "yuruk semai", "6/8", "9/8", "10/8", "12/8"
+  ],
+  "driftWordsNote": "Inherited from the Suno v6 list; untested on music_v2. Chunk duration_ms enforces timing independently of prose, so meter drift is expected to be less damaging here; take logs decide.",
+  "bannedTerms": [],
+  "bannedTermsNote": "The API rejects artist/band names and copyrighted lyrics with bad_prompt / bad_composition_plan and returns a suggestion (verified docs 2026-09-16). EVAWAVE's lineage pass strips names before serialization; a rejection still reaching the user is a lineage-pass bug.",
+  "aliases": {
+    "tabla-egyptian": "Egyptian tabla darbuka",
+    "rababa": "Egyptian rababa spike fiddle",
+    "org-keyboard": "quarter-tone org keyboard",
+    "strings-egyptian": "unison Egyptian string section"
+  },
+  "aliasesNote": "Inherited from the Suno profile; re-verify per engine from take logs.",
+  "weighting": "front-loaded",
+  "weightingNote": "Verified for plans: the first chunk's styles set the whole song's tone. Unknown for the simple prompt.",
+  "supports": {
+    "D1": "native",
+    "D2": "native",
+    "D3": "native",
+    "D4": "native",
+    "D5": "native",
+    "D6": "approximate",
+    "D7": "native",
+    "D8": "native",
+    "D9": "approximate",
+    "D10": "native"
+  },
+  "supportsNotes": {
+    "D3": "Per-chunk styles and durations give section-level dynamics control.",
+    "D6": "No numeric BPM field; tempo as a style term. Chunk duration_ms gives exact section timing, which is the strongest grid control of the three engines. Key/mode as prose.",
+    "D7": "Chunks map 1:1 to Sections with real durations; ≤30 chunks; chunk minimum 3 s means pickups and silence fold inline.",
+    "D8": "Lyrics per chunk in text; phonetic (ooh) and inline {directions} supported.",
+    "D9": "Mix character as style terms only.",
+    "D10": "negative_styles per chunk; first chunk acts as global."
+  },
+  "houseBudgets": {
+    "eleven.styles_per_chunk": 20
+  },
+  "houseBudgetsNote": "Engine cap is 50 qualities; house cap 20 keeps the first chunk readable and ordered.",
+  "postRender": [
+    "In-painting (source_from) regenerates one chunk while keeping the rest; enterprise-only as of 2026-08, so not assumed in the v1 workflow.",
+    "Downloads within plan limits; commercial use cleared under Eleven's music terms.",
+    "For DAW handoff, chunk durations already match the word-MIDI blueprint bar map; export the plan JSON alongside the stems."
+  ],
+  "repairRules": [
+    { "symptom": "bad_composition_plan or bad_prompt returned", "action": "A name or lyric slipped past the lineage pass; diff the payload against the API's suggestion, fix the offending term in the IR (not in the payload), recompile." },
+    { "symptom": "sections run long or short", "action": "Check that music_length_ms equals the sum of chunk duration_ms; recompute from bar math; do not hand-edit durations." },
+    { "symptom": "vocals appear in an instrumental chunk", "action": "Add {instrumental break} to the chunk text and 'lead vocals, singing' to that chunk's negative_styles; set force_instrumental if the whole track is instrumental." }
+  ],
+  "exports": [
+    { "id": "plan-json", "filename": "<song>-<variant>-eleven-plan.json", "content": "composition_plan + music_length_ms + model_id" },
+    { "id": "prompt-txt", "filename": "<song>-<variant>-eleven-prompt.txt", "content": "simple-mode prompt for the web app" }
+  ],
+  "notes": [
+    "Two artifacts per compile: the plan JSON (primary, API or plan editor) and the simple prompt (web-app paste). The coverage report is computed against the plan.",
+    "AudioRefChunk and conditioning_ref are deliberately unused in v1: they would require uploading reference audio, which A6 forbids.",
+    "Litigation state 2026-09-16 (data only, per A12): licensed training, created with labels and publishers; no known suits."
+  ]
+}

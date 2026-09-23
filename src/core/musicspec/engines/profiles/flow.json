@@ -1,0 +1,176 @@
+{
+  "id": "flow",
+  "displayName": "Google Flow Music",
+  "version": "lyria-3.5",
+  "verifiedOn": "2026-09-16",
+  "confidence": "partial",
+  "status": "live",
+  "verification": {
+    "method": "Flow Music iOS app screenshots supplied by Sean, 2026-09-16; press for launch dates (Flow Music 2026-04-18, Lyria 3.5 2026-07-29).",
+    "verified": [
+      "Compose sheet field set and order: Lyrics, Instrumental toggle, Sound, Model, Seed, BPM, Length, Title, Cover image",
+      "Instrumental toggle changes the Lyrics placeholder to 'Instrumental'",
+      "Model selector options: Lyria 3.5 (flagship), Lyria 3 Pro (legacy)",
+      "Settings selectors: Instrument (music model), Ghostwriter (Standard/Pro), Producer (Standard/Fast)",
+      "Producer chat accepts numbered multi-step commands including a time-range trim ('Trim the song from 40s to 48s')",
+      "Producer chat has an attachment control (+) and suggestion chips (spaces, remix)",
+      "Sessions are named and persisted; navigation: Explore, Songs, Playlists, Music Videos, Spaces, Search, Profile"
+    ],
+    "unverified": [
+      "character limits on Sound and Lyrics (no counters visible)",
+      "whether Lyrics accepts section tags when Instrumental is ON, or is disabled",
+      "Length units and maximum (press: 30 s to 3 min)",
+      "whether BPM is a hard lock or guidance",
+      "Producer command grammar for section-level edits (section painting)",
+      "artist-name filtering behaviour and any banned-term list",
+      "whether Cover image is decorative only or also a creative reference"
+    ]
+  },
+  "fields": [
+    {
+      "id": "lyrics",
+      "label": "Lyrics",
+      "kind": "text",
+      "serializesFrom": ["D7", "D8"],
+      "order": 1,
+      "notes": "User-supplied lyrics pass through untouched. For instrumentals, structure tags may go here if verification shows they are read; until then the Producer script carries structure."
+    },
+    {
+      "id": "sound",
+      "label": "Sound",
+      "kind": "text",
+      "serializesFrom": ["D1", "D2", "D4", "D5", "D6", "D9", "D10"],
+      "order": 2,
+      "notes": "Style-equivalent. Same priority order as Suno Style: form/meter/tempo, key/mode, drum grammar, regional instruments, synth roles, textures, transitions, bridge/finale, mood, inline negatives last. No Exclude field exists, so negatives are inline and reported as 'approximated'."
+    },
+    {
+      "id": "bpm",
+      "label": "BPM",
+      "kind": "number",
+      "serializesFrom": ["D6"],
+      "order": 4,
+      "notes": "Numeric field, 'auto' when empty. Written from Form.tempo. Lock strength unverified; tempo is also restated in Sound."
+    },
+    {
+      "id": "length",
+      "label": "Length",
+      "kind": "number",
+      "serializesFrom": ["D7", "D10"],
+      "order": 5,
+      "notes": "'Auto' or a duration. Written from the runtime target computed by bar math."
+    },
+    {
+      "id": "seed",
+      "label": "Seed",
+      "kind": "number",
+      "serializesFrom": ["D10"],
+      "order": 6,
+      "notes": "Reproducibility handle. Empty on first render; stored on every Take; printed when reproducing a kept take."
+    },
+    {
+      "id": "title",
+      "label": "Title",
+      "kind": "text",
+      "serializesFrom": ["D10"],
+      "order": 7,
+      "notes": "Optional."
+    },
+    {
+      "id": "cover_image",
+      "label": "Cover image",
+      "kind": "file",
+      "serializesFrom": [],
+      "order": 8,
+      "notes": "Optional. Not serialized; EVAWAVE never uploads reference images on the user's behalf."
+    },
+    {
+      "id": "producer_script",
+      "label": "Producer chat",
+      "kind": "text",
+      "serializesFrom": ["D3", "D7"],
+      "order": 9,
+      "notes": "Not a form field: numbered instructions pasted into 'Ask Producer...'. First render: one instruction per section for structure and dynamics. Later Variants: the diff against the parent compiled to revision ops, with bar ranges converted to time ranges via bar math."
+    }
+  ],
+  "toggles": [
+    {
+      "id": "instrumental",
+      "label": "Instrumental",
+      "effect": "Suppresses vocals; Lyrics placeholder becomes 'Instrumental'. Interaction with structure tags unverified."
+    }
+  ],
+  "selectors": [
+    {
+      "id": "instrument",
+      "label": "Instrument",
+      "affects": "render",
+      "options": [
+        { "value": "lyria-3.5", "note": "Top performing, flagship model", "default": true },
+        { "value": "lyria-3-pro", "note": "Legacy model" }
+      ]
+    },
+    {
+      "id": "ghostwriter",
+      "label": "Ghostwriter",
+      "affects": "lyrics",
+      "options": [
+        { "value": "standard", "note": "Fast creative writing, fewer credits", "default": true },
+        { "value": "pro", "note": "Deep thinking lyric composition" }
+      ]
+    },
+    {
+      "id": "producer",
+      "label": "Producer",
+      "affects": "orchestration",
+      "options": [
+        { "value": "standard", "note": "Best quality, strongest reasoning", "default": true },
+        { "value": "fast", "note": "Faster replies, fewer credits" }
+      ]
+    }
+  ],
+  "driftWords": [
+    "shuffle", "shuffled", "swing", "swung", "triplet feel", "waltz", "rubato", "trance rhythm",
+    "two cycles per bar", "karsilama", "samai", "yuruk semai", "6/8", "9/8", "10/8", "12/8"
+  ],
+  "driftWordsNote": "Inherited from the Suno v6 list; not yet tested against Lyria 3.5. Take-log 'wordsBlamed' entries for this engine feed the review queue.",
+  "bannedTerms": [],
+  "bannedTermsNote": "Unverified. The lineage pass strips artist and producer names before serialization regardless.",
+  "aliases": {
+    "tabla-egyptian": "Egyptian tabla darbuka",
+    "rababa": "Egyptian rababa spike fiddle",
+    "org-keyboard": "quarter-tone org keyboard",
+    "strings-egyptian": "unison Egyptian string section"
+  },
+  "aliasesNote": "Inherited from the Suno profile; re-verify per engine.",
+  "weighting": "unknown",
+  "supports": {
+    "D1": "native",
+    "D2": "native",
+    "D3": "approximate",
+    "D4": "native",
+    "D5": "native",
+    "D6": "approximate",
+    "D7": "approximate",
+    "D8": "native",
+    "D9": "approximate",
+    "D10": "approximate"
+  },
+  "supportsNotes": {
+    "D3": "Per-section dynamics only via Producer script.",
+    "D6": "Tempo native via BPM field; key, mode and meter as prose in Sound; no meter lock.",
+    "D7": "Structure tags in Lyrics unverified; Producer script carries structure and revisions.",
+    "D9": "Mix character as prose only.",
+    "D10": "No Exclude field (negatives inline); length, seed and title native."
+  },
+  "postRender": [
+    "Section painting: highlight a section in the render and revise it in place.",
+    "Producer chat edit ops: trim, extend, replace a section, restyle, remix.",
+    "Download from Songs; SynthID watermark on every output.",
+    "For DAW handoff use the word-MIDI blueprint; Flow does not export stems (unverified)."
+  ],
+  "notes": [
+    "Flow accepts uploaded or recorded audio and images as references through the Producer chat; EVAWAVE does not upload on the user's behalf.",
+    "Producer script is EVAWAVE's unique channel here: Variant diffs become revision commands, and bar math converts bar ranges to the time ranges Flow's trim command expects.",
+    "Credits vary by selector choice (Fast/Standard, Standard/Pro); EVAWAVE records the selector values on each Take."
+  ]
+}

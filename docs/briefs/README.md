@@ -7,6 +7,12 @@ direction is a new brief that names the one it supersedes.
 Precedence: **brief > package > `CLAUDE.md` defaults**. §1, §5, and §10 of `CLAUDE.md`
 change only by explicit owner instruction recorded in an ADR.
 
+## Briefs on record
+
+| Date | Brief | Location |
+| --- | --- | --- |
+| 2026-09-16 | EVAWAVE Build Brief v0.1 | [`docs/evawave/BUILD-BRIEF.md`](../evawave/BUILD-BRIEF.md). The brief names its own repo target, and the brief wins over this folder's default, so it isn't copied here. Owner amendments to it are listed in [ADR 0002](../decisions/0002-session-0-intake-and-stack.md) |
+
 ## What a brief should settle
 
 A brief doesn't need every item, but anything it leaves open becomes a flagged assumption

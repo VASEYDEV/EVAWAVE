@@ -1,0 +1,29 @@
+{
+  "id": "udio",
+  "displayName": "Udio",
+  "version": "transitional",
+  "verifiedOn": "2026-09-16",
+  "confidence": "unverified",
+  "status": "stub",
+  "halted": {
+    "by": "Sean",
+    "on": "2026-09-16",
+    "decision": "A12",
+    "reasons": [
+      "downloads disabled since the UMG walled-garden transition; licensed relaunch has no date",
+      "input surface unknown",
+      "Sony SDNY cases unresolved (original plus a second suit filed 2026-07-20)"
+    ],
+    "reinstate": "explicit decision by Sean only; no automatic threshold"
+  },
+  "fields": [],
+  "toggles": [],
+  "selectors": [],
+  "driftWords": [],
+  "bannedTerms": [],
+  "aliases": {},
+  "weighting": "unknown",
+  "supports": { "D1": "none", "D2": "none", "D3": "none", "D4": "none", "D5": "none", "D6": "none", "D7": "none", "D8": "none", "D9": "none", "D10": "none" },
+  "postRender": [],
+  "notes": ["Rendered greyed out in the target picker with a 'halted' label. compile() must refuse this profile with a typed error."]
+}

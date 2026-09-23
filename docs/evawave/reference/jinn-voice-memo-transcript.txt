@@ -1,0 +1,25 @@
+Jinn on the Dune — voice memo transcript (faster-whisper base.en, 2026-09-14). Raw ASR output; known mishears: zoludes=ouds, Catholic Dorians=Gregorian choirs, Karmina Barana=Carmina Burana, roof rain=refrain, satard=sitar, on-zimmer=Hans Zimmer, French-worn=French horn, cateau=staccato, 30 seconds=32nds.
+
+[   1.8-  11.2] I would like to create a beautifully ethnic and ancient cultural sound of Morocco and the
+[  11.2-  17.7] Berber people while using native instruments such as pitch-bended Dorian, minor scales with
+[  17.7-  26.3] violins, zoludes, hand drums and various flutes and other instruments from the Islamic world.
+[  26.3-  33.8] I'd also like to incorporate sitars and other hand drums such as Indian types of bells,
+[  33.8-  38.9] shakers and flutes as well or wood instruments.
+[  38.9-  46.4] Then I'd like to add this all for the ethnic and regional flavor to make it even more contemporary
+[  46.4-  54.0] for the United States by giving it an incredible amount of sub-bass, a trap or drill-style
+[  54.0-  62.4] beat with extreme drum patterns, heavy snare and claps, rapid hi-hat patterns, triplets,
+[  62.4-  72.4] 30 seconds and double timed notes along with transitions, breakdowns, sweeps and risers
+[  72.4-  82.6] at the ends of 8 bars and 16 bars for the going into hooks, hooks and water, more sound, more
+[  82.6-  84.2] chords, progressions.
+[  84.2-  93.0] I'd like to use arpeggiated synthesizers, epic choirs like Catholic, Dorians or even
+[  93.0- 100.8] something similar to Karmina Barana and in building it up towards a bridge or a roof
+[ 100.8- 108.0] rain, it should break down and have a slower counter melody harmonized with modern instruments
+[ 108.0- 119.0] such as synth pads and possibly piano or maybe a satard for a little bit of extra stuff and
+[ 119.0- 127.0] then do some other kind of drums such as hi-hat shakers but use panning, auto pan and automated
+[ 127.0- 134.3] effects such as filtering, hi-cats, low cuts, flanging and phasing, hi-hats and then for
+[ 134.3- 140.4] the grand finale to bring it all back to an epic on-zimmer style score, massive trombones,
+[ 140.4- 148.9] French-worn stabs, violin, glissandos, the cateau arpeggiation, all in minor scales falling
+[ 148.9- 160.9] dark, middle eastern or Arabic world, minor keys and it should be called gin on the dune
+[ 160.9- 168.5] about wandering the sands and the whispers and the darkness of being alone in an area
+[ 168.5- 176.5] where you know not where you are or even who you are but keeping yourself on the journey
+[ 176.5- 178.5] and eventually successfully completing it.
