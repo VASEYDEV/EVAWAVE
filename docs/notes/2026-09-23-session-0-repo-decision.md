@@ -117,3 +117,26 @@ this branch will:
 4. update the README, architecture, CHANGELOG and Project Notes in the same PR.
 
 S1 starts only after the IR v0.2 sources arrive.
+
+## 7. Owner decisions and S0 outcome (appended 2026-09-23)
+
+The owner answered the report. The decisions are recorded in
+[ADR 0002](../decisions/0002-session-0-intake-and-stack.md) and scope A15:
+
+- **Repo:** confirmed. This repo is `evawave` (the new-repo branch).
+- **Compiler sources:** not an S0 dependency. They are supplied before S1. If they are
+  absent at S1, stop and ask, and never reconstruct them from the docs.
+- **Canonical files and starter kit v3.0:** the owner is supplying them. Verify MD5 and
+  date markers. If a marker disagrees with the brief, report it and change neither file,
+  because the hard copy is canonical. As of this note, they have not landed on `main`.
+- **Stack:** Next.js 16, pinned at 16.3.6 or later, with the 16 conventions. Supabase
+  Auth, no Clerk.
+- **Node:** the requested 20.9 floor conflicted with current releases. The owner approved
+  a 22.x floor, and verification against every locked `engines` range put it at 22.13.0.
+
+Conflict-scan items resolved in this PR: #3 (the settings.json merge) is deferred to the
+drop-in. #4, #5, #6 and #7 were done as proposed. #8 was decided by the owner.
+#10 is resolved. #1 and #2 wait for the canonical files.
+
+Installed tree check: all 13 package files match the section 3 hashes. The rule file
+matched before its `paths:` frontmatter was added.

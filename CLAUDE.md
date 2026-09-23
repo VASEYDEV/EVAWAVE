@@ -108,15 +108,17 @@ README statements are claims — they pass the same verify-before-claiming rule 
 
 ## Project Notes
 
-**Project:** EVAWAVE (EvaWavE): an AI-assisted song-creation tag generator, plus prompt-alignment integration for AI music applications.
-**Brand:** VASEY/AI, under the Vasey Studios umbrella. This is an assumption (the product is AI tooling) and the owner needs to confirm it (ADR 0001). No VASEY.AUDIO marks, copy, or metadata.
-**Stack:** none yet. This is the pre-implementation stage, and the stack will be set by the foundation package and directive brief.
-**Package manager:** none yet. Decide it with the stack (npm by default unless the stack dictates otherwise).
-**Commands:** dev `n/a (no app yet)` · gate `bash scripts/gate.sh`
-**Deploy:** none yet. Vercel per §9 once a deployable app exists.
+**Project:** EVAWAVE, a mobile-first PWA that composes, lints, versions and compiles musical intent (MusicSpec IR) into AI music engine input fields. It does not generate audio. Spec: `docs/evawave/BUILD-BRIEF.md` (read first), then `docs/evawave/scope-v0.2.md` and `docs/musicspec/ir-v0.3-delta.md`.
+**Brand:** VASEY/AI, under the Vasey Studios umbrella, as confirmed by the Build Brief (ADR 0002). The output serves VASEY.AUDIO, and `Song.brand` labels that data. The app carries no VASEY.AUDIO marks, copy, or metadata.
+**Stack:** Next.js 16.3.6 (App Router, Turbopack, `src/proxy.ts`) · React 19 · TypeScript 5.9 strict · Supabase (`@supabase/ssr`, Supabase Auth; no Clerk) · Vitest · ESLint 9, invoked directly. Node ≥ 22.13.0 (scope A15, ADR 0002).
+**Package manager:** npm (lockfile committed, `npm ci`; `.npmrc` sets `engine-strict`).
+**Commands:** dev `npm run dev` · lint `npm run lint` · typecheck `npm run typecheck` · test `npm test` · build `npm run build` · gate `bash scripts/gate.sh`
+**Deploy:** Vercel per §9, not configured yet.
 **Repo-specific invariants** (§1.8 corrected-twice rules land here):
 - LICENSE is Apache-2.0, chosen at repo creation. Do not swap it to MIT without explicit owner approval.
-- Until an application stack lands, the §3 gate is `bash scripts/gate.sh` (repo-standard checks). Replace it with real lint/typecheck/test/build in the same PR that introduces code.
+- `src/core/**` is pure: `eslint.config.mjs` bans React, Next.js, Supabase and app-layer imports there, and `tests/unit/import-boundary.test.ts` proves it. Never disable either. Path-scoped core rules: `.claude/rules/musicspec-core.md`.
+- IR v0.2 types and `resolveLineage.ts` come from the owner. If they are absent when S1 starts, stop and ask. Never reconstruct them from the docs.
+- Owner-supplied canonical files (hard copies) win. If a file's MD5 or date marker disagrees with the brief, report it and change neither.
 - Working notes are dated files in `docs/notes/` (`YYYY-MM-DD-topic.md`). Every meaningful change also gets a `CHANGELOG.md` entry. Decisions are ADRs in `docs/decisions/` (`000N-topic.md`).
 - **Package + brief intake:** when the owner supplies a package and a directive brief, follow `docs/runbooks/package-intake.md` before writing any code. The brief wins over the package, and the package wins over this file's defaults. The package can never override §1, §5 or §10. Changing those takes an explicit owner instruction, recorded in an ADR.
 - **One policy layer:** if a package ships its own agent contract (`AGENTS.md` or similar), reconcile it into this file or reference it from here. Record the outcome in an ADR and never keep two conflicting contracts.
