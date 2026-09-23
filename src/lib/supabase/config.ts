@@ -5,18 +5,29 @@ export interface SupabasePublicConfig {
 }
 
 /**
- * Reads the public Supabase settings, or returns `null` when they are unset.
- * `null` is a legitimate state until a Supabase project is provisioned (S7); callers
- * that cannot work without Supabase use {@link requireSupabasePublicConfig}.
+ * Reads the public Supabase settings.
+ *
+ * Returns `null` only when both variables are unset, which is the legitimate state
+ * until a Supabase project is provisioned (S7). If exactly one is set, it throws: a
+ * partial configuration is a deployment error, and treating it as "not configured"
+ * would silently switch off session validation in src/proxy.ts. Callers that cannot
+ * work without Supabase use {@link requireSupabasePublicConfig}.
  * The variables are read by their literal names so Next.js can inline them client-side.
  */
 export function getSupabasePublicConfig(): SupabasePublicConfig | null {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-  return url && anonKey ? { url, anonKey } : null;
+  if (url && anonKey) {
+    return { url, anonKey };
+  }
+  if (url || anonKey) {
+    const missing = url ? "NEXT_PUBLIC_SUPABASE_ANON_KEY" : "NEXT_PUBLIC_SUPABASE_URL";
+    throw new Error(`Supabase is partially configured: ${missing} is unset (see .env.example).`);
+  }
+  return null;
 }
 
-/** Like {@link getSupabasePublicConfig}, but throws a configuration error when unset. */
+/** Like {@link getSupabasePublicConfig}, but also throws when neither variable is set. */
 export function requireSupabasePublicConfig(): SupabasePublicConfig {
   const config = getSupabasePublicConfig();
   if (!config) {

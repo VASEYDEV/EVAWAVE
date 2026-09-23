@@ -56,8 +56,8 @@ the gate fails if any of them appears in the client bundle.
 
 | Variable | Scope | Used by | Notes |
 | --- | --- | --- | --- |
-| `NEXT_PUBLIC_SUPABASE_URL` | public | `src/lib/supabase/*`, `src/proxy.ts` | Unset: proxy passes through |
-| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | public | `src/lib/supabase/*`, `src/proxy.ts` | Unset: proxy passes through |
+| `NEXT_PUBLIC_SUPABASE_URL` | public | `src/lib/supabase/*`, `src/proxy.ts` | Both unset: proxy passes through. Only one set: error |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | public | `src/lib/supabase/*`, `src/proxy.ts` | Both unset: proxy passes through. Only one set: error |
 | `SUPABASE_SERVICE_ROLE_KEY` | server | not yet | Bypasses RLS; server only |
 | `ANTHROPIC_API_KEY` | server | not yet (S8 text intake) | |
 | `INTAKE_MODEL` | server | not yet (S8) | Pin explicitly; verify the id against the API docs at S8 |

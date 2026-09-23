@@ -6,10 +6,12 @@ import { getSupabasePublicConfig } from "./config";
 /**
  * Refreshes the Supabase Auth session for one request (called from src/proxy.ts).
  *
- * Passes the request through untouched when Supabase is not configured, so the app runs
- * before a Supabase project exists (S7). Once it is configured, the auth token is
- * revalidated and any refreshed cookies, plus the no-cache headers the library requires
- * alongside them, are written to both the forwarded request and the response.
+ * Passes the request through untouched when Supabase is not configured (both public
+ * variables unset), so the app runs before a Supabase project exists (S7). A partial
+ * configuration throws from getSupabasePublicConfig rather than disabling validation.
+ * Once it is configured, the auth token is revalidated and any refreshed cookies, plus
+ * the no-cache headers the library requires alongside them, are written to both the
+ * forwarded request and the response.
  */
 export async function updateSession(request: NextRequest): Promise<NextResponse> {
   let response = NextResponse.next({ request });

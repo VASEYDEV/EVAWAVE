@@ -36,7 +36,7 @@ library UI. EVAWAVE never generates audio and never calls the engines.
 - **`next lint` does not exist in Next 16.** `npm run lint` calls ESLint directly.
 - **ESLint stays on 9.** `eslint-config-next@16.3.6` crashes under ESLint 10.
 - **Session refresh is `src/proxy.ts`, not `middleware.ts`.** It passes requests through
-  while `NEXT_PUBLIC_SUPABASE_*` are unset.
+  while both `NEXT_PUBLIC_SUPABASE_*` variables are unset. Setting only one of them throws.
 - **`next-env.d.ts` and route types are generated and gitignored.** `npm run typecheck`
   runs `next typegen` first.
 - **Server-only env names must never reach client code.** The gate greps `.next/static` for

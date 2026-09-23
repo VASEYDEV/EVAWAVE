@@ -47,6 +47,14 @@ describe("updateSession (src/proxy.ts session refresh)", () => {
     expect(createServerClient).not.toHaveBeenCalled();
   });
 
+  it("fails loudly instead of passing through when Supabase is only partially configured", async () => {
+    vi.stubEnv("NEXT_PUBLIC_SUPABASE_URL", "https://project.supabase.test");
+    vi.stubEnv("NEXT_PUBLIC_SUPABASE_ANON_KEY", "");
+
+    await expect(updateSession(request())).rejects.toThrow("NEXT_PUBLIC_SUPABASE_ANON_KEY");
+    expect(createServerClient).not.toHaveBeenCalled();
+  });
+
   it("revalidates the session and writes refreshed cookies plus no-cache headers", async () => {
     vi.stubEnv("NEXT_PUBLIC_SUPABASE_URL", "https://project.supabase.test");
     vi.stubEnv("NEXT_PUBLIC_SUPABASE_ANON_KEY", "anon-key-for-tests");
