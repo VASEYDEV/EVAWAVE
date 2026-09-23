@@ -30,7 +30,7 @@ The build order (S1 IR through S10 Phase D) is in the Build Brief §3.
 
 ## Quick start
 
-Requires Node ≥ 22.13.0.
+Requires Node 22.13+ on the 22 line, 24, or 26 and later. The locked Vitest excludes 23 and 25.
 
 ```bash
 git clone https://github.com/VASEYDEV/EVAWAVE.git && cd EVAWAVE

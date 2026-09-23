@@ -7,9 +7,10 @@ npm ci
 bash scripts/gate.sh     # or: npm run gate
 ```
 
-Exit code 0 and a final `GATE: PASS` line mean every check passed. Node must be ≥ 22.13.0
-(`package.json` `engines`). `.npmrc` sets `engine-strict`, so an older Node fails at
-install instead of partway through the gate.
+Exit code 0 and a final `GATE: PASS` line mean every check passed. Node must match
+`package.json` `engines`: `^22.13.0 || ^24.0.0 || >=26.0.0`. The locked Vitest excludes 23
+and 25. `.npmrc` sets `engine-strict`, so an unsupported Node fails at install instead of
+partway through the gate.
 
 ## What CI runs
 

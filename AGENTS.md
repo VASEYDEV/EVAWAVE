@@ -15,7 +15,8 @@ library UI. EVAWAVE never generates audio and never calls the engines.
 
 ## Commands
 
-- `npm ci`: install from the lockfile. Node ≥ 22.13.0; `.npmrc` sets `engine-strict`.
+- `npm ci`: install from the lockfile. Node `^22.13.0 || ^24.0.0 || >=26.0.0` (not 23 or 25);
+  `.npmrc` sets `engine-strict`.
 - `npm run dev`: dev server on http://localhost:3000.
 - `npm run lint` · `npm run typecheck` · `npm test` · `npm run build`
 - `bash scripts/gate.sh`: the full gate CI runs (standards, lint, typecheck, unit, build,

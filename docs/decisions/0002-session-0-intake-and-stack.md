@@ -48,8 +48,9 @@ from them.
    were its last Node 20 line), vitest 5 needs ^22.12, and `eslint-visitor-keys`, a
    non-optional typescript-eslint dependency, needs ^22.13. Node 20 has also been EOL
    since 2026-04-30. The owner approved a 22.x floor. Checking every locked package's
-   `engines` set it at 22.13.0; at 22.12.0 `npm ci` fails under `engine-strict`. CI runs
-   22.13.0 and 24.
+   `engines` set it at 22.13.0; at 22.12.0 `npm ci` fails under `engine-strict`. Vitest 5
+   also excludes the odd releases 23 and 25, so `engines` is `^22.13.0 || ^24.0.0 ||
+   >=26.0.0`, exactly the set the lockfile can install. CI runs 22.13.0 and 24.
 7. **Held-back majors, each with a reproduced reason.**
    - ESLint stays on 9: `eslint-config-next@16.3.6` crashes under ESLint 10.
    - TypeScript stays on 5.9: TypeScript 7 is outside typescript-eslint's `<6.1.0` peer
