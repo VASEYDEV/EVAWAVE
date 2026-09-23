@@ -15,18 +15,25 @@ Thumbs.db
 # Logs
 *.log
 
-# Node (future stack)
+# Node
 node_modules/
 npm-debug.log*
 pnpm-debug.log*
 
-# Build output (future stack)
+# Build output
 dist/
 build/
 out/
 coverage/
 .next/
 .vercel/
+
+# Next.js / TypeScript generated files
+next-env.d.ts
+*.tsbuildinfo
+
+# Key material
+*.pem
 
 # Claude Code local overrides
 .claude/settings.local.json
