@@ -48,7 +48,8 @@
       "id": "music_length_ms",
       "label": "Length (ms)",
       "kind": "number",
-      "hardLimit": 600000,
+      "min": 3000,
+      "max": 600000,
       "serializesFrom": ["D7", "D10"],
       "order": 3,
       "notes": "3,000–600,000. Written from Structure.derived.runtimeSec × 1000; must equal the sum of chunk durations when a plan is used."

@@ -310,7 +310,7 @@ Patches are applied only through the review diff; a patch with `status: 'propose
 | RB-3 | Instrument or mode `reliability` is `approximate`/`unreliable` for the active target | warn with substitute |
 | TQ-1 | A technique with `meterRisk` under MeterLock | warn |
 | LN-1 | Artist or producer name in any prose field, patch value or override | block (lineage pass) |
-| BG-1 | Field over `hardLimit` | block |
+| BG-1 | Text field over `hardLimit`, or number field outside `min`/`max` | block |
 | BG-2 | Field over `softLimit` or `houseBudgets` | warn |
 | CV-1 | Coverage score < 0.8 for the active target | warn |
 | CV-2 | A `dropped` item in D6 or D7 without acknowledgement | block export |

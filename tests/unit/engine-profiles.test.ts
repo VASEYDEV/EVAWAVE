@@ -10,12 +10,46 @@ import udio from "@/core/musicspec/engines/profiles/udio.json";
  * `EngineField.order` is the paste order in the engine UI (scope v0.2 §2.2), so an export
  * pane that sorts by it walks the user through the real form.
  */
-const profiles: Record<string, { fields: { order: number }[] }> = { suno, eleven, flow, udio };
+interface ProfileField {
+  id: string;
+  kind: string;
+  order: number;
+  hardLimit?: number;
+  softLimit?: number;
+  min?: number;
+  max?: number;
+}
+
+const profiles: Record<string, { fields: ProfileField[] }> = { suno, eleven, flow, udio };
 
 describe("engine profiles", () => {
   it.each(Object.entries(profiles))("%s gives every field a distinct order", (_id, profile) => {
     const orders = profile.fields.map((field) => field.order);
     expect(new Set(orders).size).toBe(orders.length);
+  });
+
+  it.each(Object.entries(profiles))(
+    "%s keeps character caps on text fields and numeric bounds on number fields",
+    (_id, profile) => {
+      // hardLimit/softLimit are character caps (scope v0.2 §2.2), so a numeric range
+      // stored there would be measured as a string length by BG-1.
+      for (const field of profile.fields) {
+        const hasCharacterCap = field.hardLimit !== undefined || field.softLimit !== undefined;
+        const hasNumericBound = field.min !== undefined || field.max !== undefined;
+        expect({ field: field.id, kind: hasCharacterCap ? field.kind : "text" }).toEqual({ field: field.id, kind: "text" });
+        expect({ field: field.id, kind: hasNumericBound ? field.kind : "number" }).toEqual({ field: field.id, kind: "number" });
+        if (field.min !== undefined && field.max !== undefined) {
+          expect(field.min).toBeLessThanOrEqual(field.max);
+        }
+      }
+    },
+  );
+
+  it("bounds Eleven's music_length_ms to its verified 3,000–600,000 ms", () => {
+    const length = eleven.fields.find((field) => field.id === "music_length_ms") as ProfileField | undefined;
+    expect(length).toMatchObject({ kind: "number", min: 3000, max: 600000 });
+    expect(length?.hardLimit).toBeUndefined();
+    expect(eleven.verification.verified).toContain("music_length_ms from 3,000 to 600,000; sections 3 s to 2 min each (API marketing page)");
   });
 
   it("orders Flow's Compose-sheet fields as its own verification recorded them", () => {

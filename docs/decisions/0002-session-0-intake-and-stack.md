@@ -78,6 +78,13 @@ from them.
     labels output data and is not app branding. The logo stays deferred (ADR 0001
     decision 5): the lockup (`EVAWAVE` vs `EVA/WAVE`) is open, and the icons come from
     the Vector Iconography project.
+11. **`EngineField` separates character caps from numeric bounds.** Scope v0.2 §2.2
+    defines `hardLimit`/`softLimit` as character caps. Eleven's `music_length_ms` stored
+    its 600,000 ms ceiling in `hardLimit`, so BG-1 would have measured it as a string
+    length, and the 3,000 ms floor lived only in a note. Number fields now carry `min`/`max`
+    (Eleven: 3,000–600,000, the profile's own verified range), and BG-1 reads "text field
+    over `hardLimit`, or number field outside `min`/`max`". The values and their
+    verification are unchanged, so `verifiedOn` stays as it is.
 
 ## Pending
 

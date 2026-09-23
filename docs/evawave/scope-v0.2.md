@@ -60,8 +60,10 @@ export interface EngineField {
   id: string;                       // 'style' | 'lyrics' | 'exclude' | 'prompt' | 'composition_plan' | 'title'
   label: string;
   kind: 'text' | 'json' | 'boolean' | 'number' | 'file';
-  hardLimit?: number;               // engine-enforced character cap
-  softLimit?: number;               // house ceiling (e.g. Suno lyrics 3,000)
+  hardLimit?: number;               // engine-enforced character cap (text fields only)
+  softLimit?: number;               // house character ceiling (text fields only; e.g. Suno lyrics 3,000)
+  min?: number;                     // numeric lower bound (number fields only; e.g. Eleven music_length_ms 3,000)
+  max?: number;                     // numeric upper bound (number fields only; e.g. Eleven music_length_ms 600,000)
   serializesFrom: Dimension[];      // which IR dimensions feed this field
   order: number;                    // paste order in the engine UI
 }
