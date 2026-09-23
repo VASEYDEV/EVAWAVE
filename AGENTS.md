@@ -27,8 +27,10 @@ library UI. EVAWAVE never generates audio and never calls the engines.
   app-layer imports there by the module they target, not by spelling.
   `eslint-rules/core-boundary.mjs` normalizes aliases, relative paths, dot segments and
   doubled slashes across static imports, re-exports, `import()`, `import("…")` type
-  queries and import-equals, and `no-restricted-imports` backs it up. A dynamic `import()`
-  must use a string literal so the rule can check it.
+  queries and import-equals, and `no-restricted-imports` backs it up. The same rule rejects
+  dependencies that bypass import statements: JSX (an implicit `react/jsx-runtime` import),
+  `/// <reference types|path>` directives and `declare module` augmentations. A dynamic
+  `import()` must use a string literal so the rule can check it.
   `tests/unit/import-boundary.test.ts` proves the rule. Never disable either. The
   path-scoped hard rules are in `.claude/rules/musicspec-core.md`.
 - **`next lint` does not exist in Next 16.** `npm run lint` calls ESLint directly.

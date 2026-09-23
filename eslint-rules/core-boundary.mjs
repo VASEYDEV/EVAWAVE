@@ -6,8 +6,13 @@ import path from "node:path";
  * raw spellings, so `@/lib/./supabase/client`, `@/lib//supabase/client` or a dynamic
  * `import()` can reach a forbidden module unseen. This rule normalizes every specifier
  * first, covering static imports, re-exports, `import()`, `import("…")` type queries and
- * `import x = require("…")`.
+ * `import x = require("…")`. It also catches dependencies that never appear in an import
+ * statement: JSX (compiled to an implicit `react/jsx-runtime` import under the `react-jsx`
+ * setting), `/// <reference types|path>` directives and `declare module "…"` augmentations.
  */
+
+/** Matches the body of a `/// <reference types="…" />` or `/// <reference path="…" />` comment. */
+const REFERENCE_DIRECTIVE = /^\/\s*<reference\s+(types|path)\s*=\s*["']([^"']+)["']/;
 
 const FORBIDDEN_PACKAGES = new Set(["react", "react-dom", "next"]);
 const FORBIDDEN_SCOPES = ["@supabase/"];
@@ -65,24 +70,51 @@ export function createCoreBoundaryRule(repoRoot) {
         forbidden:
           "src/core is pure TypeScript: '{{specifier}}' reaches React, Next, Supabase or the app layer (BUILD-BRIEF §2, .claude/rules/musicspec-core.md).",
         computed: "Dynamic import() in src/core must use a string-literal specifier so the import boundary can check it.",
+        jsx: "src/core is pure TypeScript: JSX compiles to an implicit react/jsx-runtime import (BUILD-BRIEF §2).",
       },
     },
     create(context) {
       const filename = context.filename;
 
-      function check(node, specifier) {
+      /** `at` is `{ node }` for AST nodes or `{ loc }` for comments. */
+      function check(at, specifier) {
         if (targetsForbiddenModule(specifier, filename, repoRoot)) {
-          context.report({ node, messageId: "forbidden", data: { specifier } });
+          context.report({ ...at, messageId: "forbidden", data: { specifier } });
+        }
+      }
+
+      function reportOutermostJsx(node) {
+        // Nested elements and expression containers share the outer element's report.
+        if (!node.parent.type.startsWith("JSX")) {
+          context.report({ node, messageId: "jsx" });
         }
       }
 
       function checkSource(node, source) {
         if (source && source.type === "Literal" && typeof source.value === "string") {
-          check(node, source.value);
+          check({ node }, source.value);
         }
       }
 
       return {
+        Program() {
+          for (const comment of context.sourceCode.getAllComments()) {
+            const match = comment.type === "Line" ? REFERENCE_DIRECTIVE.exec(comment.value) : null;
+            if (match) {
+              const [, kind, target] = match;
+              // A reference path is file-relative even without a leading "./".
+              const isBarePath = kind === "path" && !target.startsWith(".") && !target.startsWith("/");
+              check({ loc: comment.loc }, isBarePath ? `./${target}` : target);
+            }
+          }
+        },
+        JSXElement: reportOutermostJsx,
+        JSXFragment: reportOutermostJsx,
+        TSModuleDeclaration(node) {
+          if (node.id.type === "Literal" && typeof node.id.value === "string") {
+            check({ node }, node.id.value);
+          }
+        },
         ImportDeclaration: (node) => checkSource(node, node.source),
         ExportNamedDeclaration: (node) => checkSource(node, node.source),
         ExportAllDeclaration: (node) => checkSource(node, node.source),
@@ -92,9 +124,9 @@ export function createCoreBoundaryRule(repoRoot) {
           const cooked =
             source.type === "TemplateLiteral" && source.expressions.length === 0 ? source.quasis[0]?.value.cooked : null;
           if (source.type === "Literal" && typeof source.value === "string") {
-            check(node, source.value);
+            check({ node }, source.value);
           } else if (typeof cooked === "string") {
-            check(node, cooked);
+            check({ node }, cooked);
           } else {
             context.report({ node, messageId: "computed" });
           }
@@ -102,7 +134,7 @@ export function createCoreBoundaryRule(repoRoot) {
         TSImportType(node) {
           const literal = node.argument?.literal;
           if (literal && typeof literal.value === "string") {
-            check(node, literal.value);
+            check({ node }, literal.value);
           }
         },
         TSExternalModuleReference: (node) => checkSource(node, node.expression),

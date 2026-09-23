@@ -62,7 +62,10 @@ from them.
    specifier to the module it targets, whether alias, relative path or `node_modules/`
    path, so dot segments, doubled slashes and case changes cannot slip past. It covers
    static imports, re-exports, `import()`, `import("…")` type queries and import-equals,
-   and it rejects computed `import()` specifiers it cannot check. A Vitest suite lints
+   and it rejects computed `import()` specifiers it cannot check. It also rejects
+   dependencies that never appear in an import statement: JSX (an implicit
+   `react/jsx-runtime` import under `react-jsx`), `/// <reference types|path>` directives
+   and `declare module` augmentations of forbidden modules. A Vitest suite lints
    deliberate violations of every form and spelling through the real config.
 9. **The gate replaces the docs-only stage** (ADR 0001, decision 3), with standards,
    lint, typecheck, unit, build, the client-bundle check and audit. The placeholder

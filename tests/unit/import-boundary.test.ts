@@ -136,6 +136,49 @@ describe("src/core import boundary", () => {
     expect(await rulesFor(code)).toEqual([]);
   }, 30_000);
 
+  describe("implicit dependencies (no import statement)", () => {
+    const CORE_TSX_PROBE = "src/core/musicspec/serialize/__boundary-probe__.tsx";
+
+    it.each([
+      ["an element", "export const probe = <div><span /></div>;\n"],
+      ["a fragment", "export const probe = <><span /></>;\n"],
+    ])("rejects JSX as %s, reported once at the outermost node", async (_kind, code) => {
+      const messages = await boundaryMessages(code, CORE_TSX_PROBE);
+      expect(messages.map((m) => [m.ruleId, m.messageId])).toEqual([[TARGET_RULE, "jsx"]]);
+    }, 30_000);
+
+    it.each([
+      '/// <reference types="next" />',
+      '/// <reference types="@supabase/ssr" />',
+      '/// <reference types="react-dom/client" />',
+      '/// <reference path="../../../app/types.d.ts" />',
+      '/// <reference path="../../../lib/./supabase/types.d.ts" />',
+    ])("rejects the directive %s", async (directive) => {
+      const rules = await rulesFor(`${directive}\nexport const probe = 1;\n`);
+      expect(rules).toEqual([TARGET_RULE]);
+    }, 30_000);
+
+    it.each(['declare module "next/server" {\n  interface NextRequest { probe: true }\n}', 'declare module "@/app/./layout" {}'])(
+      "rejects the module augmentation %s",
+      async (augmentation) => {
+        const rules = await rulesFor(`${augmentation}\nexport const probe = 1;\n`);
+        expect(rules).toEqual([TARGET_RULE]);
+      },
+      30_000,
+    );
+
+    it("allows pure directives, wildcard module declarations, and JSX outside src/core", async () => {
+      const pure = [
+        '/// <reference types="node" />',
+        'declare module "*.svg" {\n  const src: string;\n  export default src;\n}',
+        "export const probe = 1;",
+        "",
+      ].join("\n");
+      expect(await rulesFor(pure)).toEqual([]);
+      expect(await rulesFor("export const Probe = () => <div />;\n", "src/app/__boundary-probe__.tsx")).toEqual([]);
+    }, 30_000);
+  });
+
   it("does not restrict the same imports outside src/core", async () => {
     const code = [
       'import { NextResponse } from "next/server";',

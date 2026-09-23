@@ -28,7 +28,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - `scripts/gate.sh` failed on `main` after the handoff archive was uploaded (`cafe6f3`): the placeholder check matched the double-brace sequence inside the archive's compressed bytes. The check now skips binary files (`grep -I`) and still catches placeholders in text files.
-- The `src/core/**` import boundary matched specifier spellings only, so dynamic `import("next/server")`, computed `import()` specifiers, `import("…")` type queries and respelled paths such as `@/lib/./supabase/client` got through. A local rule, `eslint-rules/core-boundary.mjs`, now checks the normalized target of every import form, with regression probes for each form and spelling.
+- The `src/core/**` import boundary matched specifier spellings only, so dynamic `import("next/server")`, computed `import()` specifiers, `import("…")` type queries and respelled paths such as `@/lib/./supabase/client` got through. A local rule, `eslint-rules/core-boundary.mjs`, now checks the normalized target of every import form, with regression probes for each form and spelling. The same rule also rejects implicit dependencies in the core: JSX, `/// <reference>` directives and `declare module` augmentations of forbidden modules.
 - The Flow engine profile listed Seed after BPM and Length. Its own verified Compose-sheet order is Seed, BPM, Length, and a new data test ties `order` to that list.
 - The placeholder check failed on the verbatim Build Brief, which quotes the check itself. It now matches only closed double-brace tokens in non-code text files, excluding GitHub Actions expressions. The placeholder and private-key scans no longer read `node_modules/` or `.next/`.
 
