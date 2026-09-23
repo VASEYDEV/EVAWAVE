@@ -57,8 +57,10 @@ from them.
    - `@types/node` stays on 22, to track the floor.
 8. **The import boundary covers relative paths too.** `no-restricted-imports` on
    `src/core/**` blocks the brief's list and the `**/app`, `**/components` and
-   `**/lib/supabase` forms, so a `../../` path cannot route around the aliases. A
-   Vitest suite lints deliberate violations through the real config.
+   `**/lib/supabase` forms, so a `../../` path cannot route around the aliases.
+   `no-restricted-syntax` extends the block to dynamic `import()` and `import("…")` type
+   queries, and it rejects computed `import()` specifiers that cannot be checked. A Vitest
+   suite lints deliberate violations of every form through the real config.
 9. **The gate replaces the docs-only stage** (ADR 0001, decision 3), with standards,
    lint, typecheck, unit, build, the client-bundle check and audit. The placeholder
    check now matches only closed double-brace tokens in non-code text. The brief's

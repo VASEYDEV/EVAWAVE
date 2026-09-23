@@ -28,6 +28,22 @@ const CORE_FORBIDDEN_IMPORTS = [
   "**/lib/supabase/**",
 ];
 
+/**
+ * no-restricted-imports only sees static import/export declarations, so `import("next")`
+ * and `import("next").X` type queries need their own selectors. This regex matches the
+ * same set as the patterns above. esquery selector regexes cannot contain "/" or "\", so
+ * SEP (any character that cannot appear inside a specifier segment) stands in for "/".
+ */
+const SEP = "[^a-zA-Z0-9._~@-]";
+const CORE_FORBIDDEN_SPECIFIER = [
+  `^(react|react-dom|next)(${SEP}|$)`,
+  `^@supabase${SEP}`,
+  `(^|${SEP})(app|components)(${SEP}|$)`,
+  `(^|${SEP})lib${SEP}supabase(${SEP}|$)`,
+].join("|");
+const CORE_BOUNDARY_MESSAGE =
+  "src/core is pure TypeScript: no React, Next, Supabase or app-layer imports (BUILD-BRIEF §2, .claude/rules/musicspec-core.md).";
+
 const eslintConfig = defineConfig([
   ...nextVitals,
   ...nextTs,
@@ -40,10 +56,25 @@ const eslintConfig = defineConfig([
           patterns: [
             {
               group: CORE_FORBIDDEN_IMPORTS,
-              message:
-                "src/core is pure TypeScript: no React, Next, Supabase or app-layer imports (BUILD-BRIEF §2, .claude/rules/musicspec-core.md).",
+              message: CORE_BOUNDARY_MESSAGE,
             },
           ],
+        },
+      ],
+      "no-restricted-syntax": [
+        "error",
+        {
+          selector: `ImportExpression[source.type='Literal'][source.value=/${CORE_FORBIDDEN_SPECIFIER}/]`,
+          message: CORE_BOUNDARY_MESSAGE,
+        },
+        {
+          // A computed or template specifier cannot be checked against the boundary.
+          selector: "ImportExpression[source.type!='Literal']",
+          message: "Dynamic import() in src/core must use a string-literal specifier so the import boundary can check it.",
+        },
+        {
+          selector: `TSImportType[argument.literal.value=/${CORE_FORBIDDEN_SPECIFIER}/]`,
+          message: CORE_BOUNDARY_MESSAGE,
         },
       ],
     },

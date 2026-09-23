@@ -24,7 +24,9 @@ library UI. EVAWAVE never generates audio and never calls the engines.
 ## Non-obvious gotchas
 
 - **`src/core/**` is import-restricted.** ESLint rejects React, Next.js, Supabase and
-  app-layer imports there, including `../../app`-style relative escapes.
+  app-layer imports there in every form: static, `../../app`-style relative, dynamic
+  `import()`, and `import("…")` type queries. A dynamic `import()` must use a string
+  literal so the rule can check it.
   `tests/unit/import-boundary.test.ts` proves the rule. Never disable either. The
   path-scoped hard rules are in `.claude/rules/musicspec-core.md`.
 - **`next lint` does not exist in Next 16.** `npm run lint` calls ESLint directly.
