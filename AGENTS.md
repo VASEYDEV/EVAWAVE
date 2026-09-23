@@ -30,8 +30,12 @@ library UI. EVAWAVE never generates audio and never calls the engines.
   doubled slashes across static imports, re-exports, `import()`, `import("…")` type
   queries and import-equals, and `no-restricted-imports` backs it up. The same rule rejects
   dependencies that bypass import statements: JSX (an implicit `react/jsx-runtime` import),
-  `/// <reference types|path>` directives and `declare module` augmentations. A dynamic
-  `import()` must use a string literal so the rule can check it.
+  `/// <reference types|path>` directives and `declare module` augmentations. The core is
+  platform-neutral, so Node built-ins (`node:module`, `fs`, the `node` types) are
+  rejected, and so are the runtime loaders `require`, `module`, `process`, `eval` and
+  `new Function`, including their `globalThis.*` forms. A dynamic `import()` must use a
+  string literal so the rule can check it. Names assembled at runtime cannot be caught
+  statically, so code review covers deliberate obfuscation.
   `tests/unit/import-boundary.test.ts` proves the rule. Never disable either. The
   path-scoped hard rules are in `.claude/rules/musicspec-core.md`.
 - **`next lint` does not exist in Next 16.** `npm run lint` calls ESLint directly.

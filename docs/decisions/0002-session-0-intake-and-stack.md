@@ -66,7 +66,12 @@ from them.
    and it rejects computed `import()` specifiers it cannot check. It also rejects
    dependencies that never appear in an import statement: JSX (an implicit
    `react/jsx-runtime` import under `react-jsx`), `/// <reference types|path>` directives
-   and `declare module` augmentations of forbidden modules. A Vitest suite lints
+   and `declare module` augmentations of forbidden modules. The core is platform-neutral,
+   because it also runs in the browser and does no I/O. So Node built-ins are rejected,
+   which covers `createRequire` from `node:module`, and core-scoped rules ban the
+   runtime loaders (`require`/`module`/`process` globals and their `globalThis.*` forms,
+   `eval`, `new Function`). Stated limit: a module name assembled at runtime cannot be
+   seen by static analysis, and code review covers deliberate obfuscation. A Vitest suite lints
    deliberate violations of every form and spelling through the real config.
 9. **The gate replaces the docs-only stage** (ADR 0001, decision 3), with standards,
    lint, typecheck, unit, build, the client-bundle check and audit. The placeholder

@@ -16,6 +16,9 @@ const repoRoot = fileURLToPath(new URL(".", import.meta.url));
  * - evawave/core-boundary normalizes every specifier to the module it targets, so dot
  *   segments, doubled slashes, dynamic import(), import("…") type queries and
  *   import-equals cannot route around the spelling patterns.
+ * - Core rules ban runtime module loading and process access (require/module/process
+ *   globals, their globalThis/global/self/window forms, eval and new Function), which no
+ *   import-level check can see.
  * tests/unit/import-boundary.test.ts asserts both.
  */
 const CORE_FORBIDDEN_IMPORTS = [
@@ -36,6 +39,17 @@ const CORE_FORBIDDEN_IMPORTS = [
   "**/lib/supabase",
   "**/lib/supabase/**",
 ];
+
+/**
+ * Runtime code loading and process access, which no import rule can see. The core does no
+ * I/O (.claude/rules/musicspec-core.md, rule 2) and runs in the browser.
+ */
+const CORE_RUNTIME_MESSAGE =
+  "src/core is pure and platform-neutral: no runtime module loading, eval or process access (BUILD-BRIEF §2).";
+const CORE_RESTRICTED_GLOBALS = ["require", "module", "exports", "process", "__non_webpack_require__", "__dirname", "__filename"];
+const CORE_RESTRICTED_PROPERTIES = ["globalThis", "global", "self", "window"].flatMap((object) =>
+  ["require", "module", "process", "eval", "Function"].map((property) => ({ object, property, message: CORE_RUNTIME_MESSAGE })),
+);
 
 const eslintConfig = defineConfig([
   ...nextVitals,
@@ -59,6 +73,11 @@ const eslintConfig = defineConfig([
         },
       ],
       "evawave/core-boundary": "error",
+      "no-restricted-globals": ["error", ...CORE_RESTRICTED_GLOBALS.map((name) => ({ name, message: CORE_RUNTIME_MESSAGE }))],
+      "no-restricted-properties": ["error", ...CORE_RESTRICTED_PROPERTIES],
+      "no-eval": "error",
+      "no-implied-eval": "error",
+      "no-new-func": "error",
     },
   },
   // Override default ignores of eslint-config-next.

@@ -1,3 +1,4 @@
+import { isBuiltin } from "node:module";
 import path from "node:path";
 
 /**
@@ -9,6 +10,14 @@ import path from "node:path";
  * `import x = require("…")`. It also catches dependencies that never appear in an import
  * statement: JSX (compiled to an implicit `react/jsx-runtime` import under the `react-jsx`
  * setting), `/// <reference types|path>` directives and `declare module "…"` augmentations.
+ * Node built-ins (`node:module`, `fs`, the `node` types, …) are rejected outright: the core
+ * is platform-neutral and also runs in the browser, and `createRequire` from `node:module`
+ * would otherwise load any module at runtime. The runtime-global side (`require`,
+ * `process`, `eval`, …) is handled by core rules in eslint.config.mjs.
+ *
+ * Scope: static analysis covers every import syntax and the named loader globals. It cannot
+ * see a module name assembled at runtime (`globalThis["req" + "uire"]`, an aliased
+ * `globalThis`); code review covers deliberate obfuscation.
  */
 
 /** Matches the body of a `/// <reference types="…" />` or `/// <reference path="…" />` comment. */
@@ -38,6 +47,11 @@ function isForbiddenRepoPath(repoPath) {
     return isForbiddenPackage(repoPath.slice("node_modules/".length));
   }
   return FORBIDDEN_DIRS.some((dir) => lower === dir || lower.startsWith(`${dir}/`));
+}
+
+/** Node built-in modules, plus the Node type package, which the platform-neutral core may not use. */
+export function isNodeBuiltin(specifier) {
+  return specifier.startsWith("node:") || isBuiltin(specifier) || specifier === "node" || specifier === "@types/node";
 }
 
 /**
@@ -73,6 +87,8 @@ export function createCoreBoundaryRule(repoRoot) {
           "src/core is pure TypeScript: '{{specifier}}' reaches React, Next, Supabase or the app layer (BUILD-BRIEF §2, .claude/rules/musicspec-core.md).",
         computed: "Dynamic import() in src/core must use a string-literal specifier so the import boundary can check it.",
         jsx: "src/core is pure TypeScript: JSX compiles to an implicit react/jsx-runtime import (BUILD-BRIEF §2).",
+        builtin:
+          "src/core is platform-neutral: Node built-in '{{specifier}}' is not allowed (it runs in the browser too, and node:module can load any module at runtime).",
       },
     },
     create(context) {
@@ -80,7 +96,9 @@ export function createCoreBoundaryRule(repoRoot) {
 
       /** `at` is `{ node }` for AST nodes or `{ loc }` for comments. */
       function check(at, specifier) {
-        if (targetsForbiddenModule(specifier, filename, repoRoot)) {
+        if (isNodeBuiltin(specifier)) {
+          context.report({ ...at, messageId: "builtin", data: { specifier } });
+        } else if (targetsForbiddenModule(specifier, filename, repoRoot)) {
           context.report({ ...at, messageId: "forbidden", data: { specifier } });
         }
       }
