@@ -41,6 +41,8 @@ const BRIEF_FORBIDDEN = [
 const RESPELLED_FORBIDDEN = [
   "@/lib/./supabase/client",
   "@/lib//supabase/client",
+  "@//lib/../lib/supabase/client",
+  "@///app/page",
   "@/core/../lib/supabase/server",
   "../../musicspec/../../app/page",
   "./../../../components/composer/LintPanel",

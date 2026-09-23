@@ -48,7 +48,9 @@ function isForbiddenRepoPath(repoPath) {
 export function targetsForbiddenModule(specifier, filename, repoRoot) {
   let absolute = null;
   if (specifier.startsWith(ALIAS_PREFIX)) {
-    absolute = path.resolve(repoRoot, ALIAS_TARGET, specifier.slice(ALIAS_PREFIX.length));
+    // join, not resolve: TypeScript substitutes the suffix into "./src/*", so an extra
+    // leading slash ("@//lib/…") stays inside src/ rather than becoming an absolute path.
+    absolute = path.join(repoRoot, ALIAS_TARGET, specifier.slice(ALIAS_PREFIX.length));
   } else if (specifier.startsWith(".") || specifier.startsWith("/")) {
     absolute = path.resolve(path.dirname(filename), specifier);
   }
