@@ -20,8 +20,9 @@ current LTS line). Local and CI verification never diverge.
 ## What the gate checks (CLAUDE.md §3, §5, §6)
 
 1. **Standards.**
-   - Required files exist: the governance set plus `.env.example`, `package.json` and
-     `package-lock.json`.
+   - Required files exist: the governance set, `AGENTS.md` and `SKILLS.md` (without
+     `AGENTS.md`, `next dev` writes into `CLAUDE.md`; ADR 0003), `.env.example`,
+     `package.json` and `package-lock.json`.
    - No unfilled template placeholders: a closed double-brace token in non-code text
      files outside `docs/legal/`. Code, the lockfile and GitHub Actions expressions are
      excluded. Bare double braces in prose are not placeholders.

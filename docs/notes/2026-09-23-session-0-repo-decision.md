@@ -140,3 +140,9 @@ drop-in. #4, #5, #6 and #7 were done as proposed. #8 was decided by the owner.
 
 Installed tree check: all 13 package files match the section 3 hashes. The rule file
 matched before its `paths:` frontmatter was added.
+
+## 8. Agent contract files (appended 2026-09-23)
+
+The owner directed that his most recent standard versions be installed. `CLAUDE.md` (Standard
+v3.0) and `.claude/settings.json` were already the standard files. `AGENTS.md` and `SKILLS.md`
+were added to his latest repo pattern. See [ADR 0003](../decisions/0003-agent-contract-files.md).

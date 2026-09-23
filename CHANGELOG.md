@@ -16,12 +16,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `.env.example` documenting every variable from Build Brief §6.
 - `scripts/check-client-bundle.sh`: fails the build if a server-only variable name reaches the client bundle.
 - ADR 0002: Session 0 intake and stack decisions.
+- `AGENTS.md` (points to `CLAUDE.md`, adds runtime notes, and hosts the `next dev`-managed Next.js block so `next dev` never writes into `CLAUDE.md`) and `SKILLS.md` (skill index and payload firewall). ADR 0003 records the agent contract files; `CLAUDE.md` stays the canonical Standard v3.0.
 
 ### Changed
 
 - The verification gate now runs the full §3 gate: standards, lint, typecheck, unit, build, the client-bundle check and `npm audit` (criticals block). CI runs it after `npm ci` on Node 22.13.0 and 24.
 - Build Brief §2 stack line amended to Next.js 16 by owner decision. Scope decision log gains A15 (stack and Node ≥ 22.13).
 - README and `docs/architecture.md` rewritten to the package's product statement (current claims only).
+- The gate requires `AGENTS.md` and `SKILLS.md`.
 
 ### Fixed
 

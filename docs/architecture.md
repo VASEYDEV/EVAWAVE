@@ -48,7 +48,8 @@ oracle.
   ids, serializer contracts.
 - [Instrument bank seed v0.1](evawave/instrument-bank-seed-v0.1.md).
 - Decisions: [ADR 0001](decisions/0001-repo-bootstrap.md),
-  [ADR 0002](decisions/0002-session-0-intake-and-stack.md).
+  [ADR 0002](decisions/0002-session-0-intake-and-stack.md),
+  [ADR 0003](decisions/0003-agent-contract-files.md).
 
 ## Open items
 

@@ -22,8 +22,8 @@ collect_files() {
 
 printf '== standards\n'
 
-required=(README.md LICENSE CHANGELOG.md SECURITY.md CODE_OF_CONDUCT.md CLAUDE.md .editorconfig .gitignore
-  .env.example package.json package-lock.json)
+required=(README.md LICENSE CHANGELOG.md SECURITY.md CODE_OF_CONDUCT.md CLAUDE.md AGENTS.md SKILLS.md
+  .editorconfig .gitignore .env.example package.json package-lock.json)
 for f in "${required[@]}"; do
   if [[ ! -f "$f" ]]; then
     echo "MISSING required file: $f"

@@ -72,11 +72,7 @@ from them.
 
 ## Pending
 
-- **Canonical files.** `CLAUDE.md`, `AGENTS.md`, `SKILLS.md`, `.claude/settings.json`
-  and starter kit v3.0 are being supplied by the owner. When they land, the session
-  verifies MD5 and date markers against the brief and reports any disagreement without
-  editing either side. It also reconciles the agent contracts (one policy layer) in
-  ADR 0003.
+- **Canonical files:** resolved in [ADR 0003](0003-agent-contract-files.md).
 - **Reference files** for S4/S5 (the Jinn v1.1 blueprint, the v1.0 Morocco prompt and
   the research brief) arrive before S4.
 

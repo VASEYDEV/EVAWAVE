@@ -79,7 +79,8 @@ pure functions of (IR, profile), and the composer UI is a field library over the
 
 ## Contributing
 
-All changes follow the engineering standard in [`CLAUDE.md`](CLAUDE.md) and pass
+All changes follow the engineering standard in [`CLAUDE.md`](CLAUDE.md) (with runtime notes in
+[`AGENTS.md`](AGENTS.md) and the skill index in [`SKILLS.md`](SKILLS.md)) and pass
 `bash scripts/gate.sh` ([verification runbook](docs/runbooks/verification.md)). Conduct is
 governed by the [Code of Conduct](CODE_OF_CONDUCT.md). Report vulnerabilities through the
 [security policy](SECURITY.md), not public issues.
