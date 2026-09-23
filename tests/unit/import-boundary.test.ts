@@ -1,23 +1,22 @@
 import { fileURLToPath } from "node:url";
 
-import { ESLint } from "eslint";
+import { ESLint, type Linter } from "eslint";
 import { beforeAll, describe, expect, it } from "vitest";
 
 /**
  * Proves the src/core import boundary (BUILD-BRIEF §2) is live under the real
  * eslint.config.mjs: ESLint is invoked directly (Next.js 16 has no `next lint`), and a
- * deliberate violation must produce a boundary error, whichever import form it uses.
+ * deliberate violation must be reported whichever import form or spelling it uses.
  */
 const repoRoot = fileURLToPath(new URL("../..", import.meta.url));
 const CORE_PROBE = "src/core/musicspec/serialize/__boundary-probe__.ts";
 const APP_PROBE = "src/app/__boundary-probe__.tsx";
-const BOUNDARY_RULES = new Set([
-  "no-restricted-imports",
-  "no-restricted-syntax",
-  "@typescript-eslint/no-require-imports",
-]);
+const TARGET_RULE = "evawave/core-boundary";
+const SPELLING_RULE = "no-restricted-imports";
+const BOUNDARY_RULES = new Set([TARGET_RULE, SPELLING_RULE, "@typescript-eslint/no-require-imports"]);
 
-const FORBIDDEN = [
+/** The brief's list and its relative forms; no-restricted-imports must catch these as spelled. */
+const BRIEF_FORBIDDEN = [
   "react",
   "react/jsx-runtime",
   "react-dom",
@@ -37,7 +36,29 @@ const FORBIDDEN = [
   "../../../components/composer/LintPanel",
   "../../../lib/supabase/client",
 ];
-const ALLOWED = ["zod", "./palette", "../ir/types", "@/core/musicspec/ir/types"];
+
+/** Spellings that normalize to a forbidden target (the probe sits in src/core/musicspec/serialize/). */
+const RESPELLED_FORBIDDEN = [
+  "@/lib/./supabase/client",
+  "@/lib//supabase/client",
+  "@/core/../lib/supabase/server",
+  "../../musicspec/../../app/page",
+  "./../../../components/composer/LintPanel",
+  "@/App/page",
+  "../../../../node_modules/next/server",
+  "next/../next/server",
+];
+
+const FORBIDDEN = [...BRIEF_FORBIDDEN, ...RESPELLED_FORBIDDEN];
+
+const ALLOWED = [
+  "zod",
+  "./palette",
+  "../ir/types",
+  "@/core/musicspec/ir/types",
+  "../../musicspec/./ir/types",
+  "@/lib/supabase-types",
+];
 
 let eslint: ESLint;
 
@@ -45,56 +66,63 @@ beforeAll(() => {
   eslint = new ESLint({ cwd: repoRoot });
 });
 
-async function boundaryErrors(code: string, filePath: string) {
+async function boundaryMessages(code: string, filePath = CORE_PROBE): Promise<Linter.LintMessage[]> {
   const [result] = await eslint.lintText(code, { filePath });
   return (result?.messages ?? []).filter((m) => m.ruleId !== null && BOUNDARY_RULES.has(m.ruleId));
 }
 
+async function rulesFor(code: string, filePath = CORE_PROBE) {
+  return (await boundaryMessages(code, filePath)).map((m) => m.ruleId);
+}
+
 describe("src/core import boundary", () => {
   it.each(FORBIDDEN)("rejects a static import of %s", async (specifier) => {
-    const errors = await boundaryErrors(`import x from "${specifier}";\nexport const probe = x;\n`, CORE_PROBE);
-    expect(errors).toHaveLength(1);
+    const rules = await rulesFor(`import x from "${specifier}";\nexport const probe = x;\n`);
+    expect(rules).toContain(TARGET_RULE);
   }, 30_000);
 
   it.each(FORBIDDEN)("rejects a dynamic import() of %s", async (specifier) => {
-    const errors = await boundaryErrors(`export const load = () => import("${specifier}");\n`, CORE_PROBE);
-    expect(errors).toHaveLength(1);
+    const rules = await rulesFor(`export const load = () => import("${specifier}");\n`);
+    expect(rules).toEqual([TARGET_RULE]);
   }, 30_000);
 
-  it.each(["next/server", "@supabase/ssr", "@/lib/supabase/server", "../../../app/compose/page"])(
-    "rejects an import() type query of %s",
-    async (specifier) => {
-      const errors = await boundaryErrors(`export type Probe = import("${specifier}").Probe;\n`, CORE_PROBE);
-      expect(errors).toHaveLength(1);
-    },
-    30_000,
-  );
+  it.each(FORBIDDEN)("rejects an import() type query of %s", async (specifier) => {
+    const rules = await rulesFor(`export type Probe = import("${specifier}").Probe;\n`);
+    expect(rules).toEqual([TARGET_RULE]);
+  }, 30_000);
 
-  it("rejects dynamic import() with a computed or template specifier", async () => {
+  it.each(BRIEF_FORBIDDEN)("keeps the brief's no-restricted-imports rule live for %s", async (specifier) => {
+    const rules = await rulesFor(`import x from "${specifier}";\nexport const probe = x;\n`);
+    expect(rules).toContain(SPELLING_RULE);
+  }, 30_000);
+
+  it("rejects template and computed import() specifiers", async () => {
     const code = [
+      "export const template = () => import(`@/lib/./supabase/client`);",
       'const specifier = "react";',
       "export const computed = () => import(specifier);",
-      "export const template = () => import(`next/server`);",
+      "export const interpolated = () => import(`${specifier}/jsx-runtime`);",
       "",
     ].join("\n");
-    expect(await boundaryErrors(code, CORE_PROBE)).toHaveLength(2);
+    const messages = await boundaryMessages(code);
+    expect(messages.map((m) => m.ruleId)).toEqual([TARGET_RULE, TARGET_RULE, TARGET_RULE]);
+    expect(messages.map((m) => m.messageId)).toEqual(["forbidden", "computed", "computed"]);
   }, 30_000);
 
-  it("rejects require() and import-equals forms", async () => {
-    const code = ['import a = require("next");', 'export const b = require("react");', "export { a };", ""].join("\n");
-    const rules = (await boundaryErrors(code, CORE_PROBE)).map((m) => m.ruleId);
-    expect(rules).toContain("no-restricted-imports");
-    expect(rules.filter((r) => r === "@typescript-eslint/no-require-imports")).toHaveLength(2);
-  }, 30_000);
-
-  it("rejects type-only imports and re-exports too", async () => {
+  it("rejects re-exports, type-only imports, import-equals and require()", async () => {
     const code = [
-      'import type { NextRequest } from "next/server";',
-      'export * from "react";',
-      "export type Probe = NextRequest;",
+      'export * from "@/lib/./supabase/server";',
+      'export { NextResponse } from "next/server";',
+      'import type { SupabaseClient } from "@supabase/supabase-js";',
+      'import eq = require("next");',
+      'export const req = require("react");',
+      "export type Probe = SupabaseClient;",
+      "export { eq };",
       "",
     ].join("\n");
-    expect(await boundaryErrors(code, CORE_PROBE)).toHaveLength(2);
+    const rules = await rulesFor(code);
+    expect(rules.filter((r) => r === TARGET_RULE)).toHaveLength(4);
+    expect(rules.filter((r) => r === "@typescript-eslint/no-require-imports")).toHaveLength(2);
   }, 30_000);
 
   it.each(ALLOWED)("allows pure static, dynamic and type-query imports of %s", async (specifier) => {
@@ -105,16 +133,16 @@ describe("src/core import boundary", () => {
       `export type Probe = import("${specifier}").Probe;`,
       "",
     ].join("\n");
-    expect(await boundaryErrors(code, CORE_PROBE)).toHaveLength(0);
+    expect(await rulesFor(code)).toEqual([]);
   }, 30_000);
 
   it("does not restrict the same imports outside src/core", async () => {
     const code = [
       'import { NextResponse } from "next/server";',
       "export const probe = NextResponse;",
-      'export const load = () => import("next/headers");',
+      'export const load = () => import("@/lib/./supabase/server");',
       "",
     ].join("\n");
-    expect(await boundaryErrors(code, APP_PROBE)).toHaveLength(0);
+    expect(await rulesFor(code, APP_PROBE)).toEqual([]);
   }, 30_000);
 });

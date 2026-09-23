@@ -55,12 +55,15 @@ from them.
    - TypeScript stays on 5.9: TypeScript 7 is outside typescript-eslint's `<6.1.0` peer
      range.
    - `@types/node` stays on 22, to track the floor.
-8. **The import boundary covers relative paths too.** `no-restricted-imports` on
-   `src/core/**` blocks the brief's list and the `**/app`, `**/components` and
-   `**/lib/supabase` forms, so a `../../` path cannot route around the aliases.
-   `no-restricted-syntax` extends the block to dynamic `import()` and `import("…")` type
-   queries, and it rejects computed `import()` specifiers that cannot be checked. A Vitest
-   suite lints deliberate violations of every form through the real config.
+8. **The import boundary checks targets, not spellings.** `no-restricted-imports` on
+   `src/core/**` blocks the brief's list, plus the `**/app`, `**/components` and
+   `**/lib/supabase` forms so a `../../` path cannot route around the aliases. The local
+   rule `evawave/core-boundary` (`eslint-rules/core-boundary.mjs`) normalizes every
+   specifier to the module it targets, whether alias, relative path or `node_modules/`
+   path, so dot segments, doubled slashes and case changes cannot slip past. It covers
+   static imports, re-exports, `import()`, `import("…")` type queries and import-equals,
+   and it rejects computed `import()` specifiers it cannot check. A Vitest suite lints
+   deliberate violations of every form and spelling through the real config.
 9. **The gate replaces the docs-only stage** (ADR 0001, decision 3), with standards,
    lint, typecheck, unit, build, the client-bundle check and audit. The placeholder
    check now matches only closed double-brace tokens in non-code text. The brief's
