@@ -1,0 +1,148 @@
+{
+  "id": "suno",
+  "displayName": "Suno",
+  "version": "v6",
+  "verifiedOn": "2026-09-15",
+  "confidence": "verified",
+  "status": "live",
+  "verification": {
+    "method": "Research brief 2026-09-15 (press: Digital Music News, Quartz 2026-09-09; guides: HookGenius, Blake Crosley, SongSmith, usesuno.com, sunometatagcreator) plus the Jinn v1.2 renders. Suno publishes no official limits table or tag list; app-side numbers can shift between UI releases and must be checked in the live composer before each build.",
+    "verified": [
+      "v6 launched 2026-09-09 as v6 and v6-wild (Pro/Premier) and v6-mini (all users); v5 and v4.5 removed from the picker",
+      "Style field ~1,000 chars; Lyrics 5,000; Title 100 in the app (80 via API); Exclude Styles maxlength 1,000 under Custom Mode → Advanced Options",
+      "Instrumental toggle ON: bracket tags in Lyrics are read as directions, not sung; structure control survives the toggle",
+      "Exclude Styles is more reliable than inline 'no X' in Style",
+      "BPM in the prompt is guidance, not a lock; renders drift; Suno Studio → Manual BPM conforms stems to a fixed grid",
+      "Artist names in Style are flagged or stripped"
+    ],
+    "community": [
+      "Front-loaded tags carry more weight than later ones",
+      "No official time-signature tag; '[4/4]' style meta-tags are community conventions",
+      "Drift words toward compound/odd feels: shuffle, swing, triplet feel, waltz, rubato, trance, folk rhythm names in 6/8, 9/8, 10/8",
+      "Practical Lyrics sweet spot ~3,000 chars before the model rushes"
+    ],
+    "unverified": [
+      "Exact enforcement behaviour at each limit (truncate vs reject)",
+      "Whether v6-wild and v6-mini honour bracket tags identically to v6",
+      "Any published banned-term list beyond artist names"
+    ]
+  },
+  "fields": [
+    {
+      "id": "style",
+      "label": "Style",
+      "kind": "text",
+      "hardLimit": 1000,
+      "softLimit": 1000,
+      "serializesFrom": ["D1", "D2", "D4", "D5", "D6", "D9", "D10"],
+      "order": 1,
+      "notes": "Physics and palette in priority order: form/meter/tempo, key/mode, drum grammar, regional instruments and their 4/4 rhythms, synth roles, textures, transition rule, bridge and finale in one clause each, mood, inline negation last."
+    },
+    {
+      "id": "exclude",
+      "label": "Exclude Styles",
+      "kind": "text",
+      "hardLimit": 1000,
+      "softLimit": 300,
+      "serializesFrom": ["D10"],
+      "order": 2,
+      "notes": "Custom Mode → Advanced Options. Four classes in order: vocals/lyrics, meter drift, genre bleed, instrument ambiguity; then custom."
+    },
+    {
+      "id": "lyrics",
+      "label": "Lyrics",
+      "kind": "text",
+      "hardLimit": 5000,
+      "softLimit": 3000,
+      "serializesFrom": ["D3", "D7", "D8"],
+      "order": 3,
+      "notes": "The timeline. One bracket per section carrying, in order: section name, drum state, bass/808 state, lead, texture, transition/FX, pocket. Pickup bars and silence drops are their own brackets. Contrast phrases are labelled and bounded inside the section bracket. Passthrough lyrics only when Instrumental is OFF."
+    },
+    {
+      "id": "title",
+      "label": "Title",
+      "kind": "text",
+      "hardLimit": 100,
+      "serializesFrom": ["D10"],
+      "order": 4,
+      "notes": "80 via API."
+    }
+  ],
+  "toggles": [
+    {
+      "id": "instrumental",
+      "label": "Instrumental",
+      "effect": "ON: Lyrics brackets are read as arrangement directions and not sung; keep Lyrics to structure tags only. OFF: Lyrics are sung; brackets still shape sections."
+    }
+  ],
+  "selectors": [
+    {
+      "id": "model",
+      "label": "Model",
+      "affects": "render",
+      "options": [
+        { "value": "v6", "note": "Pro/Premier; default for EVAWAVE payloads", "default": true },
+        { "value": "v6-wild", "note": "Pro/Premier; more variance" },
+        { "value": "v6-mini", "note": "All users; lighter model" }
+      ]
+    }
+  ],
+  "driftWords": [
+    "shuffle", "shuffled", "swing", "swung", "triplet feel", "waltz", "rubato", "trance", "trance rhythm",
+    "two cycles per bar", "karsilama", "samai", "samai thaqil", "yuruk semai", "6/8", "9/8", "10/8", "12/8",
+    "compound meter", "odd time"
+  ],
+  "driftWordsNote": "Assembled from the v1.1 → v1.2 failure (render slipped into 6/8 and odd-length passages). 'triplet' alone is allowed for hat rolls ('32nd rolls with triplet fills') but flagged when paired with 'feel' or 'shuffle'; drop 'triplet hats' first if drift appears.",
+  "bannedTerms": [],
+  "bannedTermsNote": "Artist and producer names are flagged or stripped by Suno (verified 2026-09-15); no public list. EVAWAVE's lineage pass strips them before serialization regardless, so this list stays empty.",
+  "aliases": {
+    "tabla-egyptian": "Egyptian tabla darbuka",
+    "tabla-egyptian:drift-fallback": "darbuka",
+    "rababa": "Egyptian rababa spike fiddle",
+    "org-keyboard": "quarter-tone org keyboard",
+    "strings-egyptian": "unison Egyptian string section",
+    "kamanja": "Egyptian kamanja violin with slides"
+  },
+  "aliasesNote": "Suno may read bare 'tabla' as the Indian pair; the alias plus Exclude entries for sitar/Bollywood hold the line. The drift fallback swaps to 'darbuka' everywhere on the rerun.",
+  "weighting": "front-loaded",
+  "supports": {
+    "D1": "native",
+    "D2": "native",
+    "D3": "approximate",
+    "D4": "native",
+    "D5": "native",
+    "D6": "approximate",
+    "D7": "native",
+    "D8": "native",
+    "D9": "approximate",
+    "D10": "native"
+  },
+  "supportsNotes": {
+    "D3": "Dynamics only as words inside brackets; no numeric control.",
+    "D6": "BPM is guidance; no meter tag; key/mode as prose. Meter lock is prose plus Exclude plus the post-render Manual BPM step.",
+    "D7": "Bracket tags read as directions with Instrumental ON (verified). Bar counts are not honoured; runtime is approximate.",
+    "D9": "Mix character as prose only.",
+    "D10": "Exclude Styles field is the reliable negative channel."
+  },
+  "houseBudgets": {
+    "suno.total": 3000
+  },
+  "houseBudgetsNote": "Jinn v1.2 rule: ≤3,000 characters across the three pasted fields keeps the model from rushing.",
+  "postRender": [
+    "Suno Studio → Manual BPM = <Form.tempo> to hard-lock the grid before stems reach the DAW.",
+    "Export stems; hand the word-MIDI blueprint to the DAW session for reconstruction or repair.",
+    "Generate 4–6 takes. Keep the take where Hook and Bridge are audibly different sections and the Hook B lead is present. Kill any take that lands in a major key or skips the drums-out bridge.",
+    "If a take stops before the finale, use Extend from the Bridge with the same Style text."
+  ],
+  "repairRules": [
+    { "symptom": "render drifts to 6/8 or odd-length passages", "action": "Swap 'tabla' → 'darbuka' everywhere, remove 'zar rhythm' from the Verse bracket, keep the meter lock text first in Style, rerun." },
+    { "symptom": "take sings the bracket text", "action": "Strip brackets to bare tags ([Intro], [Build], [Hook]...) and rerun; if vocals persist, Instrumental ON and rely on Style alone (loses section control, keeps palette)." },
+    { "symptom": "take reads Indian instruments", "action": "Apply the drift-fallback alias, confirm 'sitar, Bollywood' are in Exclude, rerun." },
+    { "symptom": "tempo drift on export", "action": "Manual BPM in Suno Studio; not a prompt problem." }
+  ],
+  "notes": [
+    "v6 launched in partnership with Warner Music, BMG and Believe (press, 2026-09-09).",
+    "Litigation state 2026-09-16 (data only, not surfaced in the UI per A12): UMG and Sony active in D. Mass., dispositive motions due 2027-04-09; GEMA first-instance ruling in Munich 2026-07-31. Re-verify quarterly.",
+    "Front-load the Style field by the priority order in scope v0.2 §3; the serializer never emits in UI field order."
+  ]
+}
