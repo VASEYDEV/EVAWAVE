@@ -13,13 +13,17 @@
 
 ## Status
 
-**Pre-alpha: Session 0 (bootstrap) of the [Build Brief](docs/evawave/BUILD-BRIEF.md).**
+**Pre-alpha: Session 1a (IR v0.3 core) of the [Build Brief](docs/evawave/BUILD-BRIEF.md).**
 Nothing in the app is usable yet. What exists today:
 
 - A Next.js 16 app shell that builds, with Supabase Auth session refresh in `src/proxy.ts`
   (the proxy passes requests through until a Supabase project is configured).
 - Engine profiles as data for Suno v6, ElevenLabs Music v2 and Google Flow Music
   (`src/core/musicspec/engines/profiles/`). Udio is a halted stub (scope A12).
+- The IR v0.3 delta as typed, validated core code (`src/core/musicspec/ir/`): types,
+  defaults, zod schemas and `applyPatch`, the only mutation path for intake, plus bar math
+  (`src/core/musicspec/barmath.ts`). The v0.2 merge waits on owner-supplied sources
+  ([#3](https://github.com/VASEYDEV/EVAWAVE/issues/3), ADR 0004).
 - A lint-enforced import boundary that keeps the `src/core/` musicspec core free of React,
   Next.js, Supabase and app-layer imports, with tests that prove it fails violations.
 - The product spec: [scope](docs/evawave/scope-v0.2.md), the
@@ -44,6 +48,7 @@ bash scripts/gate.sh          # full verification gate (the same one CI runs)
 
 - **Framework:** Next.js 16.3.6 (App Router, Turbopack) · React 19 · TypeScript 5.9 (strict)
 - **Auth and data:** Supabase (`@supabase/ssr`, Supabase Auth, RLS from S7)
+- **Core validation:** zod 4 (runtime schemas for the MusicSpec IR in `src/core/musicspec/ir/schema.ts`)
 - **Quality:** ESLint 9 flat config (invoked directly) · Vitest · `npm audit`
 - **Deploy:** Vercel (planned, not yet configured)
 

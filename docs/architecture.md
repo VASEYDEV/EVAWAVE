@@ -1,6 +1,6 @@
 # Architecture
 
-> **Status: Session 0 (bootstrap).** This document describes what exists today and points
+> **Status: Session 1a (IR v0.3 core).** This document describes what exists today and points
 > to the spec for what the build adds. The package's product statement replaces the
 > concept-stage description in ADR 0001. Update this file in the same PR as any change
 > that alters it (CLAUDE.md §3).
@@ -17,7 +17,7 @@ never conflate. Full scope: [`evawave/scope-v0.2.md`](evawave/scope-v0.2.md).
 
 | Layer | Path | Rule | State |
 | --- | --- | --- | --- |
-| musicspec core | `src/core/musicspec/` | Pure TypeScript. No React, Next.js, Supabase or app-layer imports. ESLint enforces this, and `tests/unit/import-boundary.test.ts` proves it | Engine profiles (JSON) only. The IR (S1), profile loader (S2), serializers (S3) and linter (S4) follow |
+| musicspec core | `src/core/musicspec/` | Pure TypeScript. No React, Next.js, Supabase or app-layer imports. ESLint enforces this, and `tests/unit/import-boundary.test.ts` proves it | Engine profiles (JSON); the IR v0.3 delta types, defaults and schemas (`ir/`), `applyPatch` (`ir/patch.ts`) and bar math (`barmath.ts`). The v0.2 merge (S1b, [#3](https://github.com/VASEYDEV/EVAWAVE/issues/3)), profile loader (S2), serializers (S3) and linter (S4) follow |
 | Taxonomy data | `src/data/taxonomy/` | Curated JSON; ids unique across banks | S5 |
 | App | `src/app/` | Next.js 16 App Router | Shell only. Composer (S6) and library (S7) follow |
 | Proxy | `src/proxy.ts` | Next.js 16 proxy (the successor to `middleware.ts`) | Supabase Auth session refresh. Passes through while Supabase is unconfigured |
@@ -49,12 +49,15 @@ oracle.
 - [Instrument bank seed v0.1](evawave/instrument-bank-seed-v0.1.md).
 - Decisions: [ADR 0001](decisions/0001-repo-bootstrap.md),
   [ADR 0002](decisions/0002-session-0-intake-and-stack.md),
-  [ADR 0003](decisions/0003-agent-contract-files.md).
+  [ADR 0003](decisions/0003-agent-contract-files.md),
+  [ADR 0004](decisions/0004-session-1-ir-split.md).
 
 ## Open items
 
-- IR v0.2 types and `resolveLineage.ts`: the owner supplies them before S1 (ADR 0002,
-  decision 2).
+- IR v0.2 types and `resolveLineage.ts`: owner-supplied (ADR 0002, decision 2), tracked in
+  [#3](https://github.com/VASEYDEV/EVAWAVE/issues/3). S1b merges the types per the delta §7
+  attachment map (ADR 0004). Until then there is no `MusicSpec` type.
+- Compound-meter BPM convention in `barmath.ts` (ADR 0004, open items).
 - Flow verification results and the ElevenLabs web-app form surface (Build Brief §7).
 - Tagging model for S9 (Build Brief §7).
 - PWA and service-worker tooling: to be checked against Turbopack, with options reported,

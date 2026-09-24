@@ -17,6 +17,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `scripts/check-client-bundle.sh`: fails the build if a server-only variable name reaches the client bundle.
 - ADR 0002: Session 0 intake and stack decisions.
 - `AGENTS.md` (points to `CLAUDE.md`, adds runtime notes, and hosts the `next dev`-managed Next.js block so `next dev` never writes into `CLAUDE.md`) and `SKILLS.md` (skill index and payload firewall). ADR 0003 records the agent contract files; `CLAUDE.md` stays the canonical Standard v3.0.
+- IR v0.3 core (Session 1a, ADR 0004): `src/core/musicspec/ir/types.ts` (the delta's §1–§5 types), `defaults.ts` (every §7 default), `schema.ts` (a zod 4 strict schema per delta type, with a type-parity test), `patch.ts` (`applyPatch`, the only mutation path for intake: proposed patches and unaccepted paths are no-ops, PT-2 protects `references` and `patches`, RFC 6901 paths, copy-on-write) and `src/core/musicspec/barmath.ts` (bar seconds, blocks, runtime and section starts with pickups and silence; 142 BPM → 1.69 s, 140 BPM → 1.714 s, 4 bars → 6857 ms). 114 tests including a seeded property test. The v0.2 merge (S1b) waits on the owner's sources ([#3](https://github.com/VASEYDEV/EVAWAVE/issues/3)).
+- `zod` ^4.6.5 as a direct dependency: the brief's schema library, already resolved in the lockfile as a dev transitive.
 
 ### Changed
 
