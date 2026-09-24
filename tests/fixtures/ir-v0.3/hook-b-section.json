@@ -1,0 +1,29 @@
+{
+  "id": "hook-b",
+  "kind": "hook",
+  "label": "Hook B",
+  "bars": 8,
+  "dynamics": "f",
+  "scope": {
+    "instrumentIds": ["tabla-egyptian", "mizmar", "qanun", "oud", "kick-808-sub", "snare-clap-stack", "hat-16th"],
+    "synthRoleIds": ["stab-hypersaw-crackling", "lead-saw-pitchbend"],
+    "techniqueIds": ["saidi-trill", "tremolo-runs"],
+    "percussionRhythmIds": ["saidi"]
+  },
+  "drumState": "full Atlanta trap, harder than Hook A",
+  "bassState": "808 on D with glides",
+  "leadNote": "mizmar lead stabs over the oud hook; qanun runs",
+  "textureNote": "ripping crackling distorted synth stabs; hypersaw stabs on 2 and 4",
+  "modeId": "hijaz",
+  "openPocket": { "kind": "rap", "note": "open pocket for rap" },
+  "pickupBefore": { "beats": 2, "content": "filter sweep closing, two-beat drum-roll pickup", "returnTo": "4/4" },
+  "contrast": {
+    "styleId": "drill-contrast",
+    "bars": 4,
+    "position": "end",
+    "changes": ["sliding 808s", "displaced snare"],
+    "returnRule": "then back to trap grid"
+  },
+  "silenceAfter": { "beats": 4, "position": "end" },
+  "transitionOut": { "kind": "silence", "beats": 4 }
+}
