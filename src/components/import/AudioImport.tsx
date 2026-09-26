@@ -11,7 +11,7 @@ import { applyReviewedPatch, audioProfileBase, AUDIO_DRAFT_MODEL, reviewPatch } 
 import type { StyleProfile } from "@/core/musicspec/ir/types";
 import { lintStyleProfile, lowConfidenceOps } from "@/core/musicspec/lint";
 import { catalog } from "@/data/taxonomy";
-import { browserImportDeps, storeInOpfs } from "@/lib/audio/browser";
+import { browserImportDeps, inTurnForLocalAudio, storeInOpfs } from "@/lib/audio/browser";
 import { importAudio, type ImportResult } from "@/lib/audio/import";
 import { createLibraryClient } from "@/lib/library/client";
 import { saveImportAndKeepAudio } from "@/lib/library/repository";
@@ -138,8 +138,11 @@ export function AudioImport() {
         profile: { id: profile.id, name: profile.name, spec: profile.spec, analysedOn, model: AUDIO_DRAFT_MODEL },
       };
       // Kept under the account that owns the saved row: auth.uid(), which the database writes as owner_id.
+      // The save and the store take the file's turn, so a delete of the same file cannot land between them.
       const ownerId = data.session.user.id;
-      const storedIn = await saveImportAndKeepAudio(client, record, source, (sha256, audio) => storeInOpfs({ ownerId, sha256 }, audio));
+      const storedIn = await inTurnForLocalAudio({ ownerId, sha256: asset.sha256 }, () =>
+        saveImportAndKeepAudio(client, record, source, (sha256, audio) => storeInOpfs({ ownerId, sha256 }, audio)),
+      );
       const where = storedIn === "opfs" ? "in this browser's private storage" : "in memory for this tab only";
       if (inFlight.current === current) setStatus(`Saved "${profile.name}" and the file's metadata to your library. The audio stays ${where}.`);
     } catch (error) {

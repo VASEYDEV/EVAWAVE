@@ -5,7 +5,7 @@ import { analyseAudio } from "@/core/musicspec/analysis/features";
 import { decodeWav, encodeWav, WavError, type PcmAudio } from "@/core/musicspec/analysis/wav";
 import { applyReviewedPatch, audioProfileBase, AUDIO_DRAFT_MODEL, reviewPatch } from "@/core/musicspec/intake";
 import { lintStyleProfile } from "@/core/musicspec/lint";
-import { blobInTab, deleteWithLocalAudio, removeLocalAudio, storeInOpfs } from "@/lib/audio/browser";
+import { blobInTab, deleteWithLocalAudio, inTurnForLocalAudio, removeLocalAudio, storeInOpfs } from "@/lib/audio/browser";
 import { importAudio, sha256Hex, type ImportDeps } from "@/lib/audio/import";
 import { deleteFile, LibraryError, saveImport, saveImportAndKeepAudio, type ImportRecord } from "@/lib/library/repository";
 import type { Database } from "@/lib/library/schema";
@@ -431,6 +431,24 @@ describe("local audio on the device", () => {
     const results = await Promise.allSettled([tabOne.deleteWithLocalAudio(a("two-tabs-sha"), deleteRecord), tabTwo.deleteWithLocalAudio(a("two-tabs-sha"), deleteRecord)]);
     expect(results.map((r) => r.status)).toEqual(["fulfilled", "rejected"]);
     expect(files.has(`audio/${OWNER_A}/two-tabs-sha`)).toBe(false);
+  });
+
+  it("takes turns between a delete and a save of the same file, so the saved row keeps its copy", async () => {
+    const files = fakeOpfs({ locks: true });
+    await storeInOpfs(a("turns-sha"), new Blob([wav]));
+    let rows = 1;
+    // The record delete is slow, so a save that did not wait its turn would land inside it.
+    const deleting = deleteWithLocalAudio(a("turns-sha"), async () => {
+      await new Promise((resolve) => setTimeout(resolve, 20));
+      rows = 0;
+    });
+    const saving = inTurnForLocalAudio(a("turns-sha"), async () => {
+      rows = 1;
+      return storeInOpfs(a("turns-sha"), new Blob([wav]));
+    });
+    await Promise.all([deleting, saving]);
+    expect(rows).toBe(1);
+    expect(files.has(`audio/${OWNER_A}/turns-sha`)).toBe(true);
   });
 
   it("drops the in-tab copy once OPFS takes the file", async () => {

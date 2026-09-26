@@ -160,13 +160,14 @@ async function readLocalAudio(key: LocalAudioKey): Promise<Blob | undefined> {
 const deleting = new Map<string, Promise<void>>();
 
 /**
- * Runs `task` holding a Web Lock named for the file, so tabs of this origin take turns with
- * it; where the API is missing, runs it directly.
+ * Runs `task` holding a Web Lock named for this account's file, so a delete and a save that
+ * keeps the audio never interleave, in this tab or across tabs of the origin. Where the API
+ * is missing, runs it directly.
  */
-async function inTurnAcrossTabs(id: string, task: () => Promise<void>): Promise<void> {
+export async function inTurnForLocalAudio<T>(key: LocalAudioKey, task: () => Promise<T>): Promise<T> {
   const locks = typeof navigator === "undefined" ? undefined : navigator.locks;
   if (typeof locks?.request !== "function") return task();
-  return await locks.request(`evawave:local-audio:${id}`, task);
+  return await locks.request(`evawave:local-audio:${tabKey(key)}`, task);
 }
 
 /**
@@ -175,14 +176,14 @@ async function inTurnAcrossTabs(id: string, task: () => Promise<void>): Promise<
  * for a retry. If deleting the record then fails, the copy is stored again, so a failure
  * leaves both stores as they were. Two deletes of the same file must not overlap: the second
  * would read the copy, find no row, and restore a copy nothing refers to. So a second call in
- * this tab joins the first, and other tabs wait their turn on a Web Lock; by then the copy
- * is gone, and a failure there restores nothing.
+ * this tab joins the first, and other tabs wait their turn (inTurnForLocalAudio); by then the
+ * copy is gone, and a failure there restores nothing.
  */
 export function deleteWithLocalAudio(key: LocalAudioKey, deleteRecord: () => Promise<void>): Promise<void> {
   const id = tabKey(key);
   const pending = deleting.get(id);
   if (pending) return pending;
-  const run = inTurnAcrossTabs(id, () => deleteOnce(key, deleteRecord)).finally(() => deleting.delete(id));
+  const run = inTurnForLocalAudio(key, () => deleteOnce(key, deleteRecord)).finally(() => deleting.delete(id));
   deleting.set(id, run);
   return run;
 }
