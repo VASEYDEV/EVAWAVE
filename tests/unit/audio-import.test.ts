@@ -481,6 +481,20 @@ describe("local audio on the device", () => {
     expect([...files.keys()]).toEqual([`audio/${OWNER_A}/switched-sha`]);
   });
 
+  it("tells other tabs to drop their in-memory copy once the record is deleted, and only then", async () => {
+    // Two tabs: separate module instances. OPFS is missing, so each copy lives in its tab.
+    vi.resetModules();
+    const holder = await import("@/lib/audio/browser");
+    vi.resetModules();
+    const deleter = await import("@/lib/audio/browser");
+    expect(await holder.storeInOpfs(a("broadcast-sha"), new Blob([wav]))).toBe("memory");
+    await expect(deleter.deleteWithLocalAudio(a("broadcast-sha"), async () => Promise.reject(new Error("connection lost")))).rejects.toThrow("connection lost");
+    await new Promise((resolve) => setTimeout(resolve, 50));
+    expect(holder.blobInTab(a("broadcast-sha"))).toBeDefined();
+    await deleter.deleteWithLocalAudio(a("broadcast-sha"), async () => {});
+    await vi.waitFor(() => expect(holder.blobInTab(a("broadcast-sha"))).toBeUndefined());
+  });
+
   it("drops the in-tab copy once OPFS takes the file", async () => {
     const blob = new Blob([wav]);
     expect(await storeInOpfs(a("recovered-sha"), blob)).toBe("memory");

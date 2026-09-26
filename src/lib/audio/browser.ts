@@ -78,6 +78,24 @@ const tabMemory = new Map<string, Blob>();
 
 const tabKey = ({ ownerId, sha256 }: LocalAudioKey) => `${ownerId}/${sha256}`;
 
+let channel: BroadcastChannel | undefined;
+
+/**
+ * Tabs of this origin tell each other when a file's record is deleted, so another tab holding
+ * a fallback copy in memory drops it too: its memory is its own, and no lock can reach it. A
+ * tab starts listening once it holds such a copy.
+ */
+function audioChannel(): BroadcastChannel | undefined {
+  if (channel || typeof BroadcastChannel !== "function") return channel;
+  channel = new BroadcastChannel("evawave:local-audio");
+  channel.onmessage = (event: MessageEvent<{ deleted?: unknown }>) => {
+    if (typeof event.data?.deleted === "string") tabMemory.delete(event.data.deleted);
+  };
+  // Node keeps a process running while a channel is open; browsers have no unref.
+  (channel as unknown as { unref?: () => void }).unref?.();
+  return channel;
+}
+
 async function ownerDirectory(root: FileSystemDirectoryHandle, ownerId: string, create: boolean): Promise<FileSystemDirectoryHandle> {
   return (await root.getDirectoryHandle("audio", { create })).getDirectoryHandle(ownerId, { create });
 }
@@ -103,6 +121,7 @@ export async function storeInOpfs(key: LocalAudioKey, file: Blob): Promise<"opfs
     // Some browsers (and private windows) have no OPFS or no createWritable; the analysis
     // still works, and the blob stays in this tab's memory only.
     tabMemory.set(tabKey(key), file);
+    audioChannel();
     return "memory";
   }
 }
@@ -215,6 +234,7 @@ async function deleteOnce(key: LocalAudioKey, deleteRecord: () => Promise<void>)
     }
     throw error;
   }
+  audioChannel()?.postMessage({ deleted: tabKey(key) });
 }
 
 /** The blob the memory fallback holds for this account's file, if this tab kept one. */
