@@ -96,6 +96,8 @@ export async function storeInOpfs(key: LocalAudioKey, file: Blob): Promise<"opfs
       await writable.write(file);
       await writable.close();
     }
+    // OPFS holds it now, so an earlier fallback copy would only keep the recording in memory.
+    tabMemory.delete(tabKey(key));
     return "opfs";
   } catch {
     // Some browsers (and private windows) have no OPFS or no createWritable; the analysis
@@ -154,13 +156,26 @@ async function readLocalAudio(key: LocalAudioKey): Promise<Blob | undefined> {
   }
 }
 
+/** Deletes in flight, by key, so a repeated delete of the same file joins the first. */
+const deleting = new Map<string, Promise<void>>();
+
 /**
  * Deletes a library file record and its local audio as one recoverable step. The local copy
  * is read into memory and removed first, so a failed removal keeps the record (and its hash)
  * for a retry. If deleting the record then fails, the copy is stored again, so a failure
- * leaves both stores as they were.
+ * leaves both stores as they were. A second call for the same file while one is in flight
+ * joins it: run separately, the second would find no row and restore a copy nothing refers to.
  */
-export async function deleteWithLocalAudio(key: LocalAudioKey, deleteRecord: () => Promise<void>): Promise<void> {
+export function deleteWithLocalAudio(key: LocalAudioKey, deleteRecord: () => Promise<void>): Promise<void> {
+  const id = tabKey(key);
+  const pending = deleting.get(id);
+  if (pending) return pending;
+  const run = deleteOnce(key, deleteRecord).finally(() => deleting.delete(id));
+  deleting.set(id, run);
+  return run;
+}
+
+async function deleteOnce(key: LocalAudioKey, deleteRecord: () => Promise<void>): Promise<void> {
   const copy = await readLocalAudio(key);
   await removeLocalAudio(key);
   try {

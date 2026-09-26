@@ -388,6 +388,31 @@ describe("local audio on the device", () => {
     expect(files.has(`audio/${OWNER_A}/hidden-sha`)).toBe(false);
   });
 
+  it("joins a repeated delete of the same file, so no copy is restored after the record goes", async () => {
+    const files = fakeOpfs();
+    await storeInOpfs(a("twice-sha"), new Blob([wav]));
+    // The first delete removes the row; run separately, a second would find none and fail.
+    let rows = 1;
+    const deleteRecord = vi.fn(async () => {
+      if (rows-- < 1) throw new LibraryError("delete file: no such record for this account; reload the library");
+    });
+    await Promise.all([deleteWithLocalAudio(a("twice-sha"), deleteRecord), deleteWithLocalAudio(a("twice-sha"), deleteRecord)]);
+    expect(deleteRecord).toHaveBeenCalledTimes(1);
+    expect(files.has(`audio/${OWNER_A}/twice-sha`)).toBe(false);
+    // Once it has settled, a new delete runs again.
+    await expect(deleteWithLocalAudio(a("twice-sha"), deleteRecord)).rejects.toThrow(LibraryError);
+    expect(deleteRecord).toHaveBeenCalledTimes(2);
+  });
+
+  it("drops the in-tab copy once OPFS takes the file", async () => {
+    const blob = new Blob([wav]);
+    expect(await storeInOpfs(a("recovered-sha"), blob)).toBe("memory");
+    const files = fakeOpfs();
+    expect(await storeInOpfs(a("recovered-sha"), blob)).toBe("opfs");
+    expect(files.has(`audio/${OWNER_A}/recovered-sha`)).toBe(true);
+    expect(blobInTab(a("recovered-sha"))).toBeUndefined();
+  });
+
   it("removes the in-tab copy where OPFS is missing", async () => {
     expect(await storeInOpfs(a("tab-sha"), new Blob([wav]))).toBe("memory");
     expect(await storeInOpfs(b("tab-sha"), new Blob([wav]))).toBe("memory");
