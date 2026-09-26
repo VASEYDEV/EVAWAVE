@@ -5,7 +5,7 @@
  * tests/integration/library-rls.test.ts checks LIBRARY_COLUMNS against the migrated
  * database, so this file cannot drift from the SQL.
  */
-import type { AudioFeatures, FieldDiff, MusicSpec, PaletteSwatch, Provenance, ReferenceAsset, StyleProfile, Tag, TargetOverride, Variant } from "@/core/musicspec/ir/types";
+import type { AudioFeatures, DriftKind, FieldDiff, MusicSpec, PaletteSwatch, Provenance, ReferenceAsset, StyleProfile, Tag, Take, TargetOverride, Variant } from "@/core/musicspec/ir/types";
 
 export const LIBRARY_COLUMNS = {
   genres: ["id", "name", "record", "updated_at"],
@@ -18,13 +18,14 @@ export const LIBRARY_COLUMNS = {
   file_tags: ["file_id", "tag_id", "owner_id"],
   songs: ["id", "owner_id", "title", "brand", "spec", "overrides", "base_variant_id", "revision", "created_at", "updated_at"],
   variants: ["id", "owner_id", "song_id", "seq", "label", "parent_variant_id", "spec_snapshot", "diff", "overrides", "coverage", "created_at"],
+  takes: ["id", "owner_id", "variant_id", "engine", "engine_version", "render_ref", "verdict", "drifted", "words_blamed", "notes", "created_at"],
 } as const;
 
 /** Every S4 table whose rows belong to one user; RLS limits each to its owner. */
 export const USER_SCOPED_TABLES = ["style_profiles", "files", "tags", "style_profile_genres", "style_profile_tags", "file_genres", "file_tags"] as const;
 
-/** The S6 tables (supabase/migrations/20260926000400_songs.sql), also owner-only under RLS. */
-export const SONG_TABLES = ["songs", "variants"] as const;
+/** The song tables (S6 `20260926000400_songs.sql`, S7 `20260926000500_takes.sql`), owner-only under RLS. */
+export const SONG_TABLES = ["songs", "variants", "takes"] as const;
 
 export type StyleProfileRow = {
   id: string;
@@ -202,6 +203,20 @@ export type VariantRow = {
   created_at: string;
 };
 
+export type TakeRow = {
+  id: string;
+  owner_id: string;
+  variant_id: string;
+  engine: Take["engine"];
+  engine_version: string;
+  render_ref: string | null;
+  verdict: Take["verdict"];
+  drifted: DriftKind[];
+  words_blamed: string[];
+  notes: string;
+  created_at: string;
+};
+
 /**
  * Arguments of `public.freeze_variant`. Every key is sent, `p_parent_variant_id` as `null`
  * for a first variant: supabase-js drops `undefined` keys, and PostgREST then finds no
@@ -239,6 +254,7 @@ export type Database = {
       file_tags: Table<LinkRow<"file_id" | "tag_id">, { file_id: string; tag_id: string }>;
       songs: Table<SongRow, { id?: string; title: string; spec: MusicSpec; overrides?: TargetOverride[]; base_variant_id?: string | null }>;
       variants: Table<VariantRow, never>;
+      takes: Table<TakeRow, Omit<TakeRow, "id" | "owner_id" | "created_at">>;
     };
     Views: { [_ in never]: never };
     Functions: {

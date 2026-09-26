@@ -62,8 +62,8 @@ afterAll(async () => {
 });
 
 describe("songs and variants: user B against user A's rows", () => {
-  it("covers both S6 tables", () => {
-    expect([...SONG_TABLES].sort()).toEqual(["songs", "variants"]);
+  it("covers the song tables (S7's takes have their own suite, takes-rls.test.ts)", () => {
+    expect([...SONG_TABLES].sort()).toEqual(["songs", "takes", "variants"]);
   });
 
   it("A reads its song and variant (positive control)", async () => {
