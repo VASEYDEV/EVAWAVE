@@ -93,6 +93,10 @@ S5 per SPEC §3. The methods are listed in SPEC §3 S5 "Delivered".
   mean energy, those features read the loudest channel. Uncorrelated stereo keeps half,
   so ordinary material still reads the mix. A test proves phase-opposed stereo reads
   140 BPM and the right key; it fails on the old code.
+- **Metronome double start** (fourth review). `running` became true only after
+  `resume()` settled, so a double tap made two contexts and two intervals, and the lost
+  interval outlived `stop()`. A pending start is now shared, and a stop during start
+  leaves nothing running. Tests with a fake AudioContext fail on the old code.
 
 ## Decisions
 

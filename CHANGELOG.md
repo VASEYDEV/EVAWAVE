@@ -20,7 +20,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Tests:
   - A recorded-fetch test proving no request carries audio through import, review and library save.
   - Analysis vectors: a −20 dBFS sine reads −23.01 LUFS; click-track tempo and meter; triad keys; the absolute gate.
-  - The tap tempo vectors, and intake and PT/PV rule tests.
+  - The tap tempo vectors, metronome start and stop with a fake AudioContext, and intake and PT/PV rule tests.
   - An RLS check that a re-import dedupes per owner through the same upsert `saveImport` uses, while another owner's identical file gets its own row.
   - E2e for WAV import, tap tempo on a controlled clock, hue and icon on every module, and no horizontal scroll on any page.
 - S4, the library (SPEC §3):
