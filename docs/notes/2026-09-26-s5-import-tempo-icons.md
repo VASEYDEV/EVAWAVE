@@ -521,6 +521,24 @@ S5 per SPEC §3. The methods are listed in SPEC §3 S5 "Delivered".
   A test drives the metronome on a recording stand-in context. The heard clicks are 0.05
   to 0.25, then 0.35 and 0.45; the old 0.25 and 0.3 clicks are silenced. The previous
   metronome fails it, sounding 0.3 and 0.4.
+- **Forty-second review: the cap counted only the channel samples.** Confirmed. At the
+  10-minute stereo cap the import also held a 115 MB mono mix, the encoded file (up to
+  100 MiB), and a second copy of it made for the decoder. That is about 545 MB at the peak,
+  against the documented 230 MB.
+  - **The copy is gone.** The Web Audio decode takes the bytes as they are, detaching them,
+    since nothing reads them after the decode. The length is read first.
+  - **The limit counts every buffer live at the peak** (`importLimitSeconds`). While
+    decoding, those are the encoded file and every decoded channel. Afterwards, they are
+    the channels and, for more than one, their mix. Each stage must fit
+    `IMPORT_MAX_DECODE_BYTES`, about 346 MB: ten minutes of stereo with its mix.
+  - **Resulting limits.** Mono and stereo keep ten minutes at any size under the byte
+    cap. 5.1 now runs to about 257 s and 7.1 to 200 s, less for a large file. An unknown
+    layout (32 channels) runs to about 54 s.
+  - **Tests.**
+    - A property test runs 1–32 channels at three file sizes and checks both stages fit.
+    - A test stubs `OfflineAudioContext` and checks the decoder receives the same buffer.
+    - Restoring the copy fails a test, and so does leaving out the mix or the
+      during-decode term.
 
 ## Decisions
 

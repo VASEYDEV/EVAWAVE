@@ -232,13 +232,18 @@ end-to-end Jinn rebuild through the UI with an A/B Suno render.
   spectra). Imports refuse files over 100 MiB before reading them: about 9.9 minutes of
   16-bit 44.1 kHz stereo WAV, 6 minutes at 24-bit 48 kHz. They also refuse recordings over
   10 minutes by the duration a media element reads from the metadata, because the encoded
-  size says little about the decoded size (a 100 MiB MP3 can hold 109 minutes). Duration
-  times channels is capped at 20 channel-minutes, ten minutes of stereo or about 230 MB of
-  samples, so 5.1 runs to 200 seconds and 7.1 to 150. The channel count comes from the
+  size says little about the decoded size (a 100 MiB MP3 can hold 109 minutes). The
+  decode's peak memory is capped at about 346 MB (`IMPORT_MAX_DECODE_BYTES`, ten minutes of
+  stereo with its mono mix), counting every buffer live at the peak. While decoding, those
+  are the encoded file, which the decoder takes without a copy, and every decoded channel;
+  afterwards, the channels and, for more than one, their mix (`importLimitSeconds`). Mono
+  and stereo keep ten minutes at any size the byte cap allows; 5.1 runs to about 257
+  seconds and 7.1 to 200, less for a large file. Hashing copies the file once, briefly, at
+  most 210 MB. The channel count comes from the
   container header (`analysis/channels.ts`: WAV, RF64, BW64, AIFF, FLAC, Ogg Opus, Vorbis
   and FLAC, MP3, ADTS, MP4 with AAC, ALAC, Opus, FLAC or PCM, CAF, Matroska and WebM).
   When the header does not say, the import assumes 32 channels, the most a Web Audio buffer
-  holds (Chromium refuses 33), so such a recording takes up to 37.5 seconds. A recording
+  holds (Chromium refuses 33), so such a recording takes up to about 54 seconds. A recording
   whose metadata gives no finite duration is refused, since nothing else bounds its decode.
   Imports decode one at a time: Web Audio's decode takes no abort, so a newer file choice
   waits for a superseded read and decode to settle before it reads. A streaming decoder
@@ -1584,8 +1589,8 @@ Delivered:
     profile follows the review and the name after Create, keeping its id
     (`profileFromReview`), so Save and Download send what the page shows.
     Recordings over 10 minutes by their metadata, of a length the metadata does not give,
-    or over 20 channel-minutes by the channel count their header declares, are refused
-    before they are read. Decoding runs
+    or past the decode memory budget for the channel count their header declares, are
+    refused before they are read. Decoding runs
     at a fixed 48 kHz. Import, Create and Download store nothing: the file goes to OPFS (or an
     in-tab fallback) only after a library save succeeds, because a library record is the
     one reference the app can later remove it by, so no stored blob is ever unreachable.
