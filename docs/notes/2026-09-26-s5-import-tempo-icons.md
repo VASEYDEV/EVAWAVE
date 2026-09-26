@@ -221,6 +221,20 @@ S5 per SPEC §3. The methods are listed in SPEC §3 S5 "Delivered".
   record, but its only copy was gone. The in-tab copy is now dropped last, once the OPFS
   side has succeeded or had nothing to remove, so a failed removal removes nothing. A test
   with that fallback and a locked entry fails on the old code.
+- **Nineteenth review.**
+  - **A file delete that removed no row (fixed).** RLS hides other owners' rows, so after
+    the signed-in account changes, deleting a row loaded earlier succeeds with no rows.
+    `deleteFile` accepted that, so the local copy was gone while the record stayed. It now
+    rejects unless exactly one row went, and `deleteWithLocalAudio` restores the copy. A
+    test through a real supabase-js client answering `[]` fails on the old code.
+    **Listed, not fixed (CLAUDE.md §1.1):** `deleteStyleProfile` and `deleteTag` (S4) also
+    report success on zero rows; nothing local is lost there.
+  - **The loudness range gate (kept, with a test).** Codex asked to gate the 3 s windows
+    at the integrated loudness − 20 LU. EBU Tech 3342 anchors that gate to the power mean
+    of the absolute-gated short-term values, which is what the code does, and so does
+    libebur128 (`ebur128_loudness_range_multiple`: `minus_twenty_decibels * stl_power`).
+    A new test uses a signal where the two anchors disagree (10 s at −23 LUFS, then 30 s at
+    about −46): the range reads about 23 LU, and the suggested gate fails it.
 
 ## Decisions
 
