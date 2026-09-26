@@ -336,6 +336,36 @@ button.danger {
   margin: 0;
 }
 
+/* Songs and variants (S6) */
+.variants details > summary {
+  cursor: pointer;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  font-weight: 600;
+}
+
+.diff {
+  list-style: none;
+  margin: var(--space-2) 0 0;
+  padding: 0;
+  display: grid;
+  gap: var(--space-1);
+}
+
+/* Paths and values are long JSON; they wrap anywhere rather than widen the page. */
+.diff li {
+  font-size: 0.875rem;
+  overflow-wrap: anywhere;
+}
+
+.confirm {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  align-items: center;
+}
+
 .swatch {
   display: inline-block;
   width: 0.875rem;

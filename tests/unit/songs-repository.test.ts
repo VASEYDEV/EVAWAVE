@@ -7,7 +7,8 @@ import { describe, expect, it } from "vitest";
 import type { Catalog, MusicSpec } from "@/core/musicspec/ir/types";
 import { LibraryError } from "@/lib/library/repository";
 import type { Database, SongRow } from "@/lib/library/schema";
-import { coverageScores, createSong, deleteSong, freezeVariant, saveSong, songTitle, toSong, type WorkingCopy } from "@/lib/library/songs";
+import { specHash } from "@/core/musicspec/variants";
+import { coverageScores, createSong, deleteSong, describeChange, freezeVariant, saveSong, shortValue, songAttachment, songTitle, toSong, type WorkingCopy } from "@/lib/library/songs";
 import { catalog } from "@/data/taxonomy";
 
 /**
@@ -144,5 +145,37 @@ describe("deleteSong and coverageScores", () => {
       { engine: "eleven", score: 0.7 },
       { engine: "flow", score: 0.5 },
     ]);
+  });
+});
+
+describe("describeChange and shortValue", () => {
+  it("says added, removed or before → after", () => {
+    expect(describeChange({ path: "/D6/tempo/bpm", before: 142, after: 140 })).toBe("142 → 140");
+    expect(describeChange({ path: "/D2/moods/2", after: "dread" })).toBe('added "dread"');
+    expect(describeChange({ path: "/D1/stack/3", before: { weight: 1 } })).toBe('removed {"weight":1}');
+    expect(describeChange({ path: "/D10/title", before: null, after: "Jinn" })).toBe('null → "Jinn"');
+  });
+
+  it("cuts long values by code points and never splits a surrogate pair", () => {
+    const cut = shortValue("🎵".repeat(200), 10);
+    expect(Array.from(cut)).toHaveLength(10);
+    expect(cut.endsWith("…")).toBe(true);
+    expect(cut.isWellFormed()).toBe(true);
+    expect(shortValue(undefined)).toBe("undefined");
+  });
+});
+
+describe("songAttachment", () => {
+  const stored = toSong({ id: "s", owner_id: "o", title: "Jinn", brand: "VASEY.AUDIO", spec: v12, overrides: [], base_variant_id: "v-1", revision: 5, created_at: "c", updated_at: "u" });
+  const variant = (id: string, label: string, spec: MusicSpec) => ({ id, songId: "s", label, specSnapshot: spec, diff: [], overrides: [], coverage: {}, createdAt: "c" });
+  const variants = [variant("v-0", "v1.0", v11), variant("v-1", "v1.1", v12)];
+
+  it("opens a variant as the base of the next freeze, with the song's revision and saved state", () => {
+    const opened = songAttachment(stored, variants, variants[0] ?? null);
+    expect(opened).toEqual({ songId: "s", ownerId: "o", title: "Jinn", revision: 5, savedHash: specHash(v12), baseVariantId: "v-0", baseLabel: "v1.0", variantLabels: ["v1.0", "v1.1"] });
+  });
+
+  it("opens a song with no variants as a copy with no base", () => {
+    expect(songAttachment(stored, [], null)).toMatchObject({ baseVariantId: null, baseLabel: null, variantLabels: [] });
   });
 });

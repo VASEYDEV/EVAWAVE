@@ -6,8 +6,9 @@
  * one transaction; they are never updated or deleted, except with their song.
  */
 import { ENGINE_IDS } from "@/core/musicspec/engines";
-import type { Catalog, EngineId, MusicSpec, Song, TargetOverride, Variant } from "@/core/musicspec/ir/types";
-import { diffSpecs, freezeBlockers, normalise, variantCoverage } from "@/core/musicspec/variants";
+import type { Catalog, EngineId, FieldDiff, MusicSpec, Song, TargetOverride, Variant } from "@/core/musicspec/ir/types";
+import { diffSpecs, freezeBlockers, normalise, specHash, variantCoverage } from "@/core/musicspec/variants";
+import type { SongAttachment } from "@/lib/composer/storage";
 
 import { check, LibraryError, type LibraryClient } from "./repository";
 import type { SongRow, VariantRow } from "./schema";
@@ -199,4 +200,36 @@ export function coverageScores(variant: Pick<Variant, "coverage">): { engine: En
     const report = variant.coverage[engine];
     return report ? [{ engine, score: report.score }] : [];
   });
+}
+
+/** A JSON value as one short line, cut by code points, so a diff never runs off the page. */
+export function shortValue(value: unknown, max = 120): string {
+  const text = JSON.stringify(value) ?? "undefined";
+  const chars = Array.from(text);
+  return chars.length > max ? `${chars.slice(0, max - 1).join("")}…` : text;
+}
+
+/** One diff entry in words: added, removed, or before → after. */
+export function describeChange(change: FieldDiff): string {
+  if (!("before" in change)) return `added ${shortValue(change.after)}`;
+  if (!("after" in change)) return `removed ${shortValue(change.before)}`;
+  return `${shortValue(change.before)} → ${shortValue(change.after)}`;
+}
+
+/**
+ * The composer attachment for opening a stored song, from `base` (a variant, for a fork) or
+ * from the song's own working copy (`base` its base variant). The saved state is always the
+ * song's working copy, so a variant opened over a different copy shows as unsaved.
+ */
+export function songAttachment(stored: StoredSong, variants: readonly Variant[], base: Variant | null): SongAttachment {
+  return {
+    songId: stored.song.id,
+    ownerId: stored.song.ownerId,
+    title: stored.song.title,
+    revision: stored.revision,
+    savedHash: specHash(stored.song.spec),
+    baseVariantId: base?.id ?? null,
+    baseLabel: base?.label ?? null,
+    variantLabels: variants.map((v) => v.label),
+  };
 }
