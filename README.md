@@ -13,8 +13,9 @@
 
 ## Status
 
-**Pre-alpha: specification restart. The spec is [`docs/SPEC.md`](docs/SPEC.md) (ADR 0004).**
-Nothing in the app is usable yet. What exists today:
+**Pre-alpha. The spec is [`docs/SPEC.md`](docs/SPEC.md) (ADR 0004), and its build plan
+S1–S5 has landed.** The composer and audio import run in the browser today; the library
+needs a Supabase project, which is not configured yet, and nothing is deployed. What exists:
 
 - A Next.js 16 app shell that builds, with Supabase Auth session refresh in `src/proxy.ts`
   (the proxy passes requests through until a Supabase project is configured).
@@ -22,11 +23,15 @@ Nothing in the app is usable yet. What exists today:
   (`src/core/musicspec/engines/profiles/`). Udio is a halted stub (scope A12).
 - A lint-enforced import boundary that keeps the `src/core/` musicspec core free of React,
   Next.js, Supabase and app-layer imports, with tests that prove it fails violations.
-- The musicspec core from S1, with no UI yet. It has the IR v1 types, generated from the
-  spec; bar math; a linter covering the 19 S1 rules (meter lock, pickups, contrast phrases,
-  section caps, regional bundles, lineage and budgets); and a Suno v6 serializer. The
-  serializer compiles the Jinn v1.2 spec to the reference Style, Exclude and Lyrics fields
-  byte for byte. The linter blocks the Jinn v1.1 blueprint's meter drift.
+- The musicspec core from S1. It has the IR v1 types, generated from the spec; bar math; a
+  linter covering the 19 S1 rules (meter lock, pickups, contrast phrases, section caps,
+  regional bundles, lineage and budgets); and a Suno v6 serializer. The serializer compiles
+  the Jinn v1.2 spec to the reference Style, Exclude and Lyrics fields byte for byte. The
+  linter blocks the Jinn v1.1 blueprint's meter drift.
+- Target switching, from S2. ElevenLabs Music v2 and Google Flow Music serializers sit
+  beside Suno's, and `compile(spec, engineId, catalog)` renders one spec for any live
+  engine. A path-level coverage report says what each engine renders, approximates or
+  drops, so switching targets loses nothing silently.
 - The composer, from S3. It shows the eleven modules of SPEC §1.5 on one mobile-first page:
   - every input is bound to an IR path;
   - budget meters, the lint panel, coverage for the active target, and an export pane
@@ -34,7 +39,7 @@ Nothing in the app is usable yet. What exists today:
   - non-destructive undo and redo, where an edit after an undo keeps the old branch
     reachable.
 
-  The spec persists in the browser until the S4 library.
+  The spec persists in this browser, and the library can save it as a style profile.
 - The library, from S4, at `/library`: style profiles saved from the composer, file
   metadata, tags, and genre and tag links. Sign-in is by Supabase Auth email link. Row
   level security keeps each user to their own rows, and a test proves it against the real
