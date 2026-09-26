@@ -38,13 +38,20 @@ export interface ImportResult {
   analysedOn: string;
 }
 
-export async function importAudio(file: File, deps: ImportDeps): Promise<ImportResult> {
+/**
+ * Hashes, decodes and analyses `file`, then keeps it on the device and drafts the patch.
+ * Aborting `signal` (a newer file choice) stops it before analysis and before anything is
+ * stored; the promise then rejects with the signal's reason.
+ */
+export async function importAudio(file: File, deps: ImportDeps, signal?: AbortSignal): Promise<ImportResult> {
   const bytes = await file.arrayBuffer();
   const sha256 = await deps.digest(bytes);
   const pcm = await deps.decode(bytes);
+  signal?.throwIfAborted();
   const features = analyseAudio(pcm.samples, pcm.sampleRate, pcm.channelData);
-  // Kept only once it decoded and analysed, so a corrupt or unsupported file leaves nothing
-  // behind in the device's storage.
+  // Kept only once it decoded and analysed and is still wanted, so a corrupt, unsupported
+  // or superseded file leaves nothing behind in the device's storage.
+  signal?.throwIfAborted();
   const storedIn = await deps.store(sha256, file);
   const analysedOn = deps.now();
   const patch = draftFromAudio(features, { createdAt: analysedOn, sourceRef: sha256 }, deps.lineageNames ?? []);

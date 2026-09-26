@@ -135,6 +135,23 @@ describe("import order", () => {
   });
 });
 
+describe("a superseded import", () => {
+  it("stops before analysis and stores nothing once a newer choice aborts it", async () => {
+    const store = new Map<string, Blob>();
+    const controller = new AbortController();
+    const deps: ImportDeps = {
+      ...nodeDeps(store),
+      decode: async (bytes) => {
+        // The person picks another file while this one decodes.
+        controller.abort();
+        return decodeWav(bytes);
+      },
+    };
+    await expect(importAudio(file, deps, controller.signal)).rejects.toThrow(/abort/i);
+    expect(store.size).toBe(0);
+  });
+});
+
 describe("the storage fallback", () => {
   it("keeps the blob in the tab when OPFS is missing, as the import reports", async () => {
     // Node has no navigator.storage, like a browser without OPFS.

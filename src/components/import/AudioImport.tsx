@@ -47,28 +47,30 @@ export function AudioImport() {
   const [name, setName] = useState("");
   const [profile, setProfile] = useState<StyleProfile | null>(null);
   const [dragging, setDragging] = useState(false);
-  // Decoding is async, so a second file can finish first; only the latest choice may land.
-  const latest = useRef(0);
+  // A newer file choice aborts the import in flight, so it neither lands nor stores anything.
+  const inFlight = useRef<AbortController | null>(null);
 
   const lowConfidence = useMemo(() => new Set(result ? lowConfidenceOps(result.patch, "").map((r) => Number(r.path.split("/").pop())) : []), [result]);
 
   const handle = async (file: File | undefined) => {
     if (!file) return;
-    const run = ++latest.current;
+    inFlight.current?.abort();
+    const controller = new AbortController();
+    inFlight.current = controller;
     setResult(null);
     setProfile(null);
     setStatus(`Analysing ${file.name} on this device…`);
     // Let the status paint before the analysis takes the main thread.
     await new Promise((resolve) => setTimeout(resolve, 0));
     try {
-      const imported = await importAudio(file, { ...browserImportDeps, lineageNames: catalog.lineageNames });
-      if (run !== latest.current) return;
+      const imported = await importAudio(file, { ...browserImportDeps, lineageNames: catalog.lineageNames }, controller.signal);
+      if (controller.signal.aborted) return;
       setResult(imported);
       setAccepted(new Set(imported.patch.ops.filter((o) => o.confidence >= 0.5).map((o) => o.path)));
       setName(file.name.replace(/\.[^.]+$/, ""));
       setStatus(`Analysed ${file.name}. Stored ${imported.asset.storedIn === "opfs" ? "in this browser's private storage" : "in memory for this tab only"}. Review the proposed fields below.`);
     } catch (error) {
-      if (run !== latest.current) return;
+      if (controller.signal.aborted) return;
       setStatus(`Could not analyse ${file.name}: ${error instanceof Error ? error.message : "unknown error"}. Try a WAV, MP3, AAC or FLAC file.`);
     }
   };
