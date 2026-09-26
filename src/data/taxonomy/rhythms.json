@@ -1,0 +1,56 @@
+[
+  {
+    "id": "maqsum",
+    "name": "maqsum",
+    "meter": "4/4",
+    "fourFourSafe": true,
+    "notation": "D T · T D · T ·",
+    "region": "Egypt",
+    "role": "the Egyptian default groove"
+  },
+  {
+    "id": "baladi",
+    "name": "baladi",
+    "meter": "4/4",
+    "fourFourSafe": true,
+    "notation": "D D · T D · T ·",
+    "region": "Egypt",
+    "role": "heavier folk groove"
+  },
+  {
+    "id": "saidi",
+    "name": "Sa'idi",
+    "meter": "4/4",
+    "fourFourSafe": true,
+    "notation": "D T · D D · T ·",
+    "region": "Egypt / Sa'idi",
+    "role": "Upper Egypt, tahtib"
+  },
+  {
+    "id": "wahda",
+    "name": "wahda",
+    "meter": "4/4",
+    "fourFourSafe": true,
+    "notation": "D · · · · T · ·",
+    "region": "Egypt",
+    "role": "slow, one doum per bar"
+  },
+  {
+    "id": "zar-ayyub",
+    "name": "zar / ayyub",
+    "meter": "2/4",
+    "fourFourSafe": true,
+    "notation": "D · · k D · T ·",
+    "region": "Egypt",
+    "role": "zar ritual rhythm, hypnotic"
+  },
+  {
+    "id": "malfuf",
+    "name": "malfuf",
+    "meter": "2/4",
+    "fourFourSafe": true,
+    "notation": "D · T · T ·",
+    "region": "Egypt",
+    "role": "fast and driving, on sagat or hats"
+  }
+]

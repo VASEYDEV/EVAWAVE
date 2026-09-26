@@ -1,0 +1,95 @@
+[
+  {
+    "id": "atlanta-trap-core",
+    "name": "Atlanta trap core",
+    "genreId": "atlanta-trap",
+    "bpmRange": [
+      130,
+      150
+    ],
+    "feel": "half-time",
+    "grid": {
+      "kick": [
+        0,
+        6
+      ],
+      "808": [
+        0,
+        6
+      ],
+      "snare": [
+        8
+      ],
+      "clap": [
+        8
+      ],
+      "rim": [
+        3,
+        11
+      ],
+      "hat-closed": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15
+      ]
+    },
+    "rolls": [
+      {
+        "piece": "hat-closed",
+        "subdivision": 32,
+        "slots": [
+          12,
+          13,
+          14,
+          15
+        ]
+      }
+    ],
+    "regional": [],
+    "prose": "booming 808 tuned to the key, long decay; clap-snare stack on 3; rimshot off-beat snares; 16th hi-hats with 32nd rolls"
+  },
+  {
+    "id": "drill-contrast",
+    "name": "Drill contrast",
+    "genreId": "drill",
+    "bpmRange": [
+      138,
+      146
+    ],
+    "feel": "half-time",
+    "grid": {
+      "808": [
+        0,
+        10
+      ],
+      "snare": [
+        8,
+        14
+      ],
+      "hat-closed": [
+        0,
+        3,
+        6,
+        8,
+        11,
+        14
+      ]
+    },
+    "rolls": [],
+    "regional": [],
+    "prose": "sliding 808s, displaced snare, 3-3-2 hats"
+  }
+]

@@ -1,0 +1,914 @@
+{
+  "irVersion": 1,
+  "D1": {
+    "stack": [
+      {
+        "value": {
+          "genreId": "egyptian-trap",
+          "role": "regional"
+        },
+        "weight": 1
+      },
+      {
+        "value": {
+          "genreId": "drill",
+          "role": "core"
+        },
+        "weight": 1
+      },
+      {
+        "value": {
+          "genreId": "cinematic-hybrid",
+          "role": "finale"
+        },
+        "weight": 0.5
+      }
+    ],
+    "formPhrase": "cinematic Egyptian trap-drill hybrid"
+  },
+  "D2": {
+    "moods": [
+      {
+        "value": "desert dusk",
+        "weight": 1
+      },
+      {
+        "value": "lonely wanderer",
+        "weight": 1
+      },
+      {
+        "value": "ominous",
+        "weight": 1
+      }
+    ],
+    "imagery": [
+      "the Great Sand Sea in Egypt's Western Desert",
+      "a ritual for someone with a spirit on them"
+    ],
+    "palette": []
+  },
+  "D3": {
+    "techniques": [
+      {
+        "techniqueId": "light-shuffle",
+        "target": {
+          "kind": "instrument",
+          "instrumentId": "sagat",
+          "sectionIds": []
+        }
+      },
+      {
+        "techniqueId": "light-shuffle",
+        "target": {
+          "kind": "instrument",
+          "instrumentId": "tabla-egyptian",
+          "sectionIds": []
+        }
+      },
+      {
+        "techniqueId": "slide",
+        "target": {
+          "kind": "instrument",
+          "instrumentId": "kamanja",
+          "sectionIds": []
+        }
+      },
+      {
+        "techniqueId": "bend",
+        "target": {
+          "kind": "instrument",
+          "instrumentId": "rababa",
+          "sectionIds": []
+        }
+      },
+      {
+        "techniqueId": "tremolo",
+        "target": {
+          "kind": "instrument",
+          "instrumentId": "qanun",
+          "sectionIds": []
+        }
+      },
+      {
+        "techniqueId": "saidi-trill",
+        "target": {
+          "kind": "instrument",
+          "instrumentId": "mizmar",
+          "sectionIds": [
+            "hook-b"
+          ]
+        }
+      }
+    ]
+  },
+  "D4": {
+    "traits": []
+  },
+  "D5": {
+    "instruments": [
+      {
+        "value": {
+          "instrumentId": "oud",
+          "bundleId": "egypt-takht-saidi-nubian"
+        },
+        "weight": 1
+      },
+      {
+        "value": {
+          "instrumentId": "qanun",
+          "bundleId": "egypt-takht-saidi-nubian"
+        },
+        "weight": 1
+      },
+      {
+        "value": {
+          "instrumentId": "nay",
+          "bundleId": "egypt-takht-saidi-nubian"
+        },
+        "weight": 1
+      },
+      {
+        "value": {
+          "instrumentId": "kawala",
+          "bundleId": "egypt-takht-saidi-nubian"
+        },
+        "weight": 1
+      },
+      {
+        "value": {
+          "instrumentId": "kamanja",
+          "bundleId": "egypt-takht-saidi-nubian",
+          "phraseOverride": "kamanja violin with slides"
+        },
+        "weight": 1
+      },
+      {
+        "value": {
+          "instrumentId": "strings-egyptian",
+          "bundleId": "egypt-takht-saidi-nubian",
+          "phraseOverride": "unison Egyptian strings"
+        },
+        "weight": 1
+      },
+      {
+        "value": {
+          "instrumentId": "mizmar",
+          "bundleId": "egypt-takht-saidi-nubian"
+        },
+        "weight": 1
+      },
+      {
+        "value": {
+          "instrumentId": "rababa",
+          "bundleId": "egypt-takht-saidi-nubian"
+        },
+        "weight": 1
+      },
+      {
+        "value": {
+          "instrumentId": "tanbura",
+          "bundleId": "egypt-takht-saidi-nubian",
+          "phraseOverride": "tanbura lyre"
+        },
+        "weight": 1
+      },
+      {
+        "value": {
+          "instrumentId": "tabla-egyptian",
+          "bundleId": "egypt-takht-saidi-nubian",
+          "phraseOverride": "Egyptian tabla darbuka"
+        },
+        "weight": 1
+      },
+      {
+        "value": {
+          "instrumentId": "doholla",
+          "bundleId": "egypt-takht-saidi-nubian"
+        },
+        "weight": 1
+      },
+      {
+        "value": {
+          "instrumentId": "riq",
+          "bundleId": "egypt-takht-saidi-nubian"
+        },
+        "weight": 1
+      },
+      {
+        "value": {
+          "instrumentId": "mazhar",
+          "bundleId": "egypt-takht-saidi-nubian"
+        },
+        "weight": 1
+      },
+      {
+        "value": {
+          "instrumentId": "sagat",
+          "bundleId": "egypt-takht-saidi-nubian"
+        },
+        "weight": 1
+      },
+      {
+        "value": {
+          "instrumentId": "org-keyboard",
+          "phraseOverride": "quarter-tone org keyboard"
+        },
+        "weight": 1
+      }
+    ],
+    "bundles": [
+      {
+        "bundleId": "egypt-takht-saidi-nubian",
+        "anchorInstrumentId": "doholla",
+        "label": "Takht and Sa'idi instruments",
+        "rhythmIds": [
+          "maqsum",
+          "baladi",
+          "saidi",
+          "zar-ayyub"
+        ]
+      }
+    ],
+    "drums": {
+      "patternIds": [
+        "atlanta-trap-core",
+        "drill-contrast"
+      ],
+      "label": "Trap drums",
+      "proseOverride": "Massive tuned 808 sub with drill glides, hard snare with claps, rapid trap hi-hats with triplet and 32nd rolls, double-time fills"
+    },
+    "synthRoles": [
+      {
+        "synthRoleId": "arp-lowpass",
+        "position": {
+          "sectionIds": [],
+          "phrases": [],
+          "beats": []
+        }
+      },
+      {
+        "synthRoleId": "pad-dark",
+        "position": {
+          "sectionIds": [],
+          "phrases": [],
+          "beats": []
+        }
+      }
+    ],
+    "textures": [
+      {
+        "value": "wordless epic choir",
+        "weight": 1
+      },
+      {
+        "value": "dark pads",
+        "weight": 1
+      },
+      {
+        "value": "piano",
+        "weight": 1
+      }
+    ],
+    "sectionCap": {
+      "warnAt": 6,
+      "blockAt": 8
+    }
+  },
+  "D6": {
+    "tempo": {
+      "bpm": 142,
+      "source": "manual",
+      "feltBpm": 71
+    },
+    "meterLock": {
+      "enabled": true,
+      "signature": "4/4",
+      "feel": "half-time",
+      "subdivision": 16,
+      "driftSuppression": true,
+      "allowedExtensions": [
+        "pickup-bar",
+        "silence-drop",
+        "contrast-phrase"
+      ],
+      "restatement": "style-only"
+    },
+    "key": {
+      "tonic": "D",
+      "modeId": "hijaz",
+      "phraseOverride": "D Hijaz maqam, dark minor"
+    },
+    "harmony": [
+      "D pedal drone; implied i · ♭II · i · ♭VI–♭VII, one chord per bar (hook, build, verse, finale open)",
+      "808 tuned to D1; doholla near D2 doubles the kick; low oud ostinato on D2 doubles the 808"
+    ]
+  },
+  "D7": {
+    "sections": [
+      {
+        "id": "intro",
+        "kind": "intro",
+        "label": "Intro",
+        "bars": 16,
+        "dynamics": "pp",
+        "scope": {
+          "instrumentIds": [
+            "nay",
+            "oud",
+            "tanbura",
+            "mazhar"
+          ],
+          "synthRoleIds": [],
+          "techniqueIds": [
+            "taqsim"
+          ],
+          "percussionRhythmIds": []
+        },
+        "cues": [
+          {
+            "slot": "texture",
+            "text": "desert wind"
+          },
+          {
+            "slot": "lead",
+            "text": "nay flute rubato in maqam Saba",
+            "ref": "nay"
+          },
+          {
+            "slot": "bass",
+            "text": "low oud drone on D",
+            "ref": "oud"
+          },
+          {
+            "slot": "bass",
+            "text": "tanbura lyre ostinato",
+            "ref": "tanbura"
+          },
+          {
+            "slot": "percussion",
+            "text": "sparse mazhar frame drum",
+            "ref": "mazhar"
+          },
+          {
+            "slot": "drums",
+            "text": "no drums"
+          }
+        ],
+        "notes": [
+          "rubato over an implied 142 grid; nothing locks yet",
+          "bar 5: oud taqsim shifting toward Hijaz, free ornaments around the ♭2 and 3"
+        ],
+        "modeId": "saba",
+        "openPocket": {
+          "kind": "none"
+        },
+        "transitionOut": {
+          "kind": "none"
+        }
+      },
+      {
+        "id": "build",
+        "kind": "build",
+        "label": "Build",
+        "bars": 16,
+        "dynamics": "mp",
+        "scope": {
+          "instrumentIds": [
+            "trap-kit",
+            "kick-808-sub",
+            "oud",
+            "tabla-egyptian",
+            "riq",
+            "sagat"
+          ],
+          "synthRoleIds": [],
+          "techniqueIds": [],
+          "percussionRhythmIds": [
+            "maqsum"
+          ]
+        },
+        "cues": [
+          {
+            "slot": "drums",
+            "text": "half-time trap drums enter"
+          },
+          {
+            "slot": "bass",
+            "text": "808 sub on D",
+            "ref": "kick-808-sub"
+          },
+          {
+            "slot": "groove",
+            "text": "kick on 1, snare on 3, hi-hats in 8ths"
+          },
+          {
+            "slot": "lead",
+            "text": "oud hook phrase in D Hijaz",
+            "ref": "oud"
+          },
+          {
+            "slot": "percussion",
+            "text": "Egyptian tabla maqsum rhythm",
+            "ref": "maqsum"
+          },
+          {
+            "slot": "percussion",
+            "text": "riq",
+            "ref": "riq"
+          },
+          {
+            "slot": "percussion",
+            "text": "sagat finger cymbals shuffled 16ths",
+            "ref": "sagat"
+          }
+        ],
+        "notes": [
+          "sagat: shuffled 16ths, slightly behind the hats"
+        ],
+        "modeId": "hijaz",
+        "openPocket": {
+          "kind": "none"
+        },
+        "transitionOut": {
+          "kind": "riser",
+          "note": "Riser – white noise sweep, reverse cymbal",
+          "bracket": true
+        }
+      },
+      {
+        "id": "hook-a",
+        "kind": "hook",
+        "label": "Hook",
+        "bars": 16,
+        "dynamics": "f",
+        "scope": {
+          "instrumentIds": [
+            "trap-kit",
+            "kick-808-sub",
+            "tabla-egyptian",
+            "oud",
+            "kamanja",
+            "choir-wordless",
+            "org-keyboard"
+          ],
+          "synthRoleIds": [],
+          "techniqueIds": [],
+          "percussionRhythmIds": [
+            "baladi"
+          ]
+        },
+        "cues": [
+          {
+            "slot": "drums",
+            "text": "full drill drums"
+          },
+          {
+            "slot": "bass",
+            "text": "sliding 808s",
+            "ref": "kick-808-sub"
+          },
+          {
+            "slot": "groove",
+            "text": "layered snare and claps, 32nd hi-hat rolls, triplet fills"
+          },
+          {
+            "slot": "percussion",
+            "text": "tabla baladi rhythm",
+            "ref": "baladi"
+          },
+          {
+            "slot": "lead",
+            "text": "oud and Egyptian kamanja violin with slides double the Hijaz hook",
+            "ref": "oud"
+          },
+          {
+            "slot": "texture",
+            "text": "epic wordless choir",
+            "ref": "choir-wordless"
+          },
+          {
+            "slot": "texture",
+            "text": "quarter-tone org arpeggio",
+            "ref": "org-keyboard"
+          }
+        ],
+        "modeId": "hijaz",
+        "openPocket": {
+          "kind": "none"
+        },
+        "transitionOut": {
+          "kind": "none"
+        }
+      },
+      {
+        "id": "verse",
+        "kind": "verse",
+        "label": "Verse",
+        "bars": 16,
+        "dynamics": "mf",
+        "scope": {
+          "instrumentIds": [
+            "trap-kit",
+            "kick-808-sub",
+            "doholla",
+            "mazhar",
+            "rababa",
+            "kawala",
+            "tanbura"
+          ],
+          "synthRoleIds": [],
+          "techniqueIds": [],
+          "percussionRhythmIds": [
+            "zar-ayyub"
+          ]
+        },
+        "cues": [
+          {
+            "slot": "bass",
+            "text": "sparser 808",
+            "ref": "kick-808-sub"
+          },
+          {
+            "slot": "percussion",
+            "text": "zar trance rhythm on doholla and mazhar",
+            "ref": "zar-ayyub"
+          },
+          {
+            "slot": "lead",
+            "text": "rababa lead with bends answers the oud",
+            "ref": "rababa"
+          },
+          {
+            "slot": "lead",
+            "text": "kawala flute",
+            "ref": "kawala"
+          },
+          {
+            "slot": "bass",
+            "text": "tanbura lyre",
+            "ref": "tanbura"
+          },
+          {
+            "slot": "mood",
+            "text": "dark and alone"
+          }
+        ],
+        "notes": [
+          "doholla and mazhar carry the zar/ayyub rhythm, two cycles per bar, hypnotic and unchanging"
+        ],
+        "modeId": "hijaz",
+        "openPocket": {
+          "kind": "none"
+        },
+        "transitionOut": {
+          "kind": "filter-sweep-close",
+          "note": "Filter sweep closing",
+          "bracket": true
+        }
+      },
+      {
+        "id": "hook-b",
+        "kind": "hook",
+        "label": "Hook",
+        "bars": 8,
+        "dynamics": "f",
+        "scope": {
+          "instrumentIds": [
+            "trap-kit",
+            "tabla-egyptian",
+            "mizmar",
+            "oud",
+            "qanun",
+            "shaker",
+            "choir-wordless"
+          ],
+          "synthRoleIds": [],
+          "techniqueIds": [
+            "saidi-trill"
+          ],
+          "percussionRhythmIds": [
+            "saidi"
+          ]
+        },
+        "cues": [
+          {
+            "slot": "drums",
+            "text": "full drill drums return harder"
+          },
+          {
+            "slot": "percussion",
+            "text": "Sa'idi rhythm on tabla",
+            "ref": "saidi"
+          },
+          {
+            "slot": "lead",
+            "text": "mizmar lead stabs over the oud hook",
+            "ref": "mizmar"
+          },
+          {
+            "slot": "lead",
+            "text": "qanun tremolo runs",
+            "ref": "qanun"
+          },
+          {
+            "slot": "percussion",
+            "text": "auto-panned shakers",
+            "ref": "shaker"
+          },
+          {
+            "slot": "groove",
+            "text": "double-time hi-hat fills"
+          },
+          {
+            "slot": "texture",
+            "text": "choir",
+            "ref": "choir-wordless"
+          }
+        ],
+        "modeId": "hijaz",
+        "openPocket": {
+          "kind": "none"
+        },
+        "silenceAfter": {
+          "beats": 1,
+          "position": "end"
+        },
+        "transitionOut": {
+          "kind": "none"
+        }
+      },
+      {
+        "id": "bridge",
+        "kind": "bridge",
+        "label": "Bridge",
+        "bars": 16,
+        "dynamics": "p",
+        "scope": {
+          "instrumentIds": [
+            "piano",
+            "synth-pad-warm",
+            "qanun",
+            "shaker",
+            "kick-808-sub",
+            "tabla-egyptian"
+          ],
+          "synthRoleIds": [],
+          "techniqueIds": [],
+          "percussionRhythmIds": [
+            "wahda"
+          ]
+        },
+        "cues": [
+          {
+            "slot": "drums",
+            "text": "drums out"
+          },
+          {
+            "slot": "lead",
+            "text": "slower harmonized counter-melody in D minor"
+          },
+          {
+            "slot": "texture",
+            "text": "piano and warm synth pad",
+            "ref": "piano"
+          },
+          {
+            "slot": "lead",
+            "text": "qanun counter-line",
+            "ref": "qanun"
+          },
+          {
+            "slot": "percussion",
+            "text": "auto-panned shakers",
+            "ref": "shaker"
+          },
+          {
+            "slot": "fx",
+            "text": "phaser and flanger on hi-hats"
+          },
+          {
+            "slot": "bass",
+            "text": "soft 808 pulse",
+            "ref": "kick-808-sub"
+          },
+          {
+            "slot": "fx",
+            "text": "low-pass filter opening slowly"
+          }
+        ],
+        "notes": [
+          "tabla, if audible at all, plays wahda: one doum per bar"
+        ],
+        "harmony": "Dm · B♭ · Gm · A, two bars each",
+        "modeId": "nahawand",
+        "openPocket": {
+          "kind": "none"
+        },
+        "transitionOut": {
+          "kind": "timpani-roll",
+          "note": "Big riser – timpani roll, choir swell, sub drop",
+          "bracket": true
+        }
+      },
+      {
+        "id": "finale",
+        "kind": "finale",
+        "label": "Finale",
+        "bars": 16,
+        "dynamics": "ff",
+        "scope": {
+          "instrumentIds": [
+            "orchestra-epic",
+            "strings-egyptian",
+            "taiko",
+            "sagat",
+            "trap-kit",
+            "kick-808-sub",
+            "choir-wordless",
+            "oud",
+            "mizmar"
+          ],
+          "synthRoleIds": [],
+          "techniqueIds": [],
+          "percussionRhythmIds": [
+            "malfuf"
+          ]
+        },
+        "cues": [
+          {
+            "slot": "texture",
+            "text": "epic film-score orchestra",
+            "ref": "orchestra-epic"
+          },
+          {
+            "slot": "lead",
+            "text": "unison Egyptian string section gliding in Hijaz",
+            "ref": "strings-egyptian"
+          },
+          {
+            "slot": "texture",
+            "text": "massive trombone braams on D"
+          },
+          {
+            "slot": "texture",
+            "text": "French horn stabs"
+          },
+          {
+            "slot": "texture",
+            "text": "violin glissandi"
+          },
+          {
+            "slot": "texture",
+            "text": "staccato string arpeggios"
+          },
+          {
+            "slot": "percussion",
+            "text": "taiko drums",
+            "ref": "taiko"
+          },
+          {
+            "slot": "percussion",
+            "text": "sagat malfuf rhythm",
+            "ref": "malfuf"
+          },
+          {
+            "slot": "drums",
+            "text": "full drill drums with 808 glides"
+          },
+          {
+            "slot": "texture",
+            "text": "fortissimo wordless choir",
+            "ref": "choir-wordless"
+          },
+          {
+            "slot": "lead",
+            "text": "oud and mizmar melody on top",
+            "ref": "oud"
+          }
+        ],
+        "harmony": "Dm · B♭ · E♭ · A → D, two bars each, then held D for the last 4 bars",
+        "modeId": "hijaz-kar",
+        "openPocket": {
+          "kind": "none"
+        },
+        "transitionOut": {
+          "kind": "none"
+        }
+      },
+      {
+        "id": "outro",
+        "kind": "outro",
+        "label": "Outro",
+        "bars": 8,
+        "dynamics": "pp",
+        "scope": {
+          "instrumentIds": [
+            "nay",
+            "oud"
+          ],
+          "synthRoleIds": [],
+          "techniqueIds": [],
+          "percussionRhythmIds": []
+        },
+        "cues": [
+          {
+            "slot": "drums",
+            "text": "drums cut"
+          },
+          {
+            "slot": "lead",
+            "text": "solo nay with long reverb",
+            "ref": "nay"
+          },
+          {
+            "slot": "texture",
+            "text": "desert wind"
+          },
+          {
+            "slot": "bass",
+            "text": "single low oud note on D",
+            "ref": "oud"
+          },
+          {
+            "slot": "fx",
+            "text": "slow fade"
+          }
+        ],
+        "modeId": "saba",
+        "openPocket": {
+          "kind": "none"
+        },
+        "transitionOut": {
+          "kind": "none"
+        }
+      }
+    ],
+    "blockSize": 8,
+    "blockRule": {
+      "kinds": [
+        "riser",
+        "filter-sweep-open"
+      ],
+      "everyBars": [
+        8,
+        16
+      ]
+    }
+  },
+  "D8": {
+    "instrumental": true,
+    "voice": []
+  },
+  "D9": {
+    "character": [],
+    "techniqueIds": [
+      "side-chain-pump"
+    ]
+  },
+  "D10": {
+    "targets": [
+      "suno"
+    ],
+    "activeTarget": "suno",
+    "houseBudgets": {},
+    "title": "Jinn on the Dune",
+    "negativeSpace": [
+      {
+        "class": "vocals",
+        "terms": [
+          "vocals",
+          "rap",
+          "singing",
+          "lyrics",
+          "autotune"
+        ]
+      },
+      {
+        "class": "genre-bleed",
+        "terms": [
+          "pop",
+          "EDM drop",
+          "dubstep",
+          "house",
+          "reggaeton",
+          "bright major key",
+          "acoustic guitar",
+          "ukulele",
+          "lo-fi",
+          "jazz"
+        ]
+      },
+      {
+        "class": "instrument-ambiguity",
+        "terms": [
+          "sitar",
+          "Bollywood",
+          "flamenco",
+          "Moroccan Gnawa"
+        ]
+      }
+    ]
+  },
+  "references": [],
+  "patches": []
+}

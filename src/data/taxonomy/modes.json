@@ -1,0 +1,249 @@
+[
+  {
+    "id": "hijaz",
+    "name": "Hijaz",
+    "family": "maqam",
+    "intervalsCents": [
+      0,
+      100,
+      400,
+      500,
+      700,
+      800,
+      1000
+    ],
+    "quarterTones": false,
+    "reliability": {
+      "suno": "reliable"
+    },
+    "colour": "dark, exotic, augmented second"
+  },
+  {
+    "id": "hijaz-kar",
+    "name": "Hijaz Kar",
+    "family": "maqam",
+    "intervalsCents": [
+      0,
+      100,
+      400,
+      500,
+      700,
+      800,
+      1100
+    ],
+    "quarterTones": false,
+    "reliability": {
+      "suno": "unverified"
+    },
+    "colour": "Hijaz with a raised seventh; the Cairo film-score cadence"
+  },
+  {
+    "id": "nahawand",
+    "name": "Nahawand",
+    "family": "maqam",
+    "intervalsCents": [
+      0,
+      200,
+      300,
+      500,
+      700,
+      800,
+      1000
+    ],
+    "quarterTones": false,
+    "reliability": {
+      "suno": "reliable"
+    },
+    "colour": "minor, lyrical"
+  },
+  {
+    "id": "saba",
+    "name": "Saba",
+    "family": "maqam",
+    "intervalsCents": [
+      0,
+      150,
+      300,
+      400,
+      700,
+      800,
+      1000
+    ],
+    "quarterTones": true,
+    "reliability": {
+      "suno": "approximate"
+    },
+    "colour": "the darkest Egyptian colour, mournful"
+  },
+  {
+    "id": "bayati",
+    "name": "Bayati",
+    "family": "maqam",
+    "intervalsCents": [
+      0,
+      150,
+      300,
+      500,
+      700,
+      800,
+      1000
+    ],
+    "quarterTones": true,
+    "reliability": {
+      "suno": "approximate"
+    },
+    "colour": "warm, folk"
+  },
+  {
+    "id": "rast",
+    "name": "Rast",
+    "family": "maqam",
+    "intervalsCents": [
+      0,
+      200,
+      350,
+      500,
+      700,
+      900,
+      1050
+    ],
+    "quarterTones": true,
+    "reliability": {
+      "suno": "approximate"
+    },
+    "colour": "bright, grounded"
+  },
+  {
+    "id": "ionian",
+    "name": "Ionian",
+    "family": "western",
+    "intervalsCents": [
+      0,
+      200,
+      400,
+      500,
+      700,
+      900,
+      1100
+    ],
+    "quarterTones": false,
+    "reliability": {
+      "suno": "reliable"
+    },
+    "colour": "major"
+  },
+  {
+    "id": "dorian",
+    "name": "Dorian",
+    "family": "western",
+    "intervalsCents": [
+      0,
+      200,
+      300,
+      500,
+      700,
+      900,
+      1000
+    ],
+    "quarterTones": false,
+    "reliability": {
+      "suno": "reliable"
+    },
+    "colour": "minor with a raised sixth"
+  },
+  {
+    "id": "phrygian",
+    "name": "Phrygian",
+    "family": "western",
+    "intervalsCents": [
+      0,
+      100,
+      300,
+      500,
+      700,
+      800,
+      1000
+    ],
+    "quarterTones": false,
+    "reliability": {
+      "suno": "reliable"
+    },
+    "colour": "dark minor, flat second"
+  },
+  {
+    "id": "lydian",
+    "name": "Lydian",
+    "family": "western",
+    "intervalsCents": [
+      0,
+      200,
+      400,
+      600,
+      700,
+      900,
+      1100
+    ],
+    "quarterTones": false,
+    "reliability": {
+      "suno": "reliable"
+    },
+    "colour": "bright, raised fourth"
+  },
+  {
+    "id": "mixolydian",
+    "name": "Mixolydian",
+    "family": "western",
+    "intervalsCents": [
+      0,
+      200,
+      400,
+      500,
+      700,
+      900,
+      1000
+    ],
+    "quarterTones": false,
+    "reliability": {
+      "suno": "reliable"
+    },
+    "colour": "major with a flat seventh"
+  },
+  {
+    "id": "aeolian",
+    "name": "Aeolian",
+    "family": "western",
+    "intervalsCents": [
+      0,
+      200,
+      300,
+      500,
+      700,
+      800,
+      1000
+    ],
+    "quarterTones": false,
+    "reliability": {
+      "suno": "reliable"
+    },
+    "colour": "natural minor"
+  },
+  {
+    "id": "locrian",
+    "name": "Locrian",
+    "family": "western",
+    "intervalsCents": [
+      0,
+      100,
+      300,
+      500,
+      600,
+      800,
+      1000
+    ],
+    "quarterTones": false,
+    "reliability": {
+      "suno": "reliable"
+    },
+    "colour": "unstable, diminished"
+  }
+]
