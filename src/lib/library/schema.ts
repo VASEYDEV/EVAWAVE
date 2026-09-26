@@ -133,6 +133,15 @@ export function recordFilename(name: string): string {
   return [...chars.slice(0, FILENAME_MAX - kept.length), ...kept].join("");
 }
 
+/** `files.mime` holds 1–120 characters (the check in the library migration). */
+export const MIME_MAX = 120;
+
+/** A MIME type the library accepts: the file's own when it fits, else the generic binary type. */
+export function recordMime(type: string): string {
+  const trimmed = type.trim();
+  return trimmed && Array.from(trimmed).length <= MIME_MAX ? trimmed : "application/octet-stream";
+}
+
 /** The insert payload for a new style profile. The owner comes from the session (auth.uid()). */
 export function styleProfileInsert(profile: Pick<StyleProfile, "name" | "provenance" | "spec" | "features">): Pick<StyleProfileRow, "name" | "provenance" | "spec"> & { features?: AudioFeatures } {
   return { name: profile.name, provenance: profile.provenance, spec: profile.spec, ...(profile.features ? { features: profile.features } : {}) };

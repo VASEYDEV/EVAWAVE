@@ -4,7 +4,7 @@ import { fileURLToPath } from "node:url";
 import { PGlite } from "@electric-sql/pglite";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
-import { FILENAME_MAX, LIBRARY_COLUMNS, PROFILE_NAME_MAX, USER_SCOPED_TABLES } from "@/lib/library/schema";
+import { FILENAME_MAX, LIBRARY_COLUMNS, MIME_MAX, PROFILE_NAME_MAX, USER_SCOPED_TABLES } from "@/lib/library/schema";
 
 /**
  * S4 acceptance (docs/SPEC.md §3): user B cannot read or write user A's rows in any
@@ -212,7 +212,7 @@ describe("library access for other roles and tables", () => {
 
   describe("save_import (one transaction, under RLS)", () => {
     const call = "select * from public.save_import($1::jsonb, $2::jsonb)";
-    const file = (sha: string, filename = "loop.wav") => JSON.stringify({ filename, mime: "audio/wav", bytes: 10, sha256: sha, features: { durationSec: 1 } });
+    const file = (sha: string, filename = "loop.wav", mime = "audio/wav") => JSON.stringify({ filename, mime, bytes: 10, sha256: sha, features: { durationSec: 1 } });
     const profile = (id: string, name = "Desert loop") => JSON.stringify({ id, name, spec: {}, analysedOn: "2026-09-26T12:00:00.000Z", model: "evawave-audio-draft-v1" });
     const P = "3a6f1d2e-9b8c-4c7d-a1e2-0f9e8d7c6b5a";
 
@@ -234,6 +234,11 @@ describe("library access for other roles and tables", () => {
     it("accepts filenames up to FILENAME_MAX and no longer, as the app assumes", async () => {
       await expect(as(A, () => rows(call, [file(SHA("2"), "f".repeat(FILENAME_MAX)), profile("6d5c4b3a-2918-4a7f-9e6d-5c4b3a291807")]))).resolves.toHaveLength(1);
       await expect(as(A, () => rows(call, [file(SHA("3"), "f".repeat(FILENAME_MAX + 1)), profile("7e6d5c4b-3a29-4b80-af7e-6d5c4b3a2918")]))).rejects.toThrow(/check constraint/);
+    });
+
+    it("accepts MIME types up to MIME_MAX and no longer, as the app assumes", async () => {
+      await expect(as(A, () => rows(call, [file(SHA("4"), "loop.wav", "m".repeat(MIME_MAX)), profile("8f7e6d5c-4b3a-4c91-b08f-7e6d5c4b3a29")]))).resolves.toHaveLength(1);
+      await expect(as(A, () => rows(call, [file(SHA("5"), "loop.wav", "m".repeat(MIME_MAX + 1)), profile("908f7e6d-5c4b-4da2-81f0-8f7e6d5c4b3a")]))).rejects.toThrow(/check constraint/);
     });
 
     it("leaves no file row when the profile write fails", async () => {

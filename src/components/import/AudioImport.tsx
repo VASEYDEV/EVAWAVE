@@ -15,7 +15,7 @@ import { browserImportDeps, inTurnForLocalAudio, keepAudioFor } from "@/lib/audi
 import { importAudio, type ImportResult } from "@/lib/audio/import";
 import { createLibraryClient } from "@/lib/library/client";
 import { saveImportAndKeepAudio } from "@/lib/library/repository";
-import { PROFILE_NAME_MAX, profileName, recordFilename } from "@/lib/library/schema";
+import { PROFILE_NAME_MAX, profileName, recordFilename, recordMime } from "@/lib/library/schema";
 import { getSupabasePublicConfig } from "@/lib/supabase/config";
 
 function formatSec(sec: number): string {
@@ -134,7 +134,7 @@ export function AudioImport() {
       }
       const { asset, features, analysedOn } = result;
       const record = {
-        file: { filename: recordFilename(asset.filename), mime: asset.mime, bytes: asset.bytes, sha256: asset.sha256, features },
+        file: { filename: recordFilename(asset.filename), mime: recordMime(asset.mime), bytes: asset.bytes, sha256: asset.sha256, features },
         profile: { id: profile.id, name: profile.name, spec: profile.spec, analysedOn, model: AUDIO_DRAFT_MODEL },
       };
       // The save and the store take the file's turn for this account, so a delete of the same

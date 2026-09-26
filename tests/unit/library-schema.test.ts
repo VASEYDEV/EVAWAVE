@@ -5,7 +5,7 @@ import { describe, expect, it } from "vitest";
 
 import type { MusicSpec } from "@/core/musicspec/ir/types";
 import { profileSpecFrom } from "@/lib/library/repository";
-import { FILENAME_MAX, PROFILE_NAME_MAX, profileName, recordFilename, toReferenceAsset, toStyleProfile, toTag, type FileRow, type StyleProfileRow } from "@/lib/library/schema";
+import { FILENAME_MAX, MIME_MAX, PROFILE_NAME_MAX, profileName, recordFilename, recordMime, toReferenceAsset, toStyleProfile, toTag, type FileRow, type StyleProfileRow } from "@/lib/library/schema";
 
 const spec = JSON.parse(readFileSync(fileURLToPath(new URL("../fixtures/jinn-v1.2.spec.json", import.meta.url)), "utf8")) as MusicSpec;
 
@@ -60,6 +60,13 @@ describe("profile names", () => {
     expect(Array.from(straddling)).toHaveLength(PROFILE_NAME_MAX);
     expect(straddling.isWellFormed()).toBe(true);
     expect(straddling.endsWith("🎵")).toBe(true);
+  });
+
+  it("keeps a MIME type the library accepts, else the generic binary type", () => {
+    expect(recordMime("audio/wav")).toBe("audio/wav");
+    expect(recordMime("")).toBe("application/octet-stream");
+    expect(recordMime(`audio/${"x".repeat(MIME_MAX)}`)).toBe("application/octet-stream");
+    expect(recordMime("a".repeat(MIME_MAX))).toHaveLength(MIME_MAX);
   });
 
   it("cuts filenames to the library's 255 characters, counted as Postgres counts them", () => {
