@@ -9,6 +9,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- S5, audio import, tempo tools and iconography (SPEC §3):
+  - On-device analysis (`src/core/musicspec/analysis/`): tempo, meter, key, BS.1770 loudness and range, energy, sections and spectral descriptors, with a WAV decoder and encoder.
+  - `intake.ts`: the features → `IRPatch` draft, per-field review, and apply-only-accepted with a PT-2 guard.
+  - `tempo.ts`: tap tempo (last 4 taps, ±25% outlier discard, 2 s reset) and metronome lookahead scheduling.
+  - Lint rules PT-1, PT-2 and PV-1.
+  - `/import`: file picker and drag and drop, OPFS storage, review diff, profile creation, save to the library, and download.
+  - Tap tempo and a Web Audio metronome in module 1.
+  - Module hue tokens and provisional monoline icons (`assets/icons/modules.json`, generated SVGs).
+- Tests:
+  - A recorded-fetch test proving no request carries audio through import, review and library save.
+  - Analysis vectors: a −20 dBFS sine reads −23.01 LUFS; click-track tempo and meter; triad keys; the absolute gate.
+  - The tap tempo vectors, and intake and PT/PV rule tests.
+  - E2e for WAV import, tap tempo on a controlled clock, hue and icon on every module, and no horizontal scroll on any page.
 - S4, the library (SPEC §3):
   - Supabase migrations with row level security on every table. There are owner-only policies on style profiles, files, tags and their genre and tag links. Link rows may only join the owner's rows, the curated genres are read-only, and `anon` has no access.
   - A generated genre seed migration.

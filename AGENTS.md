@@ -53,7 +53,11 @@ UI (`src/components/composer/`); the library UI follows in S4. EVAWAVE never gen
 - **Generated files are never edited by hand:** `src/core/musicspec/ir/types.ts` (from the
   SPEC) and `src/data/taxonomy/instruments/*.json` (from the seed), and
   `supabase/migrations/20260926000100_seed_genres.sql` (from `genres.json`, by
-  `node scripts/build-genre-seed.mjs`). Curated instruments
+  `node scripts/build-genre-seed.mjs`), and `assets/icons/modules/*.svg` (from
+  `assets/icons/modules.json`, by `node scripts/build-module-icons.mjs`).
+- **Audio never leaves the device (A6).** Import steps are injected (`src/lib/audio/import.ts`),
+  so `tests/unit/audio-import.test.ts` can record every request. Keep new persistence
+  inside `saveImport`-style functions that send metadata only. Curated instruments
   live in `src/data/taxonomy/instruments.json` and always win over generated ones.
 - **`next lint` does not exist in Next 16.** `npm run lint` calls ESLint directly.
 - **ESLint stays on 9.** `eslint-config-next@16.3.6` crashes under ESLint 10.
