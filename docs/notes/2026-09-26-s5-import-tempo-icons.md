@@ -193,3 +193,14 @@ S5 per SPEC §3. The methods are listed in SPEC §3 S5 "Delivered".
     OPFS and not-found, and rethrows anything else. `/library` removes the local copy
     before the row, so a failure keeps the record and its hash for a retry. A test with
     a locked entry expects the rejection; it fails on the old code.
+- **Thirteenth review.**
+  - **Leaving `/import` mid-analysis** left the worker running. An unmount cleanup now
+    aborts the import in flight, which terminates the worker. The e2e serves a worker
+    that never answers, navigates away and waits for exactly one `terminate()`. It fails
+    without the cleanup.
+  - **The save was two requests.** A failure between them left a file row with no
+    profile. `public.save_import` (new migration, `security invoker`) now writes both in
+    one transaction and builds the provenance from the file row it wrote. `saveImport`
+    makes a single RPC call. The RLS suite checks idempotence, rollback when the profile
+    fails, another owner's id refused with none of that call's rows kept, and no access
+    signed out. The refusal test fails if the function becomes `security definer`.
