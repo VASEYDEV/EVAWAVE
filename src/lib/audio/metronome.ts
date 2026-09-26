@@ -43,7 +43,14 @@ export class Metronome {
   private async begin(): Promise<void> {
     const context = new AudioContext();
     this.context = context;
-    await context.resume();
+    try {
+      await context.resume();
+    } catch (error) {
+      // Audio output blocked or unavailable: release this context so a retry starts clean.
+      if (this.context === context) this.context = null;
+      await context.close().catch(() => undefined);
+      throw error;
+    }
     // Stopped while resuming: stop() already closed this context.
     if (this.context !== context) return;
     this.cursor = { nextTime: context.currentTime + 0.05, beat: 0, step: 0 };

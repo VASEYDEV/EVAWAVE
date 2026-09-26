@@ -3,7 +3,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { Metronome } from "@/lib/audio/metronome";
 
 /** A Web Audio stand-in: counts contexts and accepts the nodes the metronome schedules. */
-function fakeAudio() {
+function fakeAudio({ blocked = false } = {}) {
   const contexts: FakeContext[] = [];
   class FakeContext {
     currentTime = 0;
@@ -12,7 +12,9 @@ function fakeAudio() {
     constructor() {
       contexts.push(this);
     }
-    resume = async () => {};
+    resume = async () => {
+      if (blocked) throw new DOMException("audio output is blocked", "NotAllowedError");
+    };
     close = async () => {
       this.closed = true;
     };
@@ -52,6 +54,16 @@ describe("metronome start and stop", () => {
     await metronome.stop();
     await starting;
     expect(intervals).not.toHaveBeenCalled();
+    expect(metronome.running).toBe(false);
+  });
+
+  it("closes the context when resume() is refused, so retries do not pile up contexts", async () => {
+    const contexts = fakeAudio({ blocked: true });
+    const metronome = new Metronome(settings);
+    await expect(metronome.start()).rejects.toThrow("blocked");
+    await expect(metronome.start()).rejects.toThrow("blocked");
+    expect(contexts).toHaveLength(2);
+    expect(contexts.every((c) => c.closed)).toBe(true);
     expect(metronome.running).toBe(false);
   });
 
