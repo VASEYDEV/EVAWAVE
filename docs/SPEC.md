@@ -1533,7 +1533,11 @@ Delivered:
     log-normal prior, the value folded by octaves into 60–200 BPM (a 58 BPM pulse reads
     116, with 58 as its half-time candidate). The sub-frame fit applies only at a local
     autocorrelation peak and stays inside the search, so a beatless swell cannot push the
-    lag to zero or below;
+    lag to zero or below. A tempo needs evidence of a beat: an onset envelope that moves
+    (a spread of at least 5, which a steady tone, fade or held chord never reaches) and a
+    raw autocorrelation peak within two lags of the winner (a swell has none). Otherwise
+    no tempo is proposed. Confidence is capped by that peak's strength (full at 0.5), so a
+    beat buried in noise, or noise itself, starts unticked;
   - meter: an accent envelope at 4-beat against 3-beat lags. A three-beat grouping may be
     half a 6/8 bar counted in eighths, so intake proposes 3/4 at no more than 0.4
     confidence (unticked) and names 6/8;
@@ -1610,7 +1614,8 @@ Delivered:
     if that fails, and restores the copy if deleting the record then fails, saying so if
     it can only be put back in this tab. Deletes of the
     same file never overlap: a second in the same tab joins the first, and tabs take turns
-    on a Web Lock. Local copies
+    on a Web Lock. A browser without Web Locks keeps no audio on the device, since a save
+    and a delete in two tabs could then leave a copy with no record. Local copies
     are kept per account, under `audio/<owner>/<sha256>`, so two accounts on one browser
     that save the same file each keep their own copy.
   - Module hues as `--mod-*` tokens. Provisional icons come from

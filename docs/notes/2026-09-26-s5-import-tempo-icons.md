@@ -539,6 +539,28 @@ S5 per SPEC §3. The methods are listed in SPEC §3 S5 "Delivered".
     - A test stubs `OfflineAudioContext` and checks the decoder receives the same buffer.
     - Restoring the copy fails a test, and so does leaving out the mix or the
       during-decode term.
+- **Forty-third review.** Both confirmed. Each fix ships with tests that fail under a
+  mutation.
+  - **Beatless material read a confident tempo.** This was listed on the PR as not fixed,
+    and Codex raised it. Measured before choosing a fix:
+    - Click tracks peak at 0.3–0.97 normalised autocorrelation. White noise peaks at 0.06,
+      and the swells have no raw peak near the winning lag.
+    - A steady sine, a fade and a held triad also show strong periodicity, up to 0.95. That
+      is frame jitter that repeats with the hop. Their onset envelopes barely move (spread
+      0.01–2, at any level), while a click track at −40 dBFS spreads about 50.
+
+    So a tempo now needs a spread of at least 5 (`ONSET_MIN_SD`) and a raw peak within two
+    lags of the winner. Its confidence is capped by that peak's strength, reaching 1 at 0.5
+    (`PERIODIC_STRENGTH`). Tests: steady tones, a fade, a triad and the swells give no
+    tempo. A beat under light noise keeps 120 BPM with at least 0.5 confidence, and buried
+    beats and noise start unticked. Removing any one rule fails a test. The swell test now
+    expects no tempo; the offset tests still pin the bounded fit.
+  - **No Web Locks, no serialisation.** Where the API is missing, a save and a delete of
+    one file could interleave across tabs and leave a copy with no record. Rather than
+    run unprotected, `keepAudioFor` keeps no audio there (`"unsupported"`, with its own
+    status). With no local copy, there is nothing to race over. Chromium, Firefox and
+    Safari have had Web Locks since 2022. A test without locks checks nothing is stored,
+    in OPFS or in the tab. Dropping the check fails it.
 
 ## Decisions
 
