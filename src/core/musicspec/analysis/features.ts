@@ -17,7 +17,7 @@
  * per frame, never the spectra, and loudness keeps one number per 100 ms.
  */
 import type { AudioFeatures } from "../ir/types";
-import { decimate, hann, magnitudes, meanOf, percentile, type Biquad } from "./dsp";
+import { decimate, hann, magnitudes, meanOf, parabolicPeakOffset, percentile, type Biquad } from "./dsp";
 
 const PITCHES = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"] as const;
 const MAJOR = [6.35, 2.23, 3.48, 2.33, 4.38, 4.09, 2.52, 5.19, 2.39, 3.66, 2.29, 2.88];
@@ -142,10 +142,12 @@ function estimateTempo(env: Float64Array, frameRate: number): AudioFeatures["bpm
     }
   }
   if (!bestLag || bestScore <= 0) return { value: 0, confidence: 0, halfTimeCandidate: 0, doubleTimeCandidate: 0, lag: 0 };
-  // Parabolic interpolation around the peak for a sub-frame lag.
+  // Parabolic interpolation for a sub-frame lag, only where the raw autocorrelation peaks: the
+  // prior can pick a lag on a slope (a swell's flux falls steadily), where the fitted vertex
+  // can land at zero or a negative lag and the fold below would never end. The clamp keeps
+  // the lag inside the search.
   const y0 = autocorrelation(centred, bestLag - 1), y1 = autocorrelation(centred, bestLag), y2 = autocorrelation(centred, bestLag + 1);
-  const denom = y0 - 2 * y1 + y2;
-  const peak = denom < 0 ? bestLag + (0.5 * (y0 - y2)) / denom : bestLag;
+  const peak = Math.min(maxLag, Math.max(minLag, bestLag + parabolicPeakOffset(y0, y1, y2)));
   // Fold by octaves into 60–200 BPM: a 58 BPM pulse reads 116, with 58 as its half-time
   // candidate, so the value always lies in the documented range and the true octave stays
   // one choice away.

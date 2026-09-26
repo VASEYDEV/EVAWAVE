@@ -1,10 +1,10 @@
 import { describe, expect, it } from "vitest";
 
-import { fft } from "@/core/musicspec/analysis/dsp";
+import { fft, parabolicPeakOffset } from "@/core/musicspec/analysis/dsp";
 import { analyseAudio } from "@/core/musicspec/analysis/features";
 import { decodeWav, encodeWav, WavError } from "@/core/musicspec/analysis/wav";
 
-import { clickTrack, mix, sine, triad } from "../support/signals";
+import { clickTrack, mix, sine, swell, triad } from "../support/signals";
 
 describe("fft", () => {
   it("puts a pure tone in its bin", () => {
@@ -19,6 +19,30 @@ describe("fft", () => {
 
   it("rejects a non-power-of-two length", () => {
     expect(() => fft(new Float64Array(6), new Float64Array(6))).toThrow(RangeError);
+  });
+});
+
+describe("parabolicPeakOffset", () => {
+  it("places the vertex of a local maximum within half a step", () => {
+    expect(parabolicPeakOffset(1, 2, 1)).toBeCloseTo(0, 12);
+    expect(parabolicPeakOffset(1, 2, 1.5)).toBeCloseTo(1 / 6, 12);
+    expect(parabolicPeakOffset(2, 2, 1)).toBe(-0.5);
+    expect(parabolicPeakOffset(1, 2, 2)).toBe(0.5);
+    let state = 7;
+    const next = () => ((state = (state * 1664525 + 1013904223) >>> 0) / 2 ** 32);
+    for (let i = 0; i < 1000; i++) {
+      const y1 = next();
+      const offset = parabolicPeakOffset(y1 * next(), y1, y1 * next());
+      expect(Math.abs(offset)).toBeLessThanOrEqual(0.5);
+    }
+  });
+
+  it("does not fit a slope, a trough or a flat run", () => {
+    // Three autocorrelation values from a swell: falling, and nearly straight. The unguarded
+    // fit put their vertex 15 steps back.
+    expect(parabolicPeakOffset(292.919, 275.449, 256.789)).toBe(0);
+    expect(parabolicPeakOffset(1, 0, 1)).toBe(0);
+    expect(parabolicPeakOffset(1, 1, 1)).toBe(0);
   });
 });
 
@@ -135,6 +159,16 @@ describe("tempo and meter", () => {
   it("claims no meter when every beat is the same", () => {
     const meter = analyseAudio(clickTrack(120, 24, 44100, 1), 44100).meter;
     expect(meter.signature).toBe("unknown");
+  });
+
+  it("ends on a swell with no beat, keeping the tempo finite and in range", () => {
+    // Before the fit was limited to local maxima, these three swells put the fitted peak at a
+    // negative lag, and folding the resulting tempo into 60–200 BPM never ended.
+    for (const seed of [1, 2, 3]) {
+      const { bpm } = analyseAudio(swell(440, 12, 1, 22050, seed), 22050);
+      expect(bpm.value).toBeGreaterThanOrEqual(60);
+      expect(bpm.value).toBeLessThanOrEqual(200);
+    }
   });
 
   it("reports no tempo in silence", () => {

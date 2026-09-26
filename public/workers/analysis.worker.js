@@ -67,6 +67,16 @@ function meanOf(values) {
 	for (let i = 0; i < values.length; i++) sum += values[i];
 	return values.length ? sum / values.length : 0;
 }
+/**
+* Where the vertex of the parabola through (−1, y0), (0, y1), (1, y2) lies, from −0.5 to 0.5,
+* when y1 is a local maximum. Anything else returns 0: through a slope or a trough the vertex
+* can land any distance away, even past the origin of a lag axis.
+*/
+function parabolicPeakOffset(y0, y1, y2) {
+	const denom = y0 - 2 * y1 + y2;
+	if (!(y1 >= y0 && y1 >= y2 && denom < 0)) return 0;
+	return .5 * (y0 - y2) / denom;
+}
 /** The p-th percentile (0–100) by linear interpolation; values need not be sorted. */
 function percentile(values, p) {
 	if (!values.length) return 0;
@@ -218,8 +228,7 @@ function estimateTempo(env, frameRate) {
 		lag: 0
 	};
 	const y0 = autocorrelation(centred, bestLag - 1), y1 = autocorrelation(centred, bestLag), y2 = autocorrelation(centred, bestLag + 1);
-	const denom = y0 - 2 * y1 + y2;
-	const peak = denom < 0 ? bestLag + .5 * (y0 - y2) / denom : bestLag;
+	const peak = Math.min(maxLag, Math.max(minLag, bestLag + parabolicPeakOffset(y0, y1, y2)));
 	let value = 60 * frameRate / peak;
 	while (value < 60) value *= 2;
 	while (value > 200) value /= 2;

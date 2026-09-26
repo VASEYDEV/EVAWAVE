@@ -77,6 +77,17 @@ export function meanOf(values: ArrayLike<number>): number {
   return values.length ? sum / values.length : 0;
 }
 
+/**
+ * Where the vertex of the parabola through (−1, y0), (0, y1), (1, y2) lies, from −0.5 to 0.5,
+ * when y1 is a local maximum. Anything else returns 0: through a slope or a trough the vertex
+ * can land any distance away, even past the origin of a lag axis.
+ */
+export function parabolicPeakOffset(y0: number, y1: number, y2: number): number {
+  const denom = y0 - 2 * y1 + y2;
+  if (!(y1 >= y0 && y1 >= y2 && denom < 0)) return 0;
+  return (0.5 * (y0 - y2)) / denom;
+}
+
 /** The p-th percentile (0–100) by linear interpolation; values need not be sorted. */
 export function percentile(values: readonly number[], p: number): number {
   if (!values.length) return 0;

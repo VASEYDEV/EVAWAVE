@@ -35,6 +35,20 @@ export function accentedClicks(bpm: number, seconds: number, sampleRate: number,
   return out;
 }
 
+/**
+ * A tone that swells with no beat: its level rises `nepers` over `seconds`, fast at first and
+ * levelling off, over a quiet seeded noise floor. Its onset flux falls steadily throughout.
+ */
+export function swell(freq: number, nepers: number, seconds: number, sampleRate: number, seed: number): Float32Array {
+  let state = seed >>> 0;
+  const noise = () => ((state = (state * 1664525 + 1013904223) >>> 0) / 2 ** 32) * 2 - 1;
+  const k = (2 * nepers) / seconds ** 2;
+  return Float32Array.from({ length: Math.round(seconds * sampleRate) }, (_, i) => {
+    const t = i / sampleRate;
+    return 0.9 * Math.exp(k * (seconds * t - (t * t) / 2) - nepers) * (Math.sin((2 * Math.PI * freq * i) / sampleRate) + 0.01 * noise());
+  });
+}
+
 const midiHz = (note: number) => 440 * 2 ** ((note - 69) / 12);
 
 /** A sustained triad (with its root an octave down), e.g. D minor = 62, minor. */
