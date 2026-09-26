@@ -513,8 +513,11 @@ function spectralDescriptors(pass, durationSec) {
 		transientDensity: durationSec ? onsets / durationSec : 0
 	};
 }
-/** Below this share of the channels' mean energy, the mix has lost the music to cancellation. */
-const MIX_ENERGY_FLOOR = .25;
+/**
+* An N-channel average of uncorrelated channels keeps 1/N of their mean energy. Below half of
+* that, the mix has lost the music to phase cancellation (0.25 for stereo, about 0.083 for 5.1).
+*/
+const MIX_ENERGY_FLOOR = .5;
 function energyOf(signal) {
 	let sum = 0;
 	for (let i = 0; i < signal.length; i++) sum += signal[i] ** 2;
@@ -523,14 +526,14 @@ function energyOf(signal) {
 /**
 * The signal tempo, meter, key, energy and spectrum read: the mono mix, unless phase
 * cancellation took most of its energy (side-only or phase-opposed channels), in which case
-* the loudest channel, which still carries the music. Uncorrelated channels keep half their
-* energy in the mix, so ordinary stereo always reads the mix.
+* the loudest channel, which still carries the music. The floor scales with the channel count,
+* so ordinary stereo and surround material always reads the mix.
 */
 function analysisSignal(mix, channels) {
 	if (channels.length < 2) return mix;
 	const energies = channels.map(energyOf);
 	const mean = meanOf(energies);
-	if (mean === 0 || energyOf(mix) >= MIX_ENERGY_FLOOR * mean) return mix;
+	if (mean === 0 || energyOf(mix) >= MIX_ENERGY_FLOOR / channels.length * mean) return mix;
 	return channels[energies.indexOf(Math.max(...energies))];
 }
 /**

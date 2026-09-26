@@ -171,6 +171,14 @@ describe("energy, sections and spectrum", () => {
     expect(withoutLoudness(analyseAudio(both, 22050, [left, right]))).toEqual(withoutLoudness(analyseAudio(both, 22050)));
   });
 
+  it("keeps reading the mix for ordinary surround material", () => {
+    // Six uncorrelated, equal-energy channels: their average keeps 1/6 of the mean energy.
+    const channels = [110, 220, 330, 440, 550, 660].map((hz) => sine(hz, -12, 8, 22050));
+    const mixed = new Float32Array(channels[0]?.length ?? 0).map((_, i) => channels.reduce((sum, c) => sum + (c[i] as number), 0) / channels.length);
+    const withoutLoudness = (f: ReturnType<typeof analyseAudio>) => ({ ...f, loudness: null });
+    expect(withoutLoudness(analyseAudio(mixed, 22050, channels))).toEqual(withoutLoudness(analyseAudio(mixed, 22050)));
+  });
+
   it("is deterministic and never tags (null tagger)", () => {
     const signal = mix(clickTrack(140, 8, 44100), triad(62, true, 8, 44100));
     const a = analyseAudio(signal, 44100);
