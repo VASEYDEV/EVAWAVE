@@ -212,8 +212,11 @@ describe("listSongs", () => {
   it("lists every song past the server's row limit, most recently saved first, with every variant counted", async () => {
     const songs = ["a", "b", "c"].map((id, i) => ({ id, owner_id: "o", title: id.toUpperCase(), revision: 0, updated_at: `2026-09-26T1${i}:00:00+00:00` }));
     const variants = ["a", "c", "c", "c", "a"].map((song_id, i) => ({ id: `v-${i}`, song_id }));
-    const { client } = recording((r) => (r.path === "/rest/v1/songs" ? songs : variants), { maxRows: 2 });
+    const { client, sent } = recording((r) => (r.path === "/rest/v1/songs" ? songs : variants), { maxRows: 2 });
     const listed = await listSongs(client);
+    // Every song page is read before any variant, so a count never predates its revision.
+    const paths = sent.map((r) => r.path);
+    expect(paths.lastIndexOf("/rest/v1/songs")).toBeLessThan(paths.indexOf("/rest/v1/variants"));
     expect(listed.map((s) => [s.id, s.variantCount])).toEqual([
       ["c", 3],
       ["b", 0],

@@ -123,17 +123,19 @@ export function toVariant(row: VariantRow, parent: MusicSpec | null, catalog: Ca
 
 /** The caller's songs, most recently saved first, each with its variant count. */
 export async function listSongs(client: LibraryClient): Promise<SongSummary[]> {
-  // Paged by id, which a save never changes, and sorted here by when each was saved.
-  const [songs, variants] = await Promise.all([
-    allRows("songs", "id", (after: string | null) => {
-      const query = client.from("songs").select("id, owner_id, title, revision, updated_at", { count: "exact" });
-      return (after === null ? query : query.gt("id", after)).order("id").limit(PAGE_ROWS);
-    }),
-    allRows("songs: variants", "id", (after: string | null) => {
-      const query = client.from("variants").select("id, song_id", { count: "exact" });
-      return (after === null ? query : query.gt("id", after)).order("id").limit(PAGE_ROWS);
-    }),
-  ]);
+  // The songs first, then the variants. Variants only ever arrive, so each count covers at
+  // least what the song held at the revision listed with it; a delete at that revision then
+  // removes no variant the confirmation left out, and a freeze since bumps the revision,
+  // which makes that delete refuse. Read at the same time, a new revision could pair with an
+  // old count. Paged by id, which a save never changes, and sorted here by when each was saved.
+  const songs = await allRows("songs", "id", (after: string | null) => {
+    const query = client.from("songs").select("id, owner_id, title, revision, updated_at", { count: "exact" });
+    return (after === null ? query : query.gt("id", after)).order("id").limit(PAGE_ROWS);
+  });
+  const variants = await allRows("songs: variants", "id", (after: string | null) => {
+    const query = client.from("variants").select("id, song_id", { count: "exact" });
+    return (after === null ? query : query.gt("id", after)).order("id").limit(PAGE_ROWS);
+  });
   const counts = new Map<string, number>();
   for (const v of variants) counts.set(v.song_id, (counts.get(v.song_id) ?? 0) + 1);
   return songs.sort((a, b) => newestFirst({ created_at: a.updated_at, id: a.id }, { created_at: b.updated_at, id: b.id })).map((row) => ({

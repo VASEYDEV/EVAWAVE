@@ -1706,7 +1706,8 @@ Delivered:
   are read a page at a time, each page after the last key read, because PostgREST cuts a
   response at its row limit without an error, and an offset would shift when another tab
   adds or deletes a row; the song is read before its variants, so the base it names
-  is always among them. Each opening of a song gets its own copy id, and a save or freeze
+  is always among them, and the song list reads every song before counting variants, so
+  a count never predates the revision a delete will match. Each opening of a song gets its own copy id, and a save or freeze
   attaches its result only to the copy it began on. Opening refuses, and says so, when the
   browser will not store the copy. The working copy in the browser carries its song attachment in the same
   `setItem` (`src/lib/composer/storage.ts`), tabs follow each other's writes, and nothing

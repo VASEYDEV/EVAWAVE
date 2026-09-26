@@ -234,6 +234,17 @@ Tenth round (Codex, on 5df1d80):
   freeze with a patch leaves it on the song and not in the variant. Mutation: storing
   the spec as sent fails it.
 
+Eleventh round (Codex, on 5fe43f8):
+
+- **P2: a revision newer than its count.** `listSongs` read the songs and the variant
+  counts at the same time. A freeze landing between the two snapshots could pair a
+  song's new revision with its old count, so the round-10 delete would accept a revision
+  whose confirmation understated the variants. The list now reads every song page
+  first, then the variants, as `loadSong` does since round 6. Variants only ever arrive,
+  so a count covers at least what existed at the listed revision. A freeze after the
+  song was read bumps the revision, and the delete refuses. Test: every song request
+  comes before the first variant request (maxRows 2). The concurrent code fails it.
+
 ## Evidence
 
 Counts as of the tenth round.
