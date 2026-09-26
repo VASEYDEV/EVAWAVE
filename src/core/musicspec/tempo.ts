@@ -12,6 +12,9 @@ export const TAP_WINDOW = 4;
 export const TAP_OUTLIER = 0.25;
 /** A gap longer than this starts a new tap sequence. */
 export const TAP_RESET_MS = 2000;
+/** The tempo range the Composer accepts, typed or tapped. */
+export const TEMPO_MIN_BPM = 20;
+export const TEMPO_MAX_BPM = 300;
 
 export interface TapState {
   /** Accepted tap times in milliseconds, oldest first, at most TAP_WINDOW. */
@@ -86,6 +89,14 @@ export function reading(state: TapState): TapReading {
   const gaps = intervals(state.taps);
   const bpm = 60000 / mean(gaps);
   return { bpm, halfTime: bpm / 2, doubleTime: bpm * 2 };
+}
+
+/** The reading rounded for `D6.tempo.bpm`, or null when there is none or it is outside the Composer's range. */
+export function assignableBpm(state: TapState): number | null {
+  const { bpm } = reading(state);
+  if (bpm === null) return null;
+  const rounded = Math.round(bpm);
+  return rounded >= TEMPO_MIN_BPM && rounded <= TEMPO_MAX_BPM ? rounded : null;
 }
 
 /** True when the sequence has timed out at `nowMs` (the display should clear). */

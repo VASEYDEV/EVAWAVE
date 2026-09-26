@@ -7,7 +7,7 @@
 import { useEffect, useId, useRef, useState } from "react";
 
 import { beatsPerBar } from "@/core/musicspec/barmath";
-import { emptyTaps, lastTapAt, reading, tap, TAP_RESET_MS, type MetronomeSettings } from "@/core/musicspec/tempo";
+import { assignableBpm, emptyTaps, lastTapAt, reading, tap, TAP_RESET_MS, TEMPO_MAX_BPM, TEMPO_MIN_BPM, type MetronomeSettings } from "@/core/musicspec/tempo";
 import { Metronome } from "@/lib/audio/metronome";
 
 import { op, useComposer } from "./state";
@@ -29,6 +29,8 @@ export function TempoTools() {
   const halfId = useId();
 
   const bpm = reading(taps).bpm;
+  // Only a tempo the tempo field would accept can be assigned.
+  const assignable = assignableBpm(taps);
   const settings: MetronomeSettings = { bpm: spec.D6.tempo.bpm, beatsPerBar: beatsPerBar(spec.D6.meterLock.signature), halfTimeAccent: halfTime, subdivision };
 
   // Clear the reading once the sequence times out (§1.8: 2 s without a tap, kept or discarded, resets).
@@ -68,14 +70,16 @@ export function TempoTools() {
           Tap
         </button>
         <p aria-live="polite" className="readout" data-testid="tap-reading">
-          {bpm === null ? "Tap four times on the beat." : `${fmt(bpm)} BPM · half ${fmt(reading(taps).halfTime)} · double ${fmt(reading(taps).doubleTime)}${taps.discarded ? " · last tap ignored" : ""}`}
+          {bpm === null
+            ? "Tap four times on the beat."
+            : `${fmt(bpm)} BPM · half ${fmt(reading(taps).halfTime)} · double ${fmt(reading(taps).doubleTime)}${taps.discarded ? " · last tap ignored" : ""}${assignable === null ? ` · outside ${TEMPO_MIN_BPM}–${TEMPO_MAX_BPM}, not assignable` : ""}`}
         </p>
         <button
           type="button"
-          disabled={bpm === null}
-          onClick={() => bpm !== null && edit([op("set", "/D6/tempo/bpm", Math.round(bpm)), op("set", "/D6/tempo/source", "tap")], "Assign tapped tempo")}
+          disabled={assignable === null}
+          onClick={() => assignable !== null && edit([op("set", "/D6/tempo/bpm", assignable), op("set", "/D6/tempo/source", "tap")], "Assign tapped tempo")}
         >
-          Assign {bpm === null ? "" : `${fmt(bpm)} BPM`}
+          Assign {assignable === null ? "" : `${assignable} BPM`}
         </button>
       </div>
       <div className="row-actions">

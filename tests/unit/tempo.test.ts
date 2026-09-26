@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { emptyTaps, lastTapAt, reading, scheduleClicks, startCursor, tap, tapsExpired, TAP_RESET_MS, type TapState } from "@/core/musicspec/tempo";
+import { assignableBpm, emptyTaps, lastTapAt, reading, scheduleClicks, startCursor, tap, tapsExpired, TAP_RESET_MS, TEMPO_MAX_BPM, TEMPO_MIN_BPM, type TapState } from "@/core/musicspec/tempo";
 
 const tapAll = (times: number[], start: TapState = emptyTaps()) => times.reduce(tap, start);
 
@@ -71,6 +71,17 @@ describe("tap tempo (§1.8)", () => {
     expect(tapsExpired(state, 3400 + TAP_RESET_MS + 1)).toBe(true);
     // The next tap is a second outlier, not a timeout: it starts a new sequence either way.
     expect(tap(state, 3900)).toEqual({ taps: [3900], discarded: false });
+  });
+
+  it("assigns only a tempo the tempo field accepts", () => {
+    expect(assignableBpm(tapAll([0, 428, 856, 1284]))).toBe(140);
+    expect(assignableBpm(tapAll([0, 428, 856]))).toBeNull();
+    // 150 ms taps read 400 BPM, past the field's 300.
+    const fast = tapAll([0, 150, 300, 450]);
+    expect(reading(fast).bpm).toBeCloseTo(400, 10);
+    expect(assignableBpm(fast)).toBeNull();
+    expect(assignableBpm(tapAll([0, 200, 400, 600]))).toBe(TEMPO_MAX_BPM);
+    expect([TEMPO_MIN_BPM, TEMPO_MAX_BPM]).toEqual([20, 300]);
   });
 
   it("resets after a 2 s gap", () => {

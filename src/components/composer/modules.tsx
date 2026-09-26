@@ -9,6 +9,7 @@ import { useId, useState } from "react";
 import { computeBarMath } from "@/core/musicspec/barmath";
 import type { EngineId, TechniqueTarget } from "@/core/musicspec/ir/types";
 import { formatPointer } from "@/core/musicspec/patch";
+import { TEMPO_MAX_BPM, TEMPO_MIN_BPM } from "@/core/musicspec/tempo";
 
 import { CheckboxField, CheckboxList, IdPicker, LinesField, NumberField, OptionalBlock, SelectField, TextField } from "./fields";
 import { Module } from "./Module";
@@ -139,7 +140,7 @@ export function EngineFormModule() {
           Add genre
         </button>
       </div>
-      <NumberField path="/D6/tempo/bpm" label="Tempo (BPM)" min={20} max={300} extra={[op("set", "/D6/tempo/source", "manual")]} />
+      <NumberField path="/D6/tempo/bpm" label="Tempo (BPM)" min={TEMPO_MIN_BPM} max={TEMPO_MAX_BPM} extra={[op("set", "/D6/tempo/source", "manual")]} />
       <TempoTools />
       <fieldset className="group">
         <legend>Meter lock</legend>
