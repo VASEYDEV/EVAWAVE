@@ -196,9 +196,10 @@ end-to-end Jinn rebuild through the UI with an A/B Suno render.
 - **Compound meters**: `beatsPerBar` is the signature's numerator, and `bpm` counts that
   unit (6/8 = six eighth-note beats). If BPM should mean the felt pulse in x/8, it is a
   one-table change. Not on the critical path (the lock is 4/4).
-- **ML-2 and the seed's rhythm flags**: the seed marks malfuf and ayyub `fourFourSafe`,
-  while ML-2 also blocks on `Rhythm.meter ≠ signature`, and both are 2/4 rhythms. S1
-  settles this against the v1.1 blueprint's own rhythm key.
+- ~~**ML-2 and the seed's rhythm flags**~~ Resolved in S1. The v1.1 blueprint's own
+  rhythm key lists zar/ayyub and malfuf as 2/4, so `src/data/taxonomy/rhythms.json` records
+  them as `meter: '2/4'` with the seed's `fourFourSafe: true`, and ML-2 blocks them under a
+  4/4 lock on the meter check. `fourFourSafe` still decides for a 4/4 rhythm.
 - **Tagging model** for audio import (§1.7 step 3).
 - **iOS PWA storage**: OPFS quota and eviction for reference audio.
 - **Lockup**: `EVAWAVE` vs `EVA/WAVE`.
@@ -476,6 +477,7 @@ export interface Section {
   cues: SectionCue[];                               // ordered payload clauses
   styleClause?: string;                             // one clause for the style-equivalent field: "Bridge: <styleClause>."
   harmony?: string;                                 // 'Dm · B♭ · Gm · A, two bars each'; blueprint-side
+  notes?: string[];                                 // word-MIDI blueprint notes; linted like cues, never sent to engines
   modeId?: string;                                  // per-section mode override: 'saba' intro, 'hijaz-kar' finale
   openPocket: OpenPocket;
   pickupBefore?: PickupBar;
@@ -700,7 +702,7 @@ export interface SynthRole {
   commonNames: string[];
 }
 
-/** The resolved taxonomy a compile or lint run reads. Built from src/data/taxonomy/. */
+/** The resolved taxonomy a compile or lint run reads. Built from src/data/taxonomy/ and src/data/lineage/. */
 export interface Catalog {
   genres: Record<string, Genre>;
   instruments: Record<string, Instrument>;
@@ -710,6 +712,7 @@ export interface Catalog {
   bundles: Record<string, RegionalBundle>;
   drumPatterns: Record<string, DrumPattern>;
   synthRoles: Record<string, SynthRole>;
+  lineageNames: string[];                           // artist and producer names the lineage pass removes (LN-1); curated data
 }
 
 // ─── Engine profiles (data) ───────────────────────────────────────────────────
@@ -1007,21 +1010,36 @@ Every container has a default, so an empty spec is valid.
   (ML-4), and every rhythm reference is checked against `signature` (ML-1, ML-2). Sections
   may still describe tempo feel ("perceived tempo halves in the bridge"), because that is
   dynamics, not meter.
-- **Named instruments for the cap** = `scope.instrumentIds ∪ scope.synthRoleIds ∪` the
-  instruments of `scope.percussionRhythmIds`. A section or ensemble record ("epic
-  orchestra", "wordless choir", "layered trap kit") counts as one.
+- **Named instruments for the cap** (SC-1) = `scope.instrumentIds ∪ scope.synthRoleIds`,
+  each id once. A rhythm in `scope.percussionRhythmIds` adds nothing: the instrument that
+  plays it is already in the scope. A section or ensemble record ("epic orchestra",
+  "wordless choir", "layered trap kit") counts as one.
 - **Silence.** `silenceAfter` is the timeline event. A `transitionOut` of kind `silence`
   beside a `silenceAfter` renders once.
-- **Cues.** Cues render in order. The `pocket` cue renders `openPocket.note`, and the
-  `contrast` cue renders the contrast clause. A cue with `phrases` and any contrast clause
-  is set off with `; ` on both sides. Other cues join with `, `.
+- **Cues.** Cues render in order. The `pocket` cue renders `openPocket.note`, only where
+  the cue sits; an `openPocket` with no pocket cue renders nothing in the bracket. The
+  `contrast` cue renders the contrast clause; a contrast with no cue is appended after the
+  last cue, so its return rule is never lost. A cue with `phrases` renders as
+  "phrases 2 and 4: <text>". A cue with `phrases`, and any contrast clause, is set off with
+  `; ` on both sides. Other clauses join with `, `. `Section.notes` are word-MIDI blueprint
+  notes: linted like cues, never sent to an engine.
+- **Transitions.** A `transitionOut` other than `none` or `silence` renders as its `note`
+  (or the kind's phrase). Without `bracket` it is the bracket's last clause; with `bracket`
+  it is its own bracket after the section. With `restatement: 'style-and-sections'`, each
+  section bracket ends with the clause `strict <signature>`.
 - **Patches.** A patch applies only through the review diff, and a `proposed` patch never
   touches the working spec. Ops apply only at exactly accepted paths. Patches may not edit
   `references` or `patches` (PT-2). The lineage pass runs on every op value before it is
   shown.
 - **Wording precedence** for an instrument: `InstrumentUse.phraseOverride`, then the
-  active engine's alias, then `Instrument.promptPhrase`. Alias substitution is reported in
-  coverage as `alias-substituted`.
+  active engine profile's alias, then the record's own `aliases[engine]`, then
+  `Instrument.promptPhrase`. Alias keys ending `:drift-fallback` apply only on a drift rerun
+  and are never read by a normal compile. Alias substitution is reported in coverage as
+  `alias-substituted`.
+- **Lineage pass.** Every compiled field runs through the lineage scrub against
+  `Catalog.lineageNames` before it is returned. LN-1 blocks a listed name in any prose
+  field, cue, note or patch op value, and in any compiled payload. Target overrides live on
+  `Song` and `Variant`; S2 checks them where they are created.
 
 ### 2.5 Bar math
 
@@ -1037,16 +1055,24 @@ begins, its pickup first. Vectors: 142 BPM gives 1.690 s per bar, 13.52 s per 8 
 Style-equivalent fields (Suno Style, Eleven first-chunk styles and prompt, Flow Sound) are
 ordered by priority, never by UI field order:
 
-1. form, meter and tempo (`D1.formPhrase`, the meter-lock text, `D6.tempo`)
+1. form, meter and tempo ("Instrumental" when `D8.instrumental`, `D1.formPhrase`, the
+   meter-lock text, `D6.tempo`)
 2. key and mode (`D6.key`)
-3. drum grammar (`D5.drums`)
-4. regional instruments and their 4/4 rhythms (`D5.bundles`, `D5.instruments`)
-5. synths by role (`D5.synthRoles`)
-6. textures (`D5.textures`)
-7. the block transition rule (`D7.blockRule`)
-8. section style clauses in section order (`Section.styleClause`)
-9. mood (`D2.moods`)
-10. inline negation last (the instrumental flag)
+3. drum grammar (`D5.drums`: its label, then its prose override or the core pattern's prose)
+4. regional instruments and their 4/4 rhythms (`D5.bundles`: melodic instruments, then
+   percussion after `; `, then "on <rhythms> rhythms in <signature>")
+5. instruments outside a bundle (`D5.instruments`)
+6. synths by role (`D5.synthRoles`, each role once)
+7. textures (`D5.textures`)
+8. production character (`D9.character`)
+9. the block transition rule (`D7.blockRule`)
+10. section style clauses in section order (`Section.styleClause`)
+11. lineage traits (`D4.traits`, descriptions only)
+12. mood (`D2.moods`)
+13. inline negation last ("No vocals, no lyrics." when instrumental)
+
+Weighted lists order by weight, highest first; ties keep their order. Sentences join with
+a single space.
 
 | Primitive | Suno v6 | ElevenLabs Music v2 (composition plan) | Google Flow Music |
 | --- | --- | --- | --- |
@@ -1072,7 +1098,7 @@ ordered by priority, never by UI field order:
 | ML-1 | Meter lock on: any profile `driftWords` term in any prose field, cue, technique `promptPhrase` or instrument `playStyles` | warn; block with `driftSuppression` when the term is in the engine's list | S1 |
 | ML-2 | Meter lock on: a rhythm (section scope or bundle use) whose `meter ≠ signature`, or `fourFourSafe === false` under 4/4 | block | S1 |
 | ML-3 | Meter lock on with `feel` swung or shuffled | block | S1 |
-| ML-4 | Meter lock on and the `meter-drift` class absent | auto-fix (populate, `auto: true`) | S1 |
+| ML-4 | Meter lock on and the `meter-drift` class absent | warn with a `fix` patch that populates the class from the profile's `driftWords` (`auto: true`); compile applies the same class | S1 |
 | PB-1 | `PickupBar.returnTo ≠ MeterLock.signature` while locked | block | S1 |
 | PB-2 | Pickup or silence used while not in `allowedExtensions` | warn | S1 |
 | CP-1 | `ContrastPhrase.returnRule` empty | block | S1 |
@@ -1132,7 +1158,7 @@ LN-1 reads a curated name denylist (data). Fixtures and tests use invented names
     "returnRule": "then back to trap grid",
     "label": "drill"
   },
-  "silenceAfter": { "beats": 4, "position": "end" },
+  "silenceAfter": { "beats": 1, "position": "end" },
   "transitionOut": { "kind": "none" }
 }
 ```
@@ -1170,7 +1196,7 @@ Every other type in §2.2 is carried over as written.
 | `CueSlot`, `SectionCue` | new | Ordered, typed payload clauses. Needed to reproduce the Jinn v1.2 brackets exactly (§2.8) while keeping every clause lintable |
 | `BlockTransitionRule` | new | The delta's "8/16-bar rule stated once in Style" had no type |
 | `ProductionMix` | new | D9 container. The delta keeps D9 unweighted; scope's Style priority and the handoff's D9 notes need mix character and production techniques |
-| `Catalog` | new | Serializers and lint resolve taxonomy ids. Compilation is `compile(spec, profile, catalog)`, still pure |
+| `Catalog` | new | Serializers and lint resolve taxonomy ids, and the lineage pass reads its curated `lineageNames`. Compilation is `compile(spec, profile, catalog)`, still pure |
 | `Register` | named from scope's inline `Instrument.register` union | Reused by the seed and the composer picker |
 | `EngineSelectorOption` | named from scope's inline `EngineSelector.options` shape | Reused by the profile loader |
 | `EngineVerification`, `EngineHalt`, `RepairRule`, `EngineExport` | new | The installed profile JSON carries these blocks; scope's `EngineProfile` did not type them |
@@ -1184,7 +1210,7 @@ Every other type in §2.2 is carried over as written.
 | `Instrumentation` (was `InstrumentationDelta`) | Renamed; gains `instruments`, `drums`, `textures` | It is now the whole D5 container, not a delta onto one |
 | `Vocals` (was `VocalsDelta`) | Renamed; gains `voice` | Whole D8 container; scope's Sections module has a voice spec |
 | `OutputIntent` (was `OutputIntentDelta`) | Renamed; gains `title` | Whole D10 container; the Suno, Flow and Eleven profiles have a title field fed by D10 |
-| `Section` | `drumState`, `bassState`, `leadNote`, `textureNote` fold into `cues` (slots `drums`, `bass`, `lead`, `texture`); gains `styleClause` | The delta's §9 compile could not be produced from those fields; ordered cues reproduce Jinn v1.2 exactly |
+| `Section` | `drumState`, `bassState`, `leadNote`, `textureNote` fold into `cues` (slots `drums`, `bass`, `lead`, `texture`); gains `styleClause` and `notes` | The delta's §9 compile could not be produced from those fields; ordered cues reproduce Jinn v1.2 exactly. `notes` hold the blueprint's word-MIDI lines, which lint must read (the v1.1 "two cycles per bar") but no engine receives |
 | `BundleUse` | Gains `label` and `rhythmIds` | The Style clause names the bundle's instruments and its 4/4 rhythms |
 | `PickupBar` | Gains `announce` | Jinn v1.2 renders one pickup announced and one as content only |
 | `ContrastPhrase` | Gains `label` | The style word in the contrast clause ("drill") |
@@ -1244,6 +1270,14 @@ handoff package's target name, byte-identical.
 
 Known risk: the Jinn v1.2 Finale names about eleven instruments. It passes SC-1 only
 when "epic orchestra" counts as one ensemble record, which is the counting rule in §2.4.
+Result: the v1.2 Finale scope holds seven records and warns; the v1.1 Finale holds nine
+and blocks.
+
+Delivered: all of the above, plus `src/core/musicspec/{catalog,lineage,text}.ts`, the
+engine profile loader (`engines/`), the curated lineage list (`src/data/lineage/`) and
+`scripts/sync-ir-types.mjs`, which generates `ir/types.ts` from §2.2 (a test fails on
+drift). The v1.1 fixture's section brackets compile to the blueprint's Lyrics field,
+less its closing `[End]` tag.
 
 ### S2: ElevenLabs and Flow serializers, target switching
 

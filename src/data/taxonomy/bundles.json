@@ -1,0 +1,49 @@
+[
+  {
+    "id": "egypt-takht-saidi-nubian",
+    "name": "Egypt — takht, Sa'idi and Nubian",
+    "region": "Egypt",
+    "instrumentIds": [
+      "oud",
+      "qanun",
+      "nay",
+      "kawala",
+      "kamanja",
+      "strings-egyptian",
+      "mizmar",
+      "rababa",
+      "tanbura",
+      "tabla-egyptian",
+      "doholla",
+      "riq",
+      "sagat",
+      "mazhar",
+      "org-keyboard"
+    ],
+    "rhythmIds": [
+      "maqsum",
+      "baladi",
+      "saidi",
+      "wahda",
+      "zar-ayyub",
+      "malfuf"
+    ],
+    "modeIds": [
+      "hijaz",
+      "hijaz-kar",
+      "nahawand",
+      "saba",
+      "bayati",
+      "rast"
+    ],
+    "techniqueIds": [
+      "taqsim",
+      "saidi-trill"
+    ],
+    "anchorInstrumentId": "doholla",
+    "notes": [
+      "Anchor: doholla and low oud double the 808 (Jinn v1.1).",
+      "Only maqsum, baladi, Sa'idi and wahda are 4/4 iqa'at; zar/ayyub and malfuf are 2/4."
+    ]
+  }
+]

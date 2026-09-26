@@ -6,7 +6,8 @@ import suno from "@/core/musicspec/engines/profiles/suno.json";
 import udio from "@/core/musicspec/engines/profiles/udio.json";
 
 /**
- * Data checks on the handoff engine profiles until S2 adds the typed loader and schema.
+ * Data checks on the handoff engine profiles. The typed loader (`validateProfile`) checks
+ * their shape at import; these check the cross-field rules.
  * `EngineField.order` is the paste order in the engine UI (scope v0.2 §2.2), so an export
  * pane that sorts by it walks the user through the real form.
  */

@@ -1,0 +1,174 @@
+[
+  {
+    "id": "atlanta-trap",
+    "name": "Atlanta trap",
+    "definition": "Half-time trap with a tuned 808 as the bass, clap-snare on 3 and 16th hats with 32nd rolls.",
+    "criteria": {
+      "tempoBpm": [
+        130,
+        150
+      ],
+      "meters": [
+        "4/4"
+      ],
+      "feel": [
+        "half-time"
+      ],
+      "drumPatternIds": [
+        "atlanta-trap-core"
+      ],
+      "coreInstrumentIds": [
+        "trap-kit",
+        "kick-808-sub"
+      ],
+      "theoryDefaults": {
+        "modeIds": [
+          "aeolian",
+          "phrygian"
+        ],
+        "harmonyStyle": "modal"
+      },
+      "mixCharacter": [
+        "sub-heavy low end",
+        "hard transients"
+      ]
+    },
+    "profilingInstruction": "Describe the 808 by tuning, decay and distortion; place snare and hats by beat; never name producers.",
+    "driftRisks": [
+      "triplet feel",
+      "swing"
+    ],
+    "engineNotes": {},
+    "eraTags": [
+      "2000s",
+      "2010s"
+    ]
+  },
+  {
+    "id": "egyptian-trap",
+    "name": "Egyptian trap",
+    "definition": "Atlanta trap with an Egyptian takht, Sa'idi and Nubian layer over 4/4 iqa'at.",
+    "criteria": {
+      "tempoBpm": [
+        130,
+        150
+      ],
+      "meters": [
+        "4/4"
+      ],
+      "feel": [
+        "half-time"
+      ],
+      "drumPatternIds": [
+        "atlanta-trap-core"
+      ],
+      "coreInstrumentIds": [
+        "oud",
+        "tabla-egyptian",
+        "doholla",
+        "kick-808-sub"
+      ],
+      "theoryDefaults": {
+        "modeIds": [
+          "hijaz",
+          "nahawand"
+        ],
+        "harmonyStyle": "drone"
+      },
+      "mixCharacter": [
+        "dry plucked leads over a sub-heavy low end"
+      ]
+    },
+    "profilingInstruction": "Anchor on doholla and low oud into the 808; name only 4/4 iqa'at; scope 5–8 instruments per section.",
+    "driftRisks": [
+      "zar trance rhythm",
+      "shuffled 16ths",
+      "rubato"
+    ],
+    "engineNotes": {},
+    "eraTags": [],
+    "parentId": "atlanta-trap"
+  },
+  {
+    "id": "drill",
+    "name": "Drill",
+    "definition": "Sliding 808s, displaced snares and 3-3-2 hats; used here only as a bounded contrast.",
+    "criteria": {
+      "tempoBpm": [
+        138,
+        146
+      ],
+      "meters": [
+        "4/4"
+      ],
+      "feel": [
+        "half-time"
+      ],
+      "drumPatternIds": [
+        "drill-contrast"
+      ],
+      "coreInstrumentIds": [
+        "trap-kit",
+        "kick-808-sub"
+      ],
+      "theoryDefaults": {
+        "modeIds": [
+          "aeolian",
+          "phrygian"
+        ],
+        "harmonyStyle": "modal"
+      },
+      "mixCharacter": [
+        "sliding sub",
+        "dark"
+      ]
+    },
+    "profilingInstruction": "Bound drill as a contrast phrase with an explicit return to the trap grid.",
+    "driftRisks": [
+      "triplet feel"
+    ],
+    "engineNotes": {},
+    "eraTags": []
+  },
+  {
+    "id": "cinematic-hybrid",
+    "name": "Cinematic hybrid",
+    "definition": "Film-score orchestra over trap drums: braams, horn stabs, string ostinati, choir, taiko.",
+    "criteria": {
+      "tempoBpm": [
+        70,
+        150
+      ],
+      "meters": [
+        "4/4"
+      ],
+      "feel": [
+        "straight",
+        "half-time"
+      ],
+      "drumPatternIds": [],
+      "coreInstrumentIds": [
+        "orchestra-epic",
+        "choir-wordless",
+        "taiko"
+      ],
+      "theoryDefaults": {
+        "modeIds": [
+          "aeolian",
+          "hijaz-kar"
+        ],
+        "harmonyStyle": "chordal"
+      },
+      "mixCharacter": [
+        "wide",
+        "long reverb tails"
+      ]
+    },
+    "profilingInstruction": "Describe the orchestra by section and articulation; never name composers.",
+    "driftRisks": [
+      "rubato"
+    ],
+    "engineNotes": {},
+    "eraTags": []
+  }
+]

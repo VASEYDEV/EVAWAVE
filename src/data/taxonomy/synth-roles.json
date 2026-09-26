@@ -1,0 +1,115 @@
+[
+  {
+    "id": "lead-saw-pitchbend",
+    "name": "Pitch-bending distorted saw lead",
+    "role": "lead",
+    "characteristics": {
+      "osc": [
+        "saw"
+      ],
+      "unisonVoices": 5,
+      "detuneCents": 15,
+      "distortion": "amp-sim",
+      "filter": "lowpass",
+      "envelope": "sustain",
+      "glide": true,
+      "bendRangeSemitones": 12,
+      "voicing": "legato"
+    },
+    "promptPhrase": "dirty detuned amp-sim-distorted analog saw lead with glide and pitch-bend swoops",
+    "commonNames": [
+      "saw lead",
+      "bend lead"
+    ]
+  },
+  {
+    "id": "stab-hypersaw-crackling",
+    "name": "Ripping crackling hypersaw stab",
+    "role": "stab",
+    "characteristics": {
+      "osc": [
+        "saw"
+      ],
+      "unisonVoices": 9,
+      "detuneCents": 25,
+      "distortion": "hard-clip",
+      "filter": "none",
+      "envelope": "stab",
+      "glide": false,
+      "bendRangeSemitones": 0,
+      "voicing": "poly"
+    },
+    "promptPhrase": "angry ripping crackling distorted hypersaw unison stab",
+    "commonNames": [
+      "hypersaw stab",
+      "supersaw stab"
+    ]
+  },
+  {
+    "id": "sub-saw-lowmid",
+    "name": "Distorted saw sub",
+    "role": "sub",
+    "characteristics": {
+      "osc": [
+        "saw"
+      ],
+      "unisonVoices": 2,
+      "detuneCents": 5,
+      "distortion": "overdrive",
+      "filter": "lowpass",
+      "envelope": "sustain",
+      "glide": false,
+      "bendRangeSemitones": 0,
+      "voicing": "mono"
+    },
+    "promptPhrase": "distorted saw sub for gritty warm low-mids",
+    "commonNames": [
+      "saw sub layer"
+    ]
+  },
+  {
+    "id": "pad-dark",
+    "name": "Dark evolving pad",
+    "role": "pad",
+    "characteristics": {
+      "osc": [
+        "wavetable"
+      ],
+      "unisonVoices": 1,
+      "detuneCents": 0,
+      "distortion": "none",
+      "filter": "lowpass",
+      "envelope": "swell",
+      "glide": false,
+      "bendRangeSemitones": 0,
+      "voicing": "poly"
+    },
+    "promptPhrase": "dark evolving wavetable pad",
+    "commonNames": [
+      "dark pad"
+    ]
+  },
+  {
+    "id": "arp-lowpass",
+    "name": "Low-passed arpeggio",
+    "role": "arp",
+    "characteristics": {
+      "osc": [
+        "saw",
+        "square"
+      ],
+      "unisonVoices": 1,
+      "detuneCents": 0,
+      "distortion": "none",
+      "filter": "lowpass",
+      "envelope": "pluck",
+      "glide": false,
+      "bendRangeSemitones": 0,
+      "voicing": "poly"
+    },
+    "promptPhrase": "low-passed 16th arpeggio in the mode",
+    "commonNames": [
+      "arp"
+    ]
+  }
+]

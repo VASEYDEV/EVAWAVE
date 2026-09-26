@@ -1,0 +1,883 @@
+[
+  {
+    "id": "oud",
+    "name": "Oud",
+    "family": "string",
+    "region": "Egypt / Arab world",
+    "register": [
+      "low-mid",
+      "mid"
+    ],
+    "timbre": [
+      "plucked",
+      "warm",
+      "woody",
+      "fretless"
+    ],
+    "articulationIds": [
+      "tremolo",
+      "slide",
+      "taqsim"
+    ],
+    "playStyles": [
+      "dry plucked",
+      "risha tremolo",
+      "low-register ostinato"
+    ],
+    "idiomaticRoles": [
+      "lead",
+      "counter",
+      "drone",
+      "rhythm"
+    ],
+    "aliases": {},
+    "reliability": {
+      "suno": "reliable",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [
+      "egypt-takht-saidi-nubian"
+    ],
+    "description": "Fretless short-necked lute; the melodic core of the takht. In Jinn it plays the Hijaz hook and doubles the 808 an octave up.",
+    "promptPhrase": "oud",
+    "commonNames": [
+      "oud",
+      "ud"
+    ]
+  },
+  {
+    "id": "qanun",
+    "name": "Qanun",
+    "family": "string",
+    "region": "Egypt / Arab world",
+    "register": [
+      "mid",
+      "high-mid",
+      "high"
+    ],
+    "timbre": [
+      "plucked",
+      "bright",
+      "zither"
+    ],
+    "articulationIds": [
+      "tremolo"
+    ],
+    "playStyles": [
+      "tremolo runs",
+      "counter-line"
+    ],
+    "idiomaticRoles": [
+      "counter",
+      "texture",
+      "lead"
+    ],
+    "aliases": {},
+    "reliability": {
+      "suno": "reliable",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [
+      "egypt-takht-saidi-nubian"
+    ],
+    "description": "Plucked trapezoid zither of the takht; tremolo runs and counter-lines.",
+    "promptPhrase": "qanun",
+    "commonNames": [
+      "qanun",
+      "kanun"
+    ]
+  },
+  {
+    "id": "nay",
+    "name": "Nay",
+    "family": "wind",
+    "region": "Egypt / Arab world",
+    "register": [
+      "mid",
+      "high-mid"
+    ],
+    "timbre": [
+      "breathy",
+      "airy",
+      "reedy"
+    ],
+    "articulationIds": [
+      "slide"
+    ],
+    "playStyles": [
+      "long breathy phrases"
+    ],
+    "idiomaticRoles": [
+      "lead",
+      "texture"
+    ],
+    "aliases": {},
+    "reliability": {
+      "suno": "reliable",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [
+      "egypt-takht-saidi-nubian"
+    ],
+    "description": "End-blown reed flute; long breathy phrases and slides.",
+    "promptPhrase": "nay",
+    "commonNames": [
+      "nay",
+      "ney"
+    ]
+  },
+  {
+    "id": "kawala",
+    "name": "Kawala",
+    "family": "wind",
+    "region": "Egypt / Sa'idi",
+    "register": [
+      "mid",
+      "high-mid"
+    ],
+    "timbre": [
+      "breathy",
+      "woody"
+    ],
+    "articulationIds": [],
+    "playStyles": [
+      "long held notes"
+    ],
+    "idiomaticRoles": [
+      "lead",
+      "texture"
+    ],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [
+      "egypt-takht-saidi-nubian"
+    ],
+    "description": "Sa'idi end-blown cane flute.",
+    "promptPhrase": "kawala",
+    "commonNames": [
+      "kawala",
+      "kawala flute"
+    ]
+  },
+  {
+    "id": "kamanja",
+    "name": "Kamanja",
+    "family": "string",
+    "region": "Egypt",
+    "register": [
+      "mid",
+      "high-mid",
+      "high"
+    ],
+    "timbre": [
+      "bowed",
+      "singing"
+    ],
+    "articulationIds": [
+      "slide",
+      "glissando"
+    ],
+    "playStyles": [
+      "slides"
+    ],
+    "idiomaticRoles": [
+      "lead",
+      "counter"
+    ],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [
+      "egypt-takht-saidi-nubian"
+    ],
+    "description": "The Egyptian violin of the takht, played with slides into the ♭2 and 3.",
+    "promptPhrase": "kamanja",
+    "commonNames": [
+      "kamanja",
+      "Egyptian violin"
+    ]
+  },
+  {
+    "id": "strings-egyptian",
+    "name": "Unison Egyptian string section",
+    "family": "string",
+    "region": "Egypt",
+    "register": [
+      "low-mid",
+      "mid",
+      "high-mid",
+      "high"
+    ],
+    "timbre": [
+      "bowed",
+      "unison",
+      "massed"
+    ],
+    "articulationIds": [
+      "glissando"
+    ],
+    "playStyles": [
+      "unison melody in octaves"
+    ],
+    "idiomaticRoles": [
+      "lead",
+      "pad"
+    ],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [
+      "egypt-takht-saidi-nubian"
+    ],
+    "description": "The massed firqa-era unison string section; counts as one ensemble.",
+    "promptPhrase": "unison Egyptian string section",
+    "commonNames": [
+      "firqa strings",
+      "Egyptian strings"
+    ]
+  },
+  {
+    "id": "mizmar",
+    "name": "Mizmar",
+    "family": "wind",
+    "region": "Egypt / Sa'idi",
+    "register": [
+      "mid",
+      "high-mid"
+    ],
+    "timbre": [
+      "nasal",
+      "loud",
+      "double-reed"
+    ],
+    "articulationIds": [
+      "saidi-trill"
+    ],
+    "playStyles": [
+      "lead stabs"
+    ],
+    "idiomaticRoles": [
+      "lead",
+      "stab"
+    ],
+    "aliases": {},
+    "reliability": {
+      "suno": "reliable",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [
+      "egypt-takht-saidi-nubian"
+    ],
+    "description": "Sa'idi double-reed shawm; the loudest lead of the region.",
+    "promptPhrase": "mizmar",
+    "commonNames": [
+      "mizmar",
+      "shawm"
+    ]
+  },
+  {
+    "id": "rababa",
+    "name": "Rababa",
+    "family": "string",
+    "region": "Egypt / Sa'idi",
+    "register": [
+      "mid"
+    ],
+    "timbre": [
+      "bowed",
+      "raw",
+      "nasal"
+    ],
+    "articulationIds": [
+      "bend"
+    ],
+    "playStyles": [
+      "wide bends"
+    ],
+    "idiomaticRoles": [
+      "lead",
+      "counter"
+    ],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [
+      "egypt-takht-saidi-nubian"
+    ],
+    "description": "Sa'idi spike fiddle; bent, raw lead lines.",
+    "promptPhrase": "rababa",
+    "commonNames": [
+      "rababa",
+      "rebab"
+    ]
+  },
+  {
+    "id": "tanbura",
+    "name": "Tanbura lyre",
+    "family": "string",
+    "region": "Egypt / Nubia",
+    "register": [
+      "low-mid",
+      "mid"
+    ],
+    "timbre": [
+      "plucked",
+      "buzzing"
+    ],
+    "articulationIds": [],
+    "playStyles": [
+      "four-note ostinato"
+    ],
+    "idiomaticRoles": [
+      "rhythm",
+      "drone"
+    ],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [
+      "egypt-takht-saidi-nubian"
+    ],
+    "description": "Nubian bowl lyre of the zar; ostinato figures.",
+    "promptPhrase": "tanbura lyre",
+    "commonNames": [
+      "tanbura",
+      "Nubian lyre"
+    ]
+  },
+  {
+    "id": "tabla-egyptian",
+    "name": "Egyptian tabla",
+    "family": "percussion",
+    "region": "Egypt",
+    "register": [
+      "low-mid",
+      "mid",
+      "high-mid"
+    ],
+    "timbre": [
+      "goblet drum",
+      "crisp doum and tek"
+    ],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [
+      "rhythm"
+    ],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [
+      "egypt-takht-saidi-nubian"
+    ],
+    "description": "The Egyptian goblet drum. Suno may read bare 'tabla' as the Indian pair; the engine alias disambiguates.",
+    "promptPhrase": "Egyptian tabla",
+    "commonNames": [
+      "tabla",
+      "darbuka",
+      "doumbek"
+    ]
+  },
+  {
+    "id": "doholla",
+    "name": "Doholla",
+    "family": "percussion",
+    "region": "Egypt",
+    "register": [
+      "bass",
+      "low-mid"
+    ],
+    "timbre": [
+      "deep",
+      "goblet drum"
+    ],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [
+      "rhythm",
+      "bass"
+    ],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [
+      "egypt-takht-saidi-nubian"
+    ],
+    "description": "Bass goblet drum; doubles the kick and anchors the bundle into the 808.",
+    "promptPhrase": "doholla",
+    "commonNames": [
+      "doholla",
+      "bass darbuka"
+    ]
+  },
+  {
+    "id": "riq",
+    "name": "Riq",
+    "family": "percussion",
+    "region": "Egypt",
+    "register": [
+      "mid",
+      "high"
+    ],
+    "timbre": [
+      "jingles",
+      "frame drum"
+    ],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [
+      "rhythm"
+    ],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [
+      "egypt-takht-saidi-nubian"
+    ],
+    "description": "Egyptian tambourine; jingles on the 16ths.",
+    "promptPhrase": "riq",
+    "commonNames": [
+      "riq",
+      "riqq"
+    ]
+  },
+  {
+    "id": "sagat",
+    "name": "Sagat",
+    "family": "percussion",
+    "region": "Egypt",
+    "register": [
+      "high"
+    ],
+    "timbre": [
+      "metallic",
+      "finger cymbals"
+    ],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [
+      "rhythm"
+    ],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [
+      "egypt-takht-saidi-nubian"
+    ],
+    "description": "Finger cymbals.",
+    "promptPhrase": "sagat",
+    "commonNames": [
+      "sagat",
+      "zills"
+    ]
+  },
+  {
+    "id": "mazhar",
+    "name": "Mazhar",
+    "family": "percussion",
+    "region": "Egypt",
+    "register": [
+      "low-mid",
+      "mid"
+    ],
+    "timbre": [
+      "frame drum",
+      "jingles",
+      "thud"
+    ],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [
+      "rhythm"
+    ],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [
+      "egypt-takht-saidi-nubian"
+    ],
+    "description": "Large frame drum with jingles; used in the zar.",
+    "promptPhrase": "mazhar",
+    "commonNames": [
+      "mazhar"
+    ]
+  },
+  {
+    "id": "org-keyboard",
+    "name": "Quarter-tone org keyboard",
+    "family": "keyboard",
+    "region": "Egypt",
+    "register": [
+      "low-mid",
+      "mid",
+      "high-mid"
+    ],
+    "timbre": [
+      "electronic",
+      "quarter-tone"
+    ],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [
+      "lead",
+      "arp"
+    ],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [
+      "egypt-takht-saidi-nubian"
+    ],
+    "description": "The Egyptian urban 'org' keyboard with quarter-tone tuning.",
+    "promptPhrase": "quarter-tone org keyboard",
+    "commonNames": [
+      "org",
+      "oriental keyboard"
+    ]
+  },
+  {
+    "id": "trap-kit",
+    "name": "Layered trap kit",
+    "family": "electronic",
+    "region": null,
+    "register": [
+      "sub",
+      "bass",
+      "mid",
+      "high"
+    ],
+    "timbre": [
+      "punchy",
+      "layered"
+    ],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [
+      "rhythm"
+    ],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "A trap drum kit as one item for the section cap: 808 sub, kick, clap-snare stack, rimshot, hats.",
+    "promptPhrase": "layered trap kit: tuned 808 sub, short kick, clap-snare stack, rimshot, 16th and 32nd hats",
+    "commonNames": [
+      "trap kit"
+    ]
+  },
+  {
+    "id": "kick-808-sub",
+    "name": "808 sub kick",
+    "family": "electronic",
+    "region": null,
+    "register": [
+      "sub",
+      "bass"
+    ],
+    "timbre": [
+      "boomy",
+      "tuned",
+      "long decay"
+    ],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [
+      "sub",
+      "bass",
+      "rhythm"
+    ],
+    "aliases": {
+      "suno": "808"
+    },
+    "reliability": {
+      "suno": "reliable",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "Tuned bass drum used as the bass instrument in trap.",
+    "promptPhrase": "booming distorted reverberant 808 tuned to the key, long decay",
+    "commonNames": [
+      "808",
+      "808 bass"
+    ]
+  },
+  {
+    "id": "choir-wordless",
+    "name": "Wordless choir",
+    "family": "voice",
+    "region": null,
+    "register": [
+      "low-mid",
+      "mid",
+      "high-mid",
+      "high"
+    ],
+    "timbre": [
+      "wordless",
+      "aahs",
+      "epic"
+    ],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [
+      "pad",
+      "texture"
+    ],
+    "aliases": {},
+    "reliability": {
+      "suno": "reliable",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "Wordless choir; instrumental-safe.",
+    "promptPhrase": "wordless choir",
+    "commonNames": [
+      "choir",
+      "choir aahs"
+    ]
+  },
+  {
+    "id": "orchestra-epic",
+    "name": "Epic orchestra",
+    "family": "other",
+    "region": null,
+    "register": [
+      "bass",
+      "low-mid",
+      "mid",
+      "high-mid",
+      "high"
+    ],
+    "timbre": [
+      "cinematic",
+      "massive"
+    ],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [
+      "pad",
+      "stab",
+      "lead"
+    ],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "A full cinematic orchestra (brass braams, horn stabs, strings) counted as one ensemble.",
+    "promptPhrase": "epic orchestra",
+    "commonNames": [
+      "orchestra",
+      "film orchestra"
+    ]
+  },
+  {
+    "id": "taiko",
+    "name": "Taiko",
+    "family": "percussion",
+    "region": "Japan",
+    "register": [
+      "bass",
+      "low-mid"
+    ],
+    "timbre": [
+      "thunderous",
+      "deep"
+    ],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [
+      "rhythm"
+    ],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "Large Japanese drums; cinematic hits.",
+    "promptPhrase": "taiko",
+    "commonNames": [
+      "taiko drums"
+    ]
+  },
+  {
+    "id": "piano",
+    "name": "Piano",
+    "family": "keyboard",
+    "region": null,
+    "register": [
+      "bass",
+      "low-mid",
+      "mid",
+      "high-mid",
+      "high"
+    ],
+    "timbre": [
+      "acoustic",
+      "warm"
+    ],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [
+      "keys",
+      "counter"
+    ],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "Acoustic piano.",
+    "promptPhrase": "piano",
+    "commonNames": [
+      "piano",
+      "grand piano"
+    ]
+  },
+  {
+    "id": "synth-pad-warm",
+    "name": "Warm synth pad",
+    "family": "electronic",
+    "region": null,
+    "register": [
+      "low-mid",
+      "mid",
+      "high-mid"
+    ],
+    "timbre": [
+      "warm",
+      "chorused"
+    ],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [
+      "pad"
+    ],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "Warm chorused analog-style pad.",
+    "promptPhrase": "warm synth pad",
+    "commonNames": [
+      "pad"
+    ]
+  },
+  {
+    "id": "shaker",
+    "name": "Shaker",
+    "family": "percussion",
+    "region": null,
+    "register": [
+      "high"
+    ],
+    "timbre": [
+      "shaken",
+      "bright"
+    ],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [
+      "rhythm",
+      "texture"
+    ],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "Shakers; auto-panned in the v1.1 bridge.",
+    "promptPhrase": "shakers",
+    "commonNames": [
+      "shaker",
+      "shakers"
+    ]
+  },
+  {
+    "id": "timpani",
+    "name": "Timpani",
+    "family": "percussion",
+    "region": null,
+    "register": [
+      "bass",
+      "low-mid"
+    ],
+    "timbre": [
+      "pitched",
+      "rolling"
+    ],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [
+      "rhythm",
+      "texture"
+    ],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "Orchestral kettle drums; rolls into the finale.",
+    "promptPhrase": "timpani",
+    "commonNames": [
+      "timpani",
+      "kettle drums"
+    ]
+  }
+]

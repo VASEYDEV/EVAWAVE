@@ -1,0 +1,117 @@
+[
+  {
+    "id": "slide",
+    "name": "Slide",
+    "class": "articulation",
+    "description": "A continuous pitch slide into or between notes.",
+    "applicableTo": [
+      "instrument"
+    ],
+    "meterRisk": false,
+    "promptPhrase": "with slides",
+    "engineReliability": {
+      "suno": "reliable"
+    }
+  },
+  {
+    "id": "bend",
+    "name": "Bend",
+    "class": "articulation",
+    "description": "A pitch bend on a sustained note.",
+    "applicableTo": [
+      "instrument"
+    ],
+    "meterRisk": false,
+    "promptPhrase": "with bends",
+    "engineReliability": {
+      "suno": "reliable"
+    }
+  },
+  {
+    "id": "tremolo",
+    "name": "Tremolo",
+    "class": "articulation",
+    "description": "Rapid repeated notes.",
+    "applicableTo": [
+      "instrument"
+    ],
+    "meterRisk": false,
+    "promptPhrase": "tremolo",
+    "engineReliability": {
+      "suno": "reliable"
+    }
+  },
+  {
+    "id": "glissando",
+    "name": "Glissando",
+    "class": "articulation",
+    "description": "A sweeping slide across a range.",
+    "applicableTo": [
+      "instrument"
+    ],
+    "meterRisk": false,
+    "promptPhrase": "glissandi",
+    "engineReliability": {
+      "suno": "reliable"
+    }
+  },
+  {
+    "id": "taqsim",
+    "name": "Taqsim",
+    "class": "ornament",
+    "description": "A free, unmetered improvisation that introduces a maqam.",
+    "applicableTo": [
+      "instrument",
+      "section"
+    ],
+    "meterRisk": true,
+    "promptPhrase": "taqsim",
+    "engineReliability": {
+      "suno": "approximate"
+    }
+  },
+  {
+    "id": "saidi-trill",
+    "name": "Sa'idi trill",
+    "class": "ornament",
+    "description": "The fast Upper-Egyptian trill on a melody note.",
+    "applicableTo": [
+      "instrument"
+    ],
+    "meterRisk": false,
+    "promptPhrase": "Sa'idi trill",
+    "engineReliability": {
+      "suno": "approximate"
+    }
+  },
+  {
+    "id": "light-shuffle",
+    "name": "Light shuffle",
+    "class": "rhythm",
+    "description": "A slight swing on the 16ths. Pushes engines toward compound feel.",
+    "applicableTo": [
+      "instrument",
+      "section"
+    ],
+    "meterRisk": true,
+    "promptPhrase": "light shuffle",
+    "engineReliability": {
+      "suno": "unreliable"
+    }
+  },
+  {
+    "id": "side-chain-pump",
+    "name": "Side-chain pump",
+    "class": "production",
+    "description": "Pads and choir duck against the kick.",
+    "applicableTo": [
+      "section",
+      "song"
+    ],
+    "meterRisk": false,
+    "promptPhrase": "side-chain pump",
+    "engineReliability": {
+      "suno": "approximate"
+    }
+  }
+]
