@@ -221,6 +221,11 @@ end-to-end Jinn rebuild through the UI with an A/B Suno render.
   filters, as pyloudnorm does: within 0.2 LU of the 48 kHz reference in the tests.
 - **iOS PWA storage**: OPFS quota and eviction for reference audio. Browsers without OPFS
   `createWritable` keep the blob in the tab's memory; the import says which.
+- **Import size.** Web Audio decodes the whole file before analysis. A 3-minute 44.1 kHz
+  stereo track is about 64 MB of decoded samples plus a 32 MB mono mix. Analysis adds
+  about 21 MB of peak memory on top (measured in Node; it was about 220 MB before the frame
+  pass stopped keeping spectra). There is no size cap yet; a cap or a streaming decoder
+  (WebCodecs) is the upgrade.
 - **Lockup**: `EVAWAVE` vs `EVA/WAVE`.
 
 ---
@@ -1494,9 +1499,13 @@ Delivered:
     log-normal prior;
   - meter: an accent envelope at 4-beat against 3-beat lags;
   - key: chroma against the Krumhansl–Kessler profiles;
-  - loudness: BS.1770 K-weighting with gating, and the loudness range from 3 s windows;
+  - loudness: BS.1770 K-weighting per channel, summed with the channel weights (1.41 on
+    5.1 surrounds, LFE left out), with gating, and the loudness range from 3 s windows;
   - energy per 4 bars, sections by energy change, and spectral descriptors;
   - a WAV decoder and encoder.
+
+  Memory stays bounded: the frame pass keeps running sums, not spectra, and loudness
+  keeps one energy sum per 100 ms.
 
   Vectors: a −20 dBFS 1 kHz sine at 48 kHz reads −23.01 LUFS; click tracks give their
   tempo within 1.5 BPM and their 4/4 or 3/4 accents; triads give their key.
@@ -1517,8 +1526,8 @@ Delivered:
 - **Lint:** PT-1 and PT-2 are spec-level rules and also run per patch
   (`lowConfidenceOps`, `protectedOps`). PV-1 is `lintStyleProfile`.
 - **App:**
-  - `/import`: file picker or drop, hashing, OPFS storage with a memory fallback, and
-    Web Audio decoding. It shows the measured features, then a per-field review with
+  - `/import`: file picker or drop, hashing, and Web Audio decoding. The file goes to
+    OPFS (or an in-tab fallback) only once it has decoded and analysed. It shows the measured features, then a per-field review with
     low-confidence suggestions left unticked. The resulting profile carries the PV-1
     badge, can be saved to the library (file metadata and the profile only, through
     `saveImport`) or downloaded.

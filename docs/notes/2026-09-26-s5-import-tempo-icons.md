@@ -58,6 +58,23 @@ S5 per SPEC §3. The methods are listed in SPEC §3 S5 "Delivered".
 - **Base64 alignment in the no-audio detector.** A single base64 probe misses data that
   starts at another offset, so the detector checks all three alignments.
 
+## Review findings (Codex on PR #11), verified and fixed
+
+- **Loudness from the mono mix.** Averaging channels before BS.1770 read identical L/R
+  3 dB low and phase-opposed stereo as silence. Loudness now K-weights each decoded
+  channel and sums the energies with the BS.1770 weights (1.41 on 5.1 surrounds, LFE
+  left out). The tests cover L = R (−20.0 LUFS for a −20 dBFS sine), one channel
+  (−23.01), phase-opposed channels, and the 5.1 weights. They fail on the old code.
+- **Spectra kept for the whole recording.** The frame pass now keeps running sums and
+  two numbers per frame, and loudness keeps 100 ms energy sums instead of two full-length
+  filtered copies. On a 3-minute 44.1 kHz stereo signal in Node, analysis raised peak RSS
+  by about 21 MB, against about 220 MB before, in 2.5 s against 2.7 s. On mono input every
+  feature except loudness is identical to the old code across ten signals. Loudness agrees
+  to within 4e-13 LU (summation order).
+- **Orphans in OPFS.** The blob was stored before decoding, so a corrupt or unsupported
+  file stayed in storage. Import now decodes and analyses first. A test proves a failed
+  decode stores nothing.
+
 ## Decisions
 
 - **The profile base** is the default D1–D6, D8 and D9. Every draft op targets a path that
