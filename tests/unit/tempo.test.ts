@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { assignableBpm, emptyTaps, lastTapAt, reading, scheduleClicks, startCursor, tap, tapsExpired, TAP_RESET_MS, TEMPO_MAX_BPM, TEMPO_MIN_BPM, type TapState } from "@/core/musicspec/tempo";
+import { assignableBpm, emptyTaps, lastTapAt, reading, scheduleClicks, startCursor, subdivisionSteps, tap, tapsExpired, TAP_RESET_MS, TEMPO_MAX_BPM, TEMPO_MIN_BPM, type TapState } from "@/core/musicspec/tempo";
 
 const tapAll = (times: number[], start: TapState = emptyTaps()) => times.reduce(tap, start);
 
@@ -126,6 +126,16 @@ describe("metronome scheduling", () => {
     expect(accents(3, 6)).toEqual(["bar", "beat", "bar", "bar", "beat", "bar"]);
     expect(accents(6, 6)).toEqual(["bar", "beat", "bar", "beat", "beat", "beat"]);
     expect(accents(2, 4)).toEqual(["bar", "beat", "bar", "beat"]);
+  });
+
+  it("clicks note values relative to the meter's beat unit", () => {
+    for (const signature of ["4/4", "3/4", "5/4"] as const) {
+      expect([subdivisionSteps(8, signature), subdivisionSteps(16, signature)]).toEqual([2, 4]);
+    }
+    // In x/8 meters the beat is an eighth: 8ths are the beat, and 16ths are 2 per beat.
+    for (const signature of ["6/8", "12/8", "7/8"] as const) {
+      expect([subdivisionSteps(8, signature), subdivisionSteps(16, signature)]).toEqual([null, 2]);
+    }
   });
 
   it("adds subdivision clicks between beats", () => {

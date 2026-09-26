@@ -2,6 +2,7 @@
  * Tap tempo and metronome scheduling (docs/SPEC.md §1.8). Pure: callers pass the clock,
  * so the rules are testable to the millisecond and the same code drives the browser.
  */
+import type { Signature } from "./ir/types";
 
 /** Taps that count toward the tempo: the last four give three intervals. */
 export const TAP_WINDOW = 4;
@@ -89,6 +90,16 @@ export function reading(state: TapState): TapReading {
   const gaps = intervals(state.taps);
   const bpm = 60000 / mean(gaps);
   return { bpm, halfTime: bpm / 2, doubleTime: bpm * 2 };
+}
+
+/**
+ * Clicks per beat for a note-value subdivision in a meter. BPM counts the signature's
+ * denominator (an eighth in 6/8), so 16ths are 4 per beat in 4/4 but 2 in 6/8. Null when
+ * the note is not finer than the beat: 8ths in 6/8 are the beat itself.
+ */
+export function subdivisionSteps(note: 8 | 16, signature: Signature): 2 | 4 | null {
+  const perBeat = note / Number(signature.split("/")[1]);
+  return perBeat === 2 || perBeat === 4 ? perBeat : null;
 }
 
 /** The reading rounded for `D6.tempo.bpm`, or null when there is none or it is outside the Composer's range. */

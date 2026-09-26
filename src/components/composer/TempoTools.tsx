@@ -7,7 +7,7 @@
 import { useEffect, useId, useRef, useState } from "react";
 
 import { beatsPerBar } from "@/core/musicspec/barmath";
-import { assignableBpm, emptyTaps, lastTapAt, reading, tap, TAP_RESET_MS, TEMPO_MAX_BPM, TEMPO_MIN_BPM, type MetronomeSettings } from "@/core/musicspec/tempo";
+import { assignableBpm, emptyTaps, lastTapAt, reading, subdivisionSteps, tap, TAP_RESET_MS, TEMPO_MAX_BPM, TEMPO_MIN_BPM, type MetronomeSettings } from "@/core/musicspec/tempo";
 import { Metronome } from "@/lib/audio/metronome";
 
 import { op, useComposer } from "./state";
@@ -21,7 +21,8 @@ export function TempoTools() {
   const [taps, setTaps] = useState(emptyTaps);
   const [running, setRunning] = useState(false);
   const [halfTime, setHalfTime] = useState(spec.D6.meterLock.feel === "half-time");
-  const [subdivision, setSubdivision] = useState<MetronomeSettings["subdivision"]>(1);
+  // A note value; the clicks per beat depend on the meter (16ths are 2 per beat in 6/8).
+  const [note, setNote] = useState<"off" | 8 | 16>("off");
   const [volume, setVolume] = useState(0.5);
   const metronome = useRef<Metronome | null>(null);
   const subId = useId();
@@ -31,7 +32,9 @@ export function TempoTools() {
   const bpm = reading(taps).bpm;
   // Only a tempo the tempo field would accept can be assigned.
   const assignable = assignableBpm(taps);
-  const settings: MetronomeSettings = { bpm: spec.D6.tempo.bpm, beatsPerBar: beatsPerBar(spec.D6.meterLock.signature), halfTimeAccent: halfTime, subdivision };
+  const signature = spec.D6.meterLock.signature;
+  const subdivision: MetronomeSettings["subdivision"] = note === "off" ? 1 : (subdivisionSteps(note, signature) ?? 1);
+  const settings: MetronomeSettings = { bpm: spec.D6.tempo.bpm, beatsPerBar: beatsPerBar(signature), halfTimeAccent: halfTime, subdivision };
 
   // Clear the reading once the sequence times out (§1.8: 2 s without a tap, kept or discarded, resets).
   useEffect(() => {
@@ -92,10 +95,15 @@ export function TempoTools() {
         </div>
         <div className="field">
           <label htmlFor={subId}>Subdivision clicks</label>
-          <select id={subId} value={subdivision} onChange={(e) => setSubdivision(Number(e.target.value) as MetronomeSettings["subdivision"])}>
-            <option value={1}>Off</option>
-            <option value={2}>8ths</option>
-            <option value={4}>16ths</option>
+          <select id={subId} value={subdivision === 1 ? "off" : note} onChange={(e) => setNote(e.target.value === "off" ? "off" : (Number(e.target.value) as 8 | 16))}>
+            <option value="off">Off</option>
+            {/* In 6/8, 12/8 and 7/8 the beat is an eighth, so 8ths add nothing. */}
+            <option value={8} disabled={subdivisionSteps(8, signature) === null}>
+              8ths
+            </option>
+            <option value={16} disabled={subdivisionSteps(16, signature) === null}>
+              16ths
+            </option>
           </select>
         </div>
         <div className="field">
