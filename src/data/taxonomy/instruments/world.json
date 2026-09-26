@@ -1,0 +1,2855 @@
+[
+  {
+    "id": "kisir-lyre",
+    "name": "Kisir lyre",
+    "family": "other",
+    "region": "Egypt",
+    "register": [],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "Egypt world set (seed §9). Family is assigned at curation.",
+    "promptPhrase": "kisir lyre",
+    "commonNames": [
+      "kisir lyre"
+    ]
+  },
+  {
+    "id": "arghul",
+    "name": "Arghul",
+    "family": "other",
+    "region": "Egypt",
+    "register": [],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "Egypt world set (seed §9). Family is assigned at curation.",
+    "promptPhrase": "arghul",
+    "commonNames": [
+      "arghul"
+    ]
+  },
+  {
+    "id": "duff",
+    "name": "Duff",
+    "family": "percussion",
+    "region": "Egypt",
+    "register": [],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [
+      "rhythm"
+    ],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "Egypt world set (seed §9).",
+    "promptPhrase": "duff",
+    "commonNames": [
+      "duff",
+      "daf"
+    ]
+  },
+  {
+    "id": "tabla-baladi",
+    "name": "Tabla baladi",
+    "family": "percussion",
+    "region": "Egypt",
+    "register": [],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [
+      "rhythm"
+    ],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "Egypt world set (seed §9).",
+    "promptPhrase": "tabla baladi",
+    "commonNames": [
+      "tabla baladi"
+    ]
+  },
+  {
+    "id": "tura",
+    "name": "Tura",
+    "family": "percussion",
+    "region": "Egypt",
+    "register": [],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [
+      "rhythm"
+    ],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "Egypt world set (seed §9).",
+    "promptPhrase": "tura",
+    "commonNames": [
+      "tura"
+    ]
+  },
+  {
+    "id": "guembri",
+    "name": "Guembri",
+    "family": "other",
+    "region": "Morocco / Maghreb",
+    "register": [],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "Morocco / Maghreb world set (seed §9); seed note: (gimbri/sintir). Family is assigned at curation.",
+    "promptPhrase": "guembri",
+    "commonNames": [
+      "guembri"
+    ]
+  },
+  {
+    "id": "ribab",
+    "name": "Ribab",
+    "family": "other",
+    "region": "Morocco / Maghreb",
+    "register": [],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "Morocco / Maghreb world set (seed §9). Family is assigned at curation.",
+    "promptPhrase": "ribab",
+    "commonNames": [
+      "ribab"
+    ]
+  },
+  {
+    "id": "lotar",
+    "name": "Lotar",
+    "family": "other",
+    "region": "Morocco / Maghreb",
+    "register": [],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "Morocco / Maghreb world set (seed §9). Family is assigned at curation.",
+    "promptPhrase": "lotar",
+    "commonNames": [
+      "lotar"
+    ]
+  },
+  {
+    "id": "krakebs",
+    "name": "Krakebs",
+    "family": "other",
+    "region": "Morocco / Maghreb",
+    "register": [],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "Morocco / Maghreb world set (seed §9); seed note: (qraqeb). Family is assigned at curation.",
+    "promptPhrase": "krakebs",
+    "commonNames": [
+      "krakebs"
+    ]
+  },
+  {
+    "id": "bendir",
+    "name": "Bendir",
+    "family": "other",
+    "region": "Morocco / Maghreb",
+    "register": [],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "Morocco / Maghreb world set (seed §9). Family is assigned at curation.",
+    "promptPhrase": "bendir",
+    "commonNames": [
+      "bendir"
+    ]
+  },
+  {
+    "id": "tbel",
+    "name": "Tbel",
+    "family": "other",
+    "region": "Morocco / Maghreb",
+    "register": [],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "Morocco / Maghreb world set (seed §9). Family is assigned at curation.",
+    "promptPhrase": "tbel",
+    "commonNames": [
+      "tbel"
+    ]
+  },
+  {
+    "id": "tarija",
+    "name": "Tarija",
+    "family": "other",
+    "region": "Morocco / Maghreb",
+    "register": [],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "Morocco / Maghreb world set (seed §9). Family is assigned at curation.",
+    "promptPhrase": "tarija",
+    "commonNames": [
+      "tarija"
+    ]
+  },
+  {
+    "id": "taarija",
+    "name": "Taarija",
+    "family": "other",
+    "region": "Morocco / Maghreb",
+    "register": [],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "Morocco / Maghreb world set (seed §9). Family is assigned at curation.",
+    "promptPhrase": "taarija",
+    "commonNames": [
+      "taarija"
+    ]
+  },
+  {
+    "id": "handclaps",
+    "name": "Handclaps",
+    "family": "other",
+    "region": "Morocco / Maghreb",
+    "register": [],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "Morocco / Maghreb world set (seed §9); seed note: (Gnawa/Ahwach). Family is assigned at curation.",
+    "promptPhrase": "handclaps",
+    "commonNames": [
+      "handclaps"
+    ]
+  },
+  {
+    "id": "buzuq",
+    "name": "Buzuq",
+    "family": "other",
+    "region": "Levant / Turkey / Persia / Caucasus",
+    "register": [],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "Levant / Turkey / Persia / Caucasus world set (seed §9). Family is assigned at curation.",
+    "promptPhrase": "buzuq",
+    "commonNames": [
+      "buzuq"
+    ]
+  },
+  {
+    "id": "saz",
+    "name": "Saz",
+    "family": "other",
+    "region": "Levant / Turkey / Persia / Caucasus",
+    "register": [],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "Levant / Turkey / Persia / Caucasus world set (seed §9). Family is assigned at curation.",
+    "promptPhrase": "saz",
+    "commonNames": [
+      "saz",
+      "bağlama"
+    ]
+  },
+  {
+    "id": "cumbus",
+    "name": "Cümbüş",
+    "family": "other",
+    "region": "Levant / Turkey / Persia / Caucasus",
+    "register": [],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "Levant / Turkey / Persia / Caucasus world set (seed §9). Family is assigned at curation.",
+    "promptPhrase": "cümbüş",
+    "commonNames": [
+      "cümbüş"
+    ]
+  },
+  {
+    "id": "zurna",
+    "name": "Zurna",
+    "family": "other",
+    "region": "Levant / Turkey / Persia / Caucasus",
+    "register": [],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "Levant / Turkey / Persia / Caucasus world set (seed §9). Family is assigned at curation.",
+    "promptPhrase": "zurna",
+    "commonNames": [
+      "zurna"
+    ]
+  },
+  {
+    "id": "duduk",
+    "name": "Duduk",
+    "family": "other",
+    "region": "Levant / Turkey / Persia / Caucasus",
+    "register": [],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "Levant / Turkey / Persia / Caucasus world set (seed §9). Family is assigned at curation.",
+    "promptPhrase": "duduk",
+    "commonNames": [
+      "duduk"
+    ]
+  },
+  {
+    "id": "kemence",
+    "name": "Kemençe",
+    "family": "other",
+    "region": "Levant / Turkey / Persia / Caucasus",
+    "register": [],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "Levant / Turkey / Persia / Caucasus world set (seed §9). Family is assigned at curation.",
+    "promptPhrase": "kemençe",
+    "commonNames": [
+      "kemençe"
+    ]
+  },
+  {
+    "id": "santur",
+    "name": "Santur",
+    "family": "other",
+    "region": "Levant / Turkey / Persia / Caucasus",
+    "register": [],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "Levant / Turkey / Persia / Caucasus world set (seed §9). Family is assigned at curation.",
+    "promptPhrase": "santur",
+    "commonNames": [
+      "santur"
+    ]
+  },
+  {
+    "id": "tar",
+    "name": "Tar",
+    "family": "other",
+    "region": "Levant / Turkey / Persia / Caucasus",
+    "register": [],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "Levant / Turkey / Persia / Caucasus world set (seed §9). Family is assigned at curation.",
+    "promptPhrase": "tar",
+    "commonNames": [
+      "tar"
+    ]
+  },
+  {
+    "id": "setar",
+    "name": "Setar",
+    "family": "other",
+    "region": "Levant / Turkey / Persia / Caucasus",
+    "register": [],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "Levant / Turkey / Persia / Caucasus world set (seed §9). Family is assigned at curation.",
+    "promptPhrase": "setar",
+    "commonNames": [
+      "setar"
+    ]
+  },
+  {
+    "id": "kamancheh",
+    "name": "Kamancheh",
+    "family": "other",
+    "region": "Levant / Turkey / Persia / Caucasus",
+    "register": [],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "Levant / Turkey / Persia / Caucasus world set (seed §9). Family is assigned at curation.",
+    "promptPhrase": "kamancheh",
+    "commonNames": [
+      "kamancheh"
+    ]
+  },
+  {
+    "id": "tombak",
+    "name": "Tombak",
+    "family": "other",
+    "region": "Levant / Turkey / Persia / Caucasus",
+    "register": [],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "Levant / Turkey / Persia / Caucasus world set (seed §9); seed note: (zarb). Family is assigned at curation.",
+    "promptPhrase": "tombak",
+    "commonNames": [
+      "tombak"
+    ]
+  },
+  {
+    "id": "davul",
+    "name": "Davul",
+    "family": "other",
+    "region": "Levant / Turkey / Persia / Caucasus",
+    "register": [],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "Levant / Turkey / Persia / Caucasus world set (seed §9). Family is assigned at curation.",
+    "promptPhrase": "davul",
+    "commonNames": [
+      "davul"
+    ]
+  },
+  {
+    "id": "tar-frame-drum",
+    "name": "Tar (frame drum)",
+    "family": "other",
+    "region": "Levant / Turkey / Persia / Caucasus",
+    "register": [],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "Levant / Turkey / Persia / Caucasus world set (seed §9); seed note: (frame drum). Family is assigned at curation.",
+    "promptPhrase": "tar (frame drum)",
+    "commonNames": [
+      "tar (frame drum)"
+    ]
+  },
+  {
+    "id": "sitar",
+    "name": "Sitar",
+    "family": "other",
+    "region": "South Asia",
+    "register": [],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "South Asia world set (seed §9); seed note: (GM 105). Family is assigned at curation.",
+    "promptPhrase": "sitar",
+    "commonNames": [
+      "sitar"
+    ]
+  },
+  {
+    "id": "sarod",
+    "name": "Sarod",
+    "family": "other",
+    "region": "South Asia",
+    "register": [],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "South Asia world set (seed §9). Family is assigned at curation.",
+    "promptPhrase": "sarod",
+    "commonNames": [
+      "sarod"
+    ]
+  },
+  {
+    "id": "tanpura",
+    "name": "Tanpura",
+    "family": "other",
+    "region": "South Asia",
+    "register": [],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "South Asia world set (seed §9). Family is assigned at curation.",
+    "promptPhrase": "tanpura",
+    "commonNames": [
+      "tanpura"
+    ]
+  },
+  {
+    "id": "veena",
+    "name": "Veena",
+    "family": "other",
+    "region": "South Asia",
+    "register": [],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "South Asia world set (seed §9). Family is assigned at curation.",
+    "promptPhrase": "veena",
+    "commonNames": [
+      "veena"
+    ]
+  },
+  {
+    "id": "santoor",
+    "name": "Santoor",
+    "family": "other",
+    "region": "South Asia",
+    "register": [],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "South Asia world set (seed §9). Family is assigned at curation.",
+    "promptPhrase": "santoor",
+    "commonNames": [
+      "santoor"
+    ]
+  },
+  {
+    "id": "bansuri",
+    "name": "Bansuri",
+    "family": "other",
+    "region": "South Asia",
+    "register": [],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "South Asia world set (seed §9). Family is assigned at curation.",
+    "promptPhrase": "bansuri",
+    "commonNames": [
+      "bansuri"
+    ]
+  },
+  {
+    "id": "shehnai",
+    "name": "Shehnai",
+    "family": "other",
+    "region": "South Asia",
+    "register": [],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "South Asia world set (seed §9); seed note: (GM 112). Family is assigned at curation.",
+    "promptPhrase": "shehnai",
+    "commonNames": [
+      "shehnai"
+    ]
+  },
+  {
+    "id": "harmonium",
+    "name": "Harmonium",
+    "family": "other",
+    "region": "South Asia",
+    "register": [],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "South Asia world set (seed §9). Family is assigned at curation.",
+    "promptPhrase": "harmonium",
+    "commonNames": [
+      "harmonium"
+    ]
+  },
+  {
+    "id": "sarangi",
+    "name": "Sarangi",
+    "family": "other",
+    "region": "South Asia",
+    "register": [],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "South Asia world set (seed §9). Family is assigned at curation.",
+    "promptPhrase": "sarangi",
+    "commonNames": [
+      "sarangi"
+    ]
+  },
+  {
+    "id": "esraj",
+    "name": "Esraj",
+    "family": "other",
+    "region": "South Asia",
+    "register": [],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "South Asia world set (seed §9). Family is assigned at curation.",
+    "promptPhrase": "esraj",
+    "commonNames": [
+      "esraj"
+    ]
+  },
+  {
+    "id": "dilruba",
+    "name": "Dilruba",
+    "family": "other",
+    "region": "South Asia",
+    "register": [],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "South Asia world set (seed §9). Family is assigned at curation.",
+    "promptPhrase": "dilruba",
+    "commonNames": [
+      "dilruba"
+    ]
+  },
+  {
+    "id": "tabla-pair",
+    "name": "Tabla pair",
+    "family": "percussion",
+    "region": "South Asia",
+    "register": [],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [
+      "rhythm"
+    ],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "South Asia world set (seed §9).",
+    "promptPhrase": "tabla pair",
+    "commonNames": [
+      "tabla pair"
+    ]
+  },
+  {
+    "id": "pakhawaj",
+    "name": "Pakhawaj",
+    "family": "percussion",
+    "region": "South Asia",
+    "register": [],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [
+      "rhythm"
+    ],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "South Asia world set (seed §9).",
+    "promptPhrase": "pakhawaj",
+    "commonNames": [
+      "pakhawaj"
+    ]
+  },
+  {
+    "id": "mridangam",
+    "name": "Mridangam",
+    "family": "percussion",
+    "region": "South Asia",
+    "register": [],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [
+      "rhythm"
+    ],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "South Asia world set (seed §9).",
+    "promptPhrase": "mridangam",
+    "commonNames": [
+      "mridangam"
+    ]
+  },
+  {
+    "id": "dhol",
+    "name": "Dhol",
+    "family": "percussion",
+    "region": "South Asia",
+    "register": [],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [
+      "rhythm"
+    ],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "South Asia world set (seed §9).",
+    "promptPhrase": "dhol",
+    "commonNames": [
+      "dhol"
+    ]
+  },
+  {
+    "id": "dholak",
+    "name": "Dholak",
+    "family": "percussion",
+    "region": "South Asia",
+    "register": [],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [
+      "rhythm"
+    ],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "South Asia world set (seed §9).",
+    "promptPhrase": "dholak",
+    "commonNames": [
+      "dholak"
+    ]
+  },
+  {
+    "id": "ghatam",
+    "name": "Ghatam",
+    "family": "percussion",
+    "region": "South Asia",
+    "register": [],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [
+      "rhythm"
+    ],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "South Asia world set (seed §9).",
+    "promptPhrase": "ghatam",
+    "commonNames": [
+      "ghatam"
+    ]
+  },
+  {
+    "id": "kanjira",
+    "name": "Kanjira",
+    "family": "percussion",
+    "region": "South Asia",
+    "register": [],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [
+      "rhythm"
+    ],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "South Asia world set (seed §9).",
+    "promptPhrase": "kanjira",
+    "commonNames": [
+      "kanjira"
+    ]
+  },
+  {
+    "id": "khol",
+    "name": "Khol",
+    "family": "percussion",
+    "region": "South Asia",
+    "register": [],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [
+      "rhythm"
+    ],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "South Asia world set (seed §9).",
+    "promptPhrase": "khol",
+    "commonNames": [
+      "khol"
+    ]
+  },
+  {
+    "id": "ghungroo-bells",
+    "name": "Ghungroo bells",
+    "family": "percussion",
+    "region": "South Asia",
+    "register": [],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [
+      "rhythm"
+    ],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "South Asia world set (seed §9).",
+    "promptPhrase": "ghungroo bells",
+    "commonNames": [
+      "ghungroo bells"
+    ]
+  },
+  {
+    "id": "koto",
+    "name": "Koto",
+    "family": "other",
+    "region": "East / Southeast Asia",
+    "register": [],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "East / Southeast Asia world set (seed §9); seed note: (GM 108). Family is assigned at curation.",
+    "promptPhrase": "koto",
+    "commonNames": [
+      "koto"
+    ]
+  },
+  {
+    "id": "shamisen",
+    "name": "Shamisen",
+    "family": "other",
+    "region": "East / Southeast Asia",
+    "register": [],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "East / Southeast Asia world set (seed §9); seed note: (GM 107). Family is assigned at curation.",
+    "promptPhrase": "shamisen",
+    "commonNames": [
+      "shamisen"
+    ]
+  },
+  {
+    "id": "biwa",
+    "name": "Biwa",
+    "family": "other",
+    "region": "East / Southeast Asia",
+    "register": [],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "East / Southeast Asia world set (seed §9). Family is assigned at curation.",
+    "promptPhrase": "biwa",
+    "commonNames": [
+      "biwa"
+    ]
+  },
+  {
+    "id": "erhu",
+    "name": "Erhu",
+    "family": "other",
+    "region": "East / Southeast Asia",
+    "register": [],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "East / Southeast Asia world set (seed §9). Family is assigned at curation.",
+    "promptPhrase": "erhu",
+    "commonNames": [
+      "erhu"
+    ]
+  },
+  {
+    "id": "guzheng",
+    "name": "Guzheng",
+    "family": "other",
+    "region": "East / Southeast Asia",
+    "register": [],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "East / Southeast Asia world set (seed §9). Family is assigned at curation.",
+    "promptPhrase": "guzheng",
+    "commonNames": [
+      "guzheng"
+    ]
+  },
+  {
+    "id": "pipa",
+    "name": "Pipa",
+    "family": "other",
+    "region": "East / Southeast Asia",
+    "register": [],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "East / Southeast Asia world set (seed §9). Family is assigned at curation.",
+    "promptPhrase": "pipa",
+    "commonNames": [
+      "pipa"
+    ]
+  },
+  {
+    "id": "dizi",
+    "name": "Dizi",
+    "family": "other",
+    "region": "East / Southeast Asia",
+    "register": [],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "East / Southeast Asia world set (seed §9). Family is assigned at curation.",
+    "promptPhrase": "dizi",
+    "commonNames": [
+      "dizi"
+    ]
+  },
+  {
+    "id": "sheng",
+    "name": "Sheng",
+    "family": "other",
+    "region": "East / Southeast Asia",
+    "register": [],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "East / Southeast Asia world set (seed §9). Family is assigned at curation.",
+    "promptPhrase": "sheng",
+    "commonNames": [
+      "sheng"
+    ]
+  },
+  {
+    "id": "yangqin",
+    "name": "Yangqin",
+    "family": "other",
+    "region": "East / Southeast Asia",
+    "register": [],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "East / Southeast Asia world set (seed §9). Family is assigned at curation.",
+    "promptPhrase": "yangqin",
+    "commonNames": [
+      "yangqin"
+    ]
+  },
+  {
+    "id": "guqin",
+    "name": "Guqin",
+    "family": "other",
+    "region": "East / Southeast Asia",
+    "register": [],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "East / Southeast Asia world set (seed §9). Family is assigned at curation.",
+    "promptPhrase": "guqin",
+    "commonNames": [
+      "guqin"
+    ]
+  },
+  {
+    "id": "suona",
+    "name": "Suona",
+    "family": "other",
+    "region": "East / Southeast Asia",
+    "register": [],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "East / Southeast Asia world set (seed §9). Family is assigned at curation.",
+    "promptPhrase": "suona",
+    "commonNames": [
+      "suona"
+    ]
+  },
+  {
+    "id": "gayageum",
+    "name": "Gayageum",
+    "family": "other",
+    "region": "East / Southeast Asia",
+    "register": [],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "East / Southeast Asia world set (seed §9). Family is assigned at curation.",
+    "promptPhrase": "gayageum",
+    "commonNames": [
+      "gayageum"
+    ]
+  },
+  {
+    "id": "haegeum",
+    "name": "Haegeum",
+    "family": "other",
+    "region": "East / Southeast Asia",
+    "register": [],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "East / Southeast Asia world set (seed §9). Family is assigned at curation.",
+    "promptPhrase": "haegeum",
+    "commonNames": [
+      "haegeum"
+    ]
+  },
+  {
+    "id": "dan-bau",
+    "name": "Dan bau",
+    "family": "other",
+    "region": "East / Southeast Asia",
+    "register": [],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "East / Southeast Asia world set (seed §9). Family is assigned at curation.",
+    "promptPhrase": "dan bau",
+    "commonNames": [
+      "dan bau"
+    ]
+  },
+  {
+    "id": "gamelan-metallophones",
+    "name": "Gamelan metallophones",
+    "family": "other",
+    "region": "East / Southeast Asia",
+    "register": [],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "East / Southeast Asia world set (seed §9); seed note: (saron, gender, bonang). Family is assigned at curation.",
+    "promptPhrase": "gamelan metallophones",
+    "commonNames": [
+      "gamelan metallophones"
+    ]
+  },
+  {
+    "id": "gong-ageng",
+    "name": "Gong ageng",
+    "family": "other",
+    "region": "East / Southeast Asia",
+    "register": [],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "East / Southeast Asia world set (seed §9). Family is assigned at curation.",
+    "promptPhrase": "gong ageng",
+    "commonNames": [
+      "gong ageng"
+    ]
+  },
+  {
+    "id": "kendang",
+    "name": "Kendang",
+    "family": "other",
+    "region": "East / Southeast Asia",
+    "register": [],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "East / Southeast Asia world set (seed §9). Family is assigned at curation.",
+    "promptPhrase": "kendang",
+    "commonNames": [
+      "kendang"
+    ]
+  },
+  {
+    "id": "angklung",
+    "name": "Angklung",
+    "family": "other",
+    "region": "East / Southeast Asia",
+    "register": [],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "East / Southeast Asia world set (seed §9). Family is assigned at curation.",
+    "promptPhrase": "angklung",
+    "commonNames": [
+      "angklung"
+    ]
+  },
+  {
+    "id": "kora",
+    "name": "Kora",
+    "family": "other",
+    "region": "Sub-Saharan Africa",
+    "register": [],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "Sub-Saharan Africa world set (seed §9). Family is assigned at curation.",
+    "promptPhrase": "kora",
+    "commonNames": [
+      "kora"
+    ]
+  },
+  {
+    "id": "ngoni",
+    "name": "Ngoni",
+    "family": "other",
+    "region": "Sub-Saharan Africa",
+    "register": [],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "Sub-Saharan Africa world set (seed §9). Family is assigned at curation.",
+    "promptPhrase": "ngoni",
+    "commonNames": [
+      "ngoni"
+    ]
+  },
+  {
+    "id": "balafon",
+    "name": "Balafon",
+    "family": "other",
+    "region": "Sub-Saharan Africa",
+    "register": [],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "Sub-Saharan Africa world set (seed §9). Family is assigned at curation.",
+    "promptPhrase": "balafon",
+    "commonNames": [
+      "balafon"
+    ]
+  },
+  {
+    "id": "mbira",
+    "name": "Mbira",
+    "family": "other",
+    "region": "Sub-Saharan Africa",
+    "register": [],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "Sub-Saharan Africa world set (seed §9); seed note: (GM 109). Family is assigned at curation.",
+    "promptPhrase": "mbira",
+    "commonNames": [
+      "mbira",
+      "kalimba"
+    ]
+  },
+  {
+    "id": "krar",
+    "name": "Krar",
+    "family": "other",
+    "region": "Sub-Saharan Africa",
+    "register": [],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "Sub-Saharan Africa world set (seed §9). Family is assigned at curation.",
+    "promptPhrase": "krar",
+    "commonNames": [
+      "krar"
+    ]
+  },
+  {
+    "id": "masenqo",
+    "name": "Masenqo",
+    "family": "other",
+    "region": "Sub-Saharan Africa",
+    "register": [],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "Sub-Saharan Africa world set (seed §9). Family is assigned at curation.",
+    "promptPhrase": "masenqo",
+    "commonNames": [
+      "masenqo"
+    ]
+  },
+  {
+    "id": "djembe",
+    "name": "Djembe",
+    "family": "percussion",
+    "region": "Sub-Saharan Africa",
+    "register": [],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [
+      "rhythm"
+    ],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "Sub-Saharan Africa world set (seed §9).",
+    "promptPhrase": "djembe",
+    "commonNames": [
+      "djembe"
+    ]
+  },
+  {
+    "id": "dunun-set",
+    "name": "Dunun set",
+    "family": "percussion",
+    "region": "Sub-Saharan Africa",
+    "register": [],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [
+      "rhythm"
+    ],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "Sub-Saharan Africa world set (seed §9).",
+    "promptPhrase": "dunun set",
+    "commonNames": [
+      "dunun set"
+    ]
+  },
+  {
+    "id": "talking-drum",
+    "name": "Talking drum",
+    "family": "percussion",
+    "region": "Sub-Saharan Africa",
+    "register": [],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [
+      "rhythm"
+    ],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "Sub-Saharan Africa world set (seed §9).",
+    "promptPhrase": "talking drum",
+    "commonNames": [
+      "talking drum"
+    ]
+  },
+  {
+    "id": "udu",
+    "name": "Udu",
+    "family": "percussion",
+    "region": "Sub-Saharan Africa",
+    "register": [],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [
+      "rhythm"
+    ],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "Sub-Saharan Africa world set (seed §9).",
+    "promptPhrase": "udu",
+    "commonNames": [
+      "udu"
+    ]
+  },
+  {
+    "id": "shekere",
+    "name": "Shekere",
+    "family": "percussion",
+    "region": "Sub-Saharan Africa",
+    "register": [],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [
+      "rhythm"
+    ],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "Sub-Saharan Africa world set (seed §9).",
+    "promptPhrase": "shekere",
+    "commonNames": [
+      "shekere"
+    ]
+  },
+  {
+    "id": "log-drum",
+    "name": "Log drum",
+    "family": "percussion",
+    "region": "Sub-Saharan Africa",
+    "register": [],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [
+      "rhythm"
+    ],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "Sub-Saharan Africa world set (seed §9).",
+    "promptPhrase": "log drum",
+    "commonNames": [
+      "log drum"
+    ]
+  },
+  {
+    "id": "sabar",
+    "name": "Sabar",
+    "family": "percussion",
+    "region": "Sub-Saharan Africa",
+    "register": [],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [
+      "rhythm"
+    ],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "Sub-Saharan Africa world set (seed §9).",
+    "promptPhrase": "sabar",
+    "commonNames": [
+      "sabar"
+    ]
+  },
+  {
+    "id": "bougarabou",
+    "name": "Bougarabou",
+    "family": "percussion",
+    "region": "Sub-Saharan Africa",
+    "register": [],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [
+      "rhythm"
+    ],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "Sub-Saharan Africa world set (seed §9).",
+    "promptPhrase": "bougarabou",
+    "commonNames": [
+      "bougarabou"
+    ]
+  },
+  {
+    "id": "kpanlogo",
+    "name": "Kpanlogo",
+    "family": "percussion",
+    "region": "Sub-Saharan Africa",
+    "register": [],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [
+      "rhythm"
+    ],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "Sub-Saharan Africa world set (seed §9).",
+    "promptPhrase": "kpanlogo",
+    "commonNames": [
+      "kpanlogo"
+    ]
+  },
+  {
+    "id": "seperewa",
+    "name": "Seperewa",
+    "family": "percussion",
+    "region": "Sub-Saharan Africa",
+    "register": [],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [
+      "rhythm"
+    ],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "Sub-Saharan Africa world set (seed §9).",
+    "promptPhrase": "seperewa",
+    "commonNames": [
+      "seperewa"
+    ]
+  },
+  {
+    "id": "congas",
+    "name": "Congas",
+    "family": "other",
+    "region": "Latin America / Caribbean / Brazil",
+    "register": [],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "Latin America / Caribbean / Brazil world set (seed §9). Family is assigned at curation.",
+    "promptPhrase": "congas",
+    "commonNames": [
+      "congas"
+    ]
+  },
+  {
+    "id": "bongos",
+    "name": "Bongos",
+    "family": "other",
+    "region": "Latin America / Caribbean / Brazil",
+    "register": [],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "Latin America / Caribbean / Brazil world set (seed §9). Family is assigned at curation.",
+    "promptPhrase": "bongos",
+    "commonNames": [
+      "bongos"
+    ]
+  },
+  {
+    "id": "timbales",
+    "name": "Timbales",
+    "family": "other",
+    "region": "Latin America / Caribbean / Brazil",
+    "register": [],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "Latin America / Caribbean / Brazil world set (seed §9). Family is assigned at curation.",
+    "promptPhrase": "timbales",
+    "commonNames": [
+      "timbales"
+    ]
+  },
+  {
+    "id": "cajon",
+    "name": "Cajón",
+    "family": "other",
+    "region": "Latin America / Caribbean / Brazil",
+    "register": [],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "Latin America / Caribbean / Brazil world set (seed §9). Family is assigned at curation.",
+    "promptPhrase": "cajón",
+    "commonNames": [
+      "cajón"
+    ]
+  },
+  {
+    "id": "guiro",
+    "name": "Güiro",
+    "family": "other",
+    "region": "Latin America / Caribbean / Brazil",
+    "register": [],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "Latin America / Caribbean / Brazil world set (seed §9); seed note: (GM 73/74). Family is assigned at curation.",
+    "promptPhrase": "güiro",
+    "commonNames": [
+      "güiro"
+    ]
+  },
+  {
+    "id": "surdo",
+    "name": "Surdo",
+    "family": "other",
+    "region": "Latin America / Caribbean / Brazil",
+    "register": [],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "Latin America / Caribbean / Brazil world set (seed §9). Family is assigned at curation.",
+    "promptPhrase": "surdo",
+    "commonNames": [
+      "surdo"
+    ]
+  },
+  {
+    "id": "repinique",
+    "name": "Repinique",
+    "family": "other",
+    "region": "Latin America / Caribbean / Brazil",
+    "register": [],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "Latin America / Caribbean / Brazil world set (seed §9). Family is assigned at curation.",
+    "promptPhrase": "repinique",
+    "commonNames": [
+      "repinique"
+    ]
+  },
+  {
+    "id": "tamborim",
+    "name": "Tamborim",
+    "family": "other",
+    "region": "Latin America / Caribbean / Brazil",
+    "register": [],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "Latin America / Caribbean / Brazil world set (seed §9). Family is assigned at curation.",
+    "promptPhrase": "tamborim",
+    "commonNames": [
+      "tamborim"
+    ]
+  },
+  {
+    "id": "caixa",
+    "name": "Caixa",
+    "family": "other",
+    "region": "Latin America / Caribbean / Brazil",
+    "register": [],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "Latin America / Caribbean / Brazil world set (seed §9). Family is assigned at curation.",
+    "promptPhrase": "caixa",
+    "commonNames": [
+      "caixa"
+    ]
+  },
+  {
+    "id": "cuica",
+    "name": "Cuíca",
+    "family": "other",
+    "region": "Latin America / Caribbean / Brazil",
+    "register": [],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "Latin America / Caribbean / Brazil world set (seed §9); seed note: (GM 78/79). Family is assigned at curation.",
+    "promptPhrase": "cuíca",
+    "commonNames": [
+      "cuíca"
+    ]
+  },
+  {
+    "id": "pandeiro",
+    "name": "Pandeiro",
+    "family": "other",
+    "region": "Latin America / Caribbean / Brazil",
+    "register": [],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "Latin America / Caribbean / Brazil world set (seed §9). Family is assigned at curation.",
+    "promptPhrase": "pandeiro",
+    "commonNames": [
+      "pandeiro"
+    ]
+  },
+  {
+    "id": "berimbau",
+    "name": "Berimbau",
+    "family": "other",
+    "region": "Latin America / Caribbean / Brazil",
+    "register": [],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "Latin America / Caribbean / Brazil world set (seed §9). Family is assigned at curation.",
+    "promptPhrase": "berimbau",
+    "commonNames": [
+      "berimbau"
+    ]
+  },
+  {
+    "id": "tres",
+    "name": "Tres",
+    "family": "other",
+    "region": "Latin America / Caribbean / Brazil",
+    "register": [],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "Latin America / Caribbean / Brazil world set (seed §9). Family is assigned at curation.",
+    "promptPhrase": "tres",
+    "commonNames": [
+      "tres"
+    ]
+  },
+  {
+    "id": "cuatro",
+    "name": "Cuatro",
+    "family": "other",
+    "region": "Latin America / Caribbean / Brazil",
+    "register": [],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "Latin America / Caribbean / Brazil world set (seed §9). Family is assigned at curation.",
+    "promptPhrase": "cuatro",
+    "commonNames": [
+      "cuatro"
+    ]
+  },
+  {
+    "id": "charango",
+    "name": "Charango",
+    "family": "other",
+    "region": "Latin America / Caribbean / Brazil",
+    "register": [],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "Latin America / Caribbean / Brazil world set (seed §9). Family is assigned at curation.",
+    "promptPhrase": "charango",
+    "commonNames": [
+      "charango"
+    ]
+  },
+  {
+    "id": "quena",
+    "name": "Quena",
+    "family": "other",
+    "region": "Latin America / Caribbean / Brazil",
+    "register": [],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "Latin America / Caribbean / Brazil world set (seed §9). Family is assigned at curation.",
+    "promptPhrase": "quena",
+    "commonNames": [
+      "quena"
+    ]
+  },
+  {
+    "id": "siku",
+    "name": "Siku",
+    "family": "other",
+    "region": "Latin America / Caribbean / Brazil",
+    "register": [],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "Latin America / Caribbean / Brazil world set (seed §9). Family is assigned at curation.",
+    "promptPhrase": "siku",
+    "commonNames": [
+      "siku"
+    ]
+  },
+  {
+    "id": "bombo-leguero",
+    "name": "Bombo legüero",
+    "family": "other",
+    "region": "Latin America / Caribbean / Brazil",
+    "register": [],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "Latin America / Caribbean / Brazil world set (seed §9). Family is assigned at curation.",
+    "promptPhrase": "bombo legüero",
+    "commonNames": [
+      "bombo legüero"
+    ]
+  },
+  {
+    "id": "requinto",
+    "name": "Requinto",
+    "family": "other",
+    "region": "Latin America / Caribbean / Brazil",
+    "register": [],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "Latin America / Caribbean / Brazil world set (seed §9). Family is assigned at curation.",
+    "promptPhrase": "requinto",
+    "commonNames": [
+      "requinto"
+    ]
+  },
+  {
+    "id": "vihuela",
+    "name": "Vihuela",
+    "family": "other",
+    "region": "Latin America / Caribbean / Brazil",
+    "register": [],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "Latin America / Caribbean / Brazil world set (seed §9); seed note: (mariachi). Family is assigned at curation.",
+    "promptPhrase": "vihuela",
+    "commonNames": [
+      "vihuela"
+    ]
+  },
+  {
+    "id": "guitarron",
+    "name": "Guitarrón",
+    "family": "other",
+    "region": "Latin America / Caribbean / Brazil",
+    "register": [],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "Latin America / Caribbean / Brazil world set (seed §9); seed note: (mariachi). Family is assigned at curation.",
+    "promptPhrase": "guitarrón",
+    "commonNames": [
+      "guitarrón"
+    ]
+  },
+  {
+    "id": "harp",
+    "name": "Harp",
+    "family": "other",
+    "region": "Latin America / Caribbean / Brazil",
+    "register": [],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "Latin America / Caribbean / Brazil world set (seed §9); seed note: (Paraguayan). Family is assigned at curation.",
+    "promptPhrase": "harp",
+    "commonNames": [
+      "harp"
+    ]
+  },
+  {
+    "id": "uilleann-pipes",
+    "name": "Uilleann pipes",
+    "family": "other",
+    "region": "Celtic / European folk",
+    "register": [],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "Celtic / European folk world set (seed §9). Family is assigned at curation.",
+    "promptPhrase": "uilleann pipes",
+    "commonNames": [
+      "uilleann pipes"
+    ]
+  },
+  {
+    "id": "highland-bagpipes",
+    "name": "Highland bagpipes",
+    "family": "other",
+    "region": "Celtic / European folk",
+    "register": [],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "Celtic / European folk world set (seed §9); seed note: (GM 110). Family is assigned at curation.",
+    "promptPhrase": "highland bagpipes",
+    "commonNames": [
+      "Highland bagpipes"
+    ]
+  },
+  {
+    "id": "tin-whistle",
+    "name": "Tin whistle",
+    "family": "other",
+    "region": "Celtic / European folk",
+    "register": [],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "Celtic / European folk world set (seed §9). Family is assigned at curation.",
+    "promptPhrase": "tin whistle",
+    "commonNames": [
+      "tin whistle"
+    ]
+  },
+  {
+    "id": "low-whistle",
+    "name": "Low whistle",
+    "family": "other",
+    "region": "Celtic / European folk",
+    "register": [],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "Celtic / European folk world set (seed §9). Family is assigned at curation.",
+    "promptPhrase": "low whistle",
+    "commonNames": [
+      "low whistle"
+    ]
+  },
+  {
+    "id": "bodhran",
+    "name": "Bodhrán",
+    "family": "other",
+    "region": "Celtic / European folk",
+    "register": [],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "Celtic / European folk world set (seed §9). Family is assigned at curation.",
+    "promptPhrase": "bodhrán",
+    "commonNames": [
+      "bodhrán"
+    ]
+  },
+  {
+    "id": "fiddle",
+    "name": "Fiddle",
+    "family": "other",
+    "region": "Celtic / European folk",
+    "register": [],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "Celtic / European folk world set (seed §9); seed note: (GM 111). Family is assigned at curation.",
+    "promptPhrase": "fiddle",
+    "commonNames": [
+      "fiddle"
+    ]
+  },
+  {
+    "id": "irish-bouzouki",
+    "name": "Irish bouzouki",
+    "family": "other",
+    "region": "Celtic / European folk",
+    "register": [],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "Celtic / European folk world set (seed §9). Family is assigned at curation.",
+    "promptPhrase": "irish bouzouki",
+    "commonNames": [
+      "Irish bouzouki"
+    ]
+  },
+  {
+    "id": "greek-bouzouki",
+    "name": "Greek bouzouki",
+    "family": "other",
+    "region": "Celtic / European folk",
+    "register": [],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "Celtic / European folk world set (seed §9). Family is assigned at curation.",
+    "promptPhrase": "greek bouzouki",
+    "commonNames": [
+      "Greek bouzouki"
+    ]
+  },
+  {
+    "id": "hurdy-gurdy",
+    "name": "Hurdy-gurdy",
+    "family": "other",
+    "region": "Celtic / European folk",
+    "register": [],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "Celtic / European folk world set (seed §9). Family is assigned at curation.",
+    "promptPhrase": "hurdy-gurdy",
+    "commonNames": [
+      "hurdy-gurdy"
+    ]
+  },
+  {
+    "id": "nyckelharpa",
+    "name": "Nyckelharpa",
+    "family": "other",
+    "region": "Celtic / European folk",
+    "register": [],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "Celtic / European folk world set (seed §9). Family is assigned at curation.",
+    "promptPhrase": "nyckelharpa",
+    "commonNames": [
+      "nyckelharpa"
+    ]
+  },
+  {
+    "id": "hardanger-fiddle",
+    "name": "Hardanger fiddle",
+    "family": "other",
+    "region": "Celtic / European folk",
+    "register": [],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "Celtic / European folk world set (seed §9). Family is assigned at curation.",
+    "promptPhrase": "hardanger fiddle",
+    "commonNames": [
+      "hardanger fiddle"
+    ]
+  },
+  {
+    "id": "cimbalom",
+    "name": "Cimbalom",
+    "family": "other",
+    "region": "Celtic / European folk",
+    "register": [],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "Celtic / European folk world set (seed §9). Family is assigned at curation.",
+    "promptPhrase": "cimbalom",
+    "commonNames": [
+      "cimbalom"
+    ]
+  },
+  {
+    "id": "tamburica",
+    "name": "Tamburica",
+    "family": "other",
+    "region": "Celtic / European folk",
+    "register": [],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "Celtic / European folk world set (seed §9). Family is assigned at curation.",
+    "promptPhrase": "tamburica",
+    "commonNames": [
+      "tamburica"
+    ]
+  },
+  {
+    "id": "cretan-lyra",
+    "name": "Cretan lyra",
+    "family": "other",
+    "region": "Celtic / European folk",
+    "register": [],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "Celtic / European folk world set (seed §9). Family is assigned at curation.",
+    "promptPhrase": "cretan lyra",
+    "commonNames": [
+      "Cretan lyra"
+    ]
+  },
+  {
+    "id": "launeddas",
+    "name": "Launeddas",
+    "family": "other",
+    "region": "Celtic / European folk",
+    "register": [],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "Celtic / European folk world set (seed §9). Family is assigned at curation.",
+    "promptPhrase": "launeddas",
+    "commonNames": [
+      "launeddas"
+    ]
+  },
+  {
+    "id": "didgeridoo",
+    "name": "Didgeridoo",
+    "family": "other",
+    "region": "Oceania / other",
+    "register": [],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "Oceania / other world set (seed §9). Family is assigned at curation.",
+    "promptPhrase": "didgeridoo",
+    "commonNames": [
+      "didgeridoo"
+    ]
+  },
+  {
+    "id": "clapsticks",
+    "name": "Clapsticks",
+    "family": "other",
+    "region": "Oceania / other",
+    "register": [],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "Oceania / other world set (seed §9). Family is assigned at curation.",
+    "promptPhrase": "clapsticks",
+    "commonNames": [
+      "clapsticks"
+    ]
+  },
+  {
+    "id": "ukulele",
+    "name": "Ukulele",
+    "family": "other",
+    "region": "Oceania / other",
+    "register": [],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "Oceania / other world set (seed §9); seed note: (also §6). Family is assigned at curation.",
+    "promptPhrase": "ukulele",
+    "commonNames": [
+      "ukulele"
+    ]
+  },
+  {
+    "id": "conch",
+    "name": "Conch",
+    "family": "other",
+    "region": "Oceania / other",
+    "register": [],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "Oceania / other world set (seed §9). Family is assigned at curation.",
+    "promptPhrase": "conch",
+    "commonNames": [
+      "conch"
+    ]
+  }
+]
