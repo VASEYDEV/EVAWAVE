@@ -84,6 +84,21 @@ describe("loudness (ITU-R BS.1770)", () => {
     const both = Float32Array.from([...quiet, ...loud]);
     expect(analyseAudio(both, 44100).loudness.loudnessRange).toBeGreaterThan(15);
   });
+
+  it("gates the loudness range against its own short-term level, per EBU Tech 3342", () => {
+    // 10 s at −23 LUFS, then 30 s at about −46 LUFS. The absolute-gated short-term windows
+    // average about −29 LUFS, so Tech 3342's −20 LU gate (about −49) keeps the quiet part and
+    // the range is about 23 LU. A gate at the integrated loudness − 20 (−43) would drop it.
+    const loud = sine(1000, -20, 10, 48000);
+    const quiet = sine(1000, -43, 30, 48000);
+    const both = new Float32Array(loud.length + quiet.length);
+    both.set(loud);
+    both.set(quiet, loud.length);
+    const { integratedLufs, loudnessRange } = analyseAudio(both, 48000).loudness;
+    expect(integratedLufs).toBeCloseTo(-23, 0);
+    expect(loudnessRange).toBeGreaterThan(20);
+    expect(loudnessRange).toBeLessThan(24);
+  });
 });
 
 describe("tempo and meter", () => {
