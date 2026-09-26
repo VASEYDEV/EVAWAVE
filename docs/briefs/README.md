@@ -11,7 +11,8 @@ change only by explicit owner instruction recorded in an ADR.
 
 | Date | Brief | Location |
 | --- | --- | --- |
-| 2026-09-16 | EVAWAVE Build Brief v0.1 | [`docs/evawave/BUILD-BRIEF.md`](../evawave/BUILD-BRIEF.md). The brief names its own repo target, and the brief wins over this folder's default, so it isn't copied here. Owner amendments to it are listed in [ADR 0002](../decisions/0002-session-0-intake-and-stack.md) |
+| 2026-09-16 | EVAWAVE Build Brief v0.1 | **Superseded** by the 2026-09-26 brief. Archived at [`docs/archive/BUILD-BRIEF.md`](../archive/BUILD-BRIEF.md). Owner amendments to it are listed in [ADR 0002](../decisions/0002-session-0-intake-and-stack.md) |
+| 2026-09-26 | Restart: EVAWAVE owns MusicSpec IR | [`2026-09-26-restart-evawave-owns-ir.md`](2026-09-26-restart-evawave-owns-ir.md). Decisions in [ADR 0004](../decisions/0004-evawave-owns-musicspec-ir.md); spec in [`docs/SPEC.md`](../SPEC.md) |
 
 ## What a brief should settle
 

@@ -22,20 +22,20 @@ spec, the taxonomy data or the UI copy. It never writes text that ships to an en
 
 The handoff brief (`docs/evawave/reference/handoff-brief-2026-09-16.md`, §2 and §8)
 names these skills as domain logic that maps onto composer modules and linter passes.
-The session column shows where each one applies in the Build Brief's order.
+The session column shows where each one applies in the build plan (`docs/SPEC.md` §3).
 
 | Skill | Applies to | Session |
 | --- | --- | --- |
-| `generating-beat-prompts` | Drum Grammar and Regional Bundle modules; drum-pattern and bundle seed drafting | S5, S6 |
-| `building-negative-prompt-lists` | Negative Space + Output module; exclude classes (vocals, meter drift, genre bleed, instrument ambiguity) | S3, S6 |
-| `auditing-audio-prompts` | Linter passes over the IR and compiled payloads | S4 |
-| `designing-synth-patches` | Synth-role records and the synth-characteristic picker | S5, S6 |
-| `mapping-synth-parameters` | `SynthCharacteristics` vocabulary (oscillator, unison, distortion, filter, envelope, glide) | S5 |
-| `translating-plugin-controls` | Describing hardware or plugin sounds by trait, never by patch or producer name (lineage invariant) | S5 |
-| `building-sound-design-recipes` | Texture and transition vocabulary | S5, S6 |
-| `designing-prompt-composer-flows` | Composer information architecture and module order | S6 |
-| `formatting-ui-preset-exports` | JSON preset export in the export pane | S6 |
-| `drafting-agent-system-instructions` | The system prompt for the `/api/intake/text` route | S8 |
+| `generating-beat-prompts` | Drum Grammar and Regional Bundle modules; drum-pattern and bundle seed drafting | S1, S3 |
+| `building-negative-prompt-lists` | Negative Space + Output module; exclude classes (vocals, meter drift, genre bleed, instrument ambiguity) | S1, S3 |
+| `auditing-audio-prompts` | Linter passes over the IR and compiled payloads | S1, S2 |
+| `designing-synth-patches` | Synth-role records and the synth-characteristic picker | S1, S3 |
+| `mapping-synth-parameters` | `SynthCharacteristics` vocabulary (oscillator, unison, distortion, filter, envelope, glide) | S1, S3 |
+| `translating-plugin-controls` | Describing hardware or plugin sounds by trait, never by patch or producer name (lineage invariant) | S1, S3 |
+| `building-sound-design-recipes` | Texture and transition vocabulary | S3 |
+| `designing-prompt-composer-flows` | Composer information architecture and module order | S3 |
+| `formatting-ui-preset-exports` | JSON preset export in the export pane | S3 |
+| `drafting-agent-system-instructions` | The system prompt for a text-intake route | not scheduled in S1–S5 |
 
 Every skill's output passes the lineage scrub before it reaches the spec. Artist and
 producer names never appear in any emitted string.

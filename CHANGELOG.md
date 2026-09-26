@@ -9,6 +9,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- `docs/SPEC.md`, the single EVAWAVE spec (ADR 0004). It holds the product scope and confirmed decisions (A1–A16; Suno, ElevenLabs Music and Google Flow Music live, Udio halted), MusicSpec IR v1 as a complete, self-contained type definition that folds in all of the IR v0.3 delta, the "Defined, not inherited" list, the lint rules, and the build plan S1–S5.
+- ADR 0004: EVAWAVE owns MusicSpec IR, with no legacy compiler dependency. It supersedes ADR 0002 and carries its still-valid decisions forward.
+- The owner's 2026-09-26 restart brief, verbatim, in `docs/briefs/`.
+- `docs/archive/README.md`: what the archive holds, and the rule that legacy compiler files live only in `docs/archive/legacy/`.
+- `tests/unit/spec.test.ts`: type-checks the IR v1 block in `docs/SPEC.md` standalone under strict settings, checks that every type listed as defined exists, validates the worked example as a `Section`, and checks that the example's Suno compile is verbatim Jinn v1.2 text.
+
 - Session 0 report for the EVAWAVE Build Brief v0.1 (`docs/notes/2026-09-23-session-0-repo-decision.md`): the repo decision rule's outcome, the handoff package inventory with sha256 hashes, the conflict scan, and the owner decisions.
 - EVAWAVE handoff package installed (2026-09-16): the Build Brief, scope v0.2, the instrument bank seed, the IR v0.3 delta, reference docs, engine profiles for Suno, ElevenLabs, Flow and a halted Udio stub, and the path-scoped `musicspec-core` rule. The archive is removed from the tree.
 - Next.js 16.3.6 app scaffold (App Router, Turbopack, TypeScript strict) with Supabase Auth session refresh in `src/proxy.ts` and Supabase browser and server clients.
@@ -20,6 +26,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Scope v0.2, the IR v0.3 delta, the Build Brief v0.1 and the handoff README moved to `docs/archive/` as history. The engine profiles, the instrument bank seed and `docs/evawave/reference/` are unchanged.
+- `docs/archive/**` is excluded from `tsconfig.json`, ESLint and the gate's placeholder scan.
+- `CLAUDE.md` Project Notes: the spec pointer is `docs/SPEC.md`. The invariant that S1 waits on legacy IR v0.2 sources is replaced by two: EVAWAVE owns IR v1, and the Jinn files are ground truth that is never edited.
+- `.claude/rules/musicspec-core.md`: serializers take a catalog (rule 2), and the Jinn v1.2 oracle is a byte-for-byte golden test (rule 7).
+- README, `docs/architecture.md`, `AGENTS.md`, `SKILLS.md`, the verification runbook and `.env.example` comments point to `docs/SPEC.md` and the S1–S5 session numbers.
 - The verification gate now runs the full §3 gate: standards, lint, typecheck, unit, build, the client-bundle check and `npm audit` (criticals block). CI runs it after `npm ci` on Node 22.13.0 and 24.
 - Build Brief §2 stack line amended to Next.js 16 by owner decision. Scope decision log gains A15 (stack and Node `^22.13.0 || ^24.0.0 || >=26.0.0`).
 - README and `docs/architecture.md` rewritten to the package's product statement (current claims only).

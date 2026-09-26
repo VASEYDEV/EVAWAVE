@@ -1,6 +1,6 @@
 # ADR 0002 — Session 0: package intake and stack
 
-**Date:** 2026-09-23 · **Status:** accepted
+**Date:** 2026-09-23 · **Status:** superseded by [ADR 0004](0004-evawave-owns-musicspec-ir.md) (2026-09-26). Decisions 1, 3 and 5–11 carry forward there; decision 2 is withdrawn.
 
 ## Context
 

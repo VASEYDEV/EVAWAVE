@@ -13,7 +13,7 @@
 
 ## Status
 
-**Pre-alpha: Session 0 (bootstrap) of the [Build Brief](docs/evawave/BUILD-BRIEF.md).**
+**Pre-alpha: specification restart. The spec is [`docs/SPEC.md`](docs/SPEC.md) (ADR 0004).**
 Nothing in the app is usable yet. What exists today:
 
 - A Next.js 16 app shell that builds, with Supabase Auth session refresh in `src/proxy.ts`
@@ -22,11 +22,13 @@ Nothing in the app is usable yet. What exists today:
   (`src/core/musicspec/engines/profiles/`). Udio is a halted stub (scope A12).
 - A lint-enforced import boundary that keeps the `src/core/` musicspec core free of React,
   Next.js, Supabase and app-layer imports, with tests that prove it fails violations.
-- The product spec: [scope](docs/evawave/scope-v0.2.md), the
-  [IR v0.3 delta](docs/musicspec/ir-v0.3-delta.md) and the
-  [instrument bank seed](docs/evawave/instrument-bank-seed-v0.1.md).
+- The product spec, [`docs/SPEC.md`](docs/SPEC.md): scope and confirmed decisions,
+  MusicSpec IR v1 as a complete type definition, and the build plan. The
+  [instrument bank seed](docs/evawave/instrument-bank-seed-v0.1.md) and the Jinn reference
+  set stay in `docs/evawave/`. Superseded docs are in `docs/archive/`.
 
-The build order (S1 IR through S10 Phase D) is in the Build Brief §3.
+The build order (S1 IR, linter and Suno serializer through S5 audio import) is in
+SPEC §3.
 
 ## Quick start
 
@@ -35,7 +37,7 @@ Requires Node 22.13+ on the 22 line, 24, or 26 and later. The locked Vitest excl
 ```bash
 git clone https://github.com/VASEYDEV/EVAWAVE.git && cd EVAWAVE
 npm ci
-cp .env.example .env.local    # optional until Supabase is provisioned (S7)
+cp .env.example .env.local    # optional until Supabase is provisioned (S4)
 npm run dev                   # http://localhost:3000
 bash scripts/gate.sh          # full verification gate (the same one CI runs)
 ```
@@ -43,7 +45,7 @@ bash scripts/gate.sh          # full verification gate (the same one CI runs)
 ## Tech stack
 
 - **Framework:** Next.js 16.3.6 (App Router, Turbopack) · React 19 · TypeScript 5.9 (strict)
-- **Auth and data:** Supabase (`@supabase/ssr`, Supabase Auth, RLS from S7)
+- **Auth and data:** Supabase (`@supabase/ssr`, Supabase Auth, RLS from S4)
 - **Quality:** ESLint 9 flat config (invoked directly) · Vitest · `npm audit`
 - **Deploy:** Vercel (planned, not yet configured)
 
@@ -59,8 +61,8 @@ the gate fails if any of them appears in the client bundle.
 | `NEXT_PUBLIC_SUPABASE_URL` | public | `src/lib/supabase/*`, `src/proxy.ts` | Both unset: proxy passes through. Only one set: error |
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | public | `src/lib/supabase/*`, `src/proxy.ts` | Both unset: proxy passes through. Only one set: error |
 | `SUPABASE_SERVICE_ROLE_KEY` | server | not yet | Bypasses RLS; server only |
-| `ANTHROPIC_API_KEY` | server | not yet (S8 text intake) | |
-| `INTAKE_MODEL` | server | not yet (S8) | Pin explicitly; verify the id against the API docs at S8 |
+| `ANTHROPIC_API_KEY` | server | not yet (text intake, not scheduled in S1–S5) | |
+| `INTAKE_MODEL` | server | not yet (text intake) | Pin explicitly; verify the id against the API docs when intake is built |
 | `APP_NAME` | server | not yet | `EVAWAVE` |
 | `BRAND_LOCKUP` | server | not yet | `EVAWAVE` |
 

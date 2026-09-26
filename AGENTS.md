@@ -2,7 +2,7 @@
 
 The authoritative operating contract lives in `CLAUDE.md` (the Vasey Multimedia
 Engineering Standard v3.0 plus EVAWAVE Project Notes). Read it first, then
-`docs/evawave/BUILD-BRIEF.md`. This file adds only environment and runtime notes; on any
+`docs/SPEC.md`. This file adds only environment and runtime notes; on any
 conflict, `CLAUDE.md` wins. The skill index is `SKILLS.md`.
 
 ## Shape of the thing
