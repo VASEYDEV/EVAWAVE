@@ -203,6 +203,18 @@ S5 per SPEC §3. The methods are listed in SPEC §3 S5 "Delivered".
   as they were. Tests cover a failed row delete (the copy is restored byte for byte), a
   successful delete, and a locked copy (the row delete never runs). Dropping the restore
   fails the first test.
+- **Seventeenth review: one local copy per account.** OPFS is per origin, so two accounts
+  on one browser that saved the same file shared `audio/<sha256>`, and deleting either
+  record removed the other's only copy. Copies now live under `audio/<owner>/<sha256>`,
+  and the in-tab fallback is keyed the same way. The save stores under the session's user
+  id, which is the `auth.uid()` the database writes as `owner_id`; the delete uses the
+  row's `owner_id`. The unit fake OPFS is now a directory tree: the old one returned the
+  same directory for every name, so it could not tell one owner's directory from another's. A two-account test keeps both
+  copies and removes only the deleted account's; collapsing the owner directory, or the
+  in-tab key, fails it. The e2e now checks that the whole `audio` directory stays empty
+  through import, Create and Download, since a check on one path would pass vacuously
+  under the new layout; storing at Create fails it. This separates lifecycles, not access
+  (SECURITY.md).
 
 ## Decisions
 
