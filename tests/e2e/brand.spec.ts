@@ -63,7 +63,7 @@ test("BEAM appears exactly once per page: the kicker's slash", async ({ page }) 
   await expect(page.locator(".kicker .beam")).toHaveText("/");
   await expect(page.locator(".kicker")).toHaveText("VASEY/AI");
   // The same holds on the other pages.
-  for (const path of ["/import", "/library", "/login"]) {
+  for (const path of ["/import", "/library", "/login", "/songs/11111111-1111-4111-8111-111111111111"]) {
     await page.goto(path);
     expect(await count(), path).toBe(1);
   }
