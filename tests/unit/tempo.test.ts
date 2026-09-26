@@ -78,7 +78,7 @@ describe("metronome scheduling", () => {
       [1.5, 3, "beat"],
       [2, 0, "bar"],
     ]);
-    expect(cursor).toEqual({ nextTime: 2.5, beatTime: 2.5, beat: 1, step: 0 });
+    expect(cursor).toEqual({ nextTime: 2.5, beatTime: 2.5, beatSec: 0.5, beat: 1, step: 0 });
   });
 
   it("accents 1 and 3 in half-time mode", () => {
@@ -113,6 +113,19 @@ describe("metronome scheduling", () => {
       [1, 2, 0, "beat"],
       [1.25, 2, 1, "sub"],
       [1.5, 3, 0, "beat"],
+    ]);
+  });
+
+  it("finishes the beat in progress at its own tempo and applies a new BPM from the next beat", () => {
+    // 16ths at 120 BPM sounded through 0.25 s; the tempo then doubles to 240 BPM.
+    const before = scheduleClicks(startCursor(0), 0.3, { ...settings, subdivision: 4 });
+    const { clicks } = scheduleClicks(before.cursor, 0.7, { ...settings, bpm: 240, subdivision: 4 });
+    expect(clicks.map((c) => [c.time, c.beat, c.step])).toEqual([
+      [0.375, 0, 3],
+      [0.5, 1, 0],
+      [0.5625, 1, 1],
+      [0.625, 1, 2],
+      [0.6875, 1, 3],
     ]);
   });
 
