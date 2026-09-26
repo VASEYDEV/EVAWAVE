@@ -55,19 +55,22 @@ const IDS_PER_REQUEST = 100;
 type Page<T> = PromiseLike<{ data: T[] | null; error: { message: string } | null; count: number | null }>;
 
 /**
- * Every row a query matches, a page at a time, until the exact count is reached or a page
- * comes back empty. It moves on by the rows the server actually returned, so a `max-rows`
- * below `PAGE_ROWS` still reads everything. `page(from, to)` must ask for
- * `count: "exact"` and order by a unique, stable key, or rows could repeat or go missing
- * between pages.
+ * Every row a query matches, a page at a time, by keyset: each page asks for the rows whose
+ * `key` comes after the last one read, so a row another tab adds or deletes meanwhile never
+ * shifts a page boundary, and no row repeats or goes missing (an offset would). `key` must
+ * be unique; `page(after)` must filter to `key > after` when `after` is not null, order by
+ * `key`, ask for at most `PAGE_ROWS`, and ask for `count: "exact"`. That count is then what
+ * was left after the cursor, so a page that holds all of it is the last, whatever the
+ * server's `max-rows`. Without a count, an empty page ends it.
  */
-async function allRows<T>(what: string, page: (from: number, to: number) => Page<T>): Promise<T[]> {
+async function allRows<T extends object, K extends keyof T>(what: string, key: K, page: (after: T[K] | null) => Page<T>): Promise<T[]> {
   const rows: T[] = [];
   for (;;) {
-    const result = await page(rows.length, rows.length + PAGE_ROWS - 1);
+    const last = rows.at(-1);
+    const result = await page(last === undefined ? null : last[key]);
     const batch = check(result, what);
     rows.push(...batch);
-    if (!batch.length || (result.count !== null && rows.length >= result.count)) return rows;
+    if (!batch.length || (result.count !== null && batch.length >= result.count)) return rows;
   }
 }
 
@@ -122,8 +125,14 @@ export function toVariant(row: VariantRow, parent: MusicSpec | null, catalog: Ca
 export async function listSongs(client: LibraryClient): Promise<SongSummary[]> {
   // Paged by id, which a save never changes, and sorted here by when each was saved.
   const [songs, variants] = await Promise.all([
-    allRows("songs", (from, to) => client.from("songs").select("id, owner_id, title, revision, updated_at", { count: "exact" }).order("id").range(from, to)),
-    allRows("songs: variants", (from, to) => client.from("variants").select("song_id", { count: "exact" }).order("id").range(from, to)),
+    allRows("songs", "id", (after: string | null) => {
+      const query = client.from("songs").select("id, owner_id, title, revision, updated_at", { count: "exact" });
+      return (after === null ? query : query.gt("id", after)).order("id").limit(PAGE_ROWS);
+    }),
+    allRows("songs: variants", "id", (after: string | null) => {
+      const query = client.from("variants").select("id, song_id", { count: "exact" });
+      return (after === null ? query : query.gt("id", after)).order("id").limit(PAGE_ROWS);
+    }),
   ]);
   const counts = new Map<string, number>();
   for (const v of variants) counts.set(v.song_id, (counts.get(v.song_id) ?? 0) + 1);
@@ -171,7 +180,10 @@ export async function loadSong(client: LibraryClient, id: string, catalog: Catal
   const song = await client.from("songs").select("*").eq("id", id).maybeSingle();
   if (song.error) throw new LibraryError(`load song: ${song.error.message}`);
   if (!song.data) throw new LibraryError("load song: no such song for this account; it may have been deleted");
-  const rows = await allRows("load song: variants", (from, to) => client.from("variants").select("*", { count: "exact" }).eq("song_id", id).order("seq", { ascending: true }).range(from, to));
+  const rows = await allRows("load song: variants", "seq", (after: number | null) => {
+    const query = client.from("variants").select("*", { count: "exact" }).eq("song_id", id);
+    return (after === null ? query : query.gt("seq", after)).order("seq", { ascending: true }).limit(PAGE_ROWS);
+  });
   const baseId = song.data.base_variant_id;
   if (baseId && !rows.some((row) => row.id === baseId)) throw new LibraryError("load song: the song changed while it loaded; reload it");
   const snapshots = new Map(rows.map((row) => [row.id, row.spec_snapshot]));
@@ -189,7 +201,12 @@ export async function loadSong(client: LibraryClient, id: string, catalog: Catal
   const batches: string[][] = [];
   for (let i = 0; i < loaded.length; i += IDS_PER_REQUEST) batches.push(loaded.slice(i, i + IDS_PER_REQUEST).map((v) => v.id));
   const takeRows = await Promise.all(
-    batches.map((ids) => allRows("load song: takes", (from, to) => client.from("takes").select("*", { count: "exact" }).in("variant_id", ids).order("id").range(from, to))),
+    batches.map((ids) =>
+      allRows("load song: takes", "id", (after: string | null) => {
+        const query = client.from("takes").select("*", { count: "exact" }).in("variant_id", ids);
+        return (after === null ? query : query.gt("id", after)).order("id").limit(PAGE_ROWS);
+      }),
+    ),
   );
   const takes = takeRows.flat().sort(newestFirst).map(toTake);
   return { ...toSong(song.data), variants: loaded, takes };

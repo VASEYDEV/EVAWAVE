@@ -169,9 +169,23 @@ c925349 and gone on the fix:
 - Mutations: the identity without the copy id, an opening that keeps a passed id, no
   base check, and a write that always reports success each fail their test.
 
+Seventh round (Codex, on 8762294):
+
+- **P2: offsets shift under concurrent writes.** The round-5 pages used `offset`. A row
+  another tab added or deleted before the boundary shifted the next page, repeating one
+  row or skipping another. The count, read again, still let the loop finish. `allRows`
+  now pages by keyset: each page asks for rows whose key (`seq`, or `id`) comes after the
+  last one read. Its exact count is then what was left after the cursor, so a page that
+  holds all of it is the last. That holds even when rows read earlier are deleted, which
+  a total count would not survive. A test changes the song list between pages. On the
+  offset code (c925349's `songs.ts`) it failed: `s3` was skipped after `s1` was deleted.
+  On keyset it passes. Mutation: stopping on a total count fails 4 tests. The scratch
+  fake Supabase now serves `gt.` cursors, and at a row limit of 1 the song page, the
+  library and a save behave as in round 5.
+
 ## Evidence
 
-Counts as of the sixth round.
+Counts as of the seventh round.
 
 - Core: `tests/unit/variants.test.ts` (18), including the Jinn v1.1 → v1.2 diff with
   `/D6/tempo/bpm` 142 → 140 and an exact replay over 60 seeded random edits. Mutations:
@@ -179,7 +193,7 @@ Counts as of the sixth round.
 - Database: `tests/integration/songs-rls.test.ts` (27). Mutations: dropping the revision
   predicate, granting variant updates, dropping the same-song parent key and dropping
   the revision bump each fail their tests.
-- App: `songs-repository.test.ts` (28 with the S7 take cases; dropping the revision
+- App: `songs-repository.test.ts` (29 with the S7 take cases; dropping the revision
   filter fails), `composer-storage.test.ts` (13).
 - E2e without Supabase: `songs.spec.ts` (3) and the song page in the layout and BEAM
   checks.

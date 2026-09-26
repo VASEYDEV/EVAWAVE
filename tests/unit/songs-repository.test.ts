@@ -30,8 +30,9 @@ interface Sent {
 
 /**
  * A client whose PostgREST answers each request with `answer(request)`, recording them all.
- * An array answer to a ranged request is served as PostgREST serves a table: the range
- * asked for, cut at `maxRows`, with the total in `content-range` unless `count` is off.
+ * An array answer to a limited request is served as PostgREST serves a table (rows given in
+ * key order): `key=gt.value` cursors applied, cut at the limit and at `maxRows`, with the
+ * rows matched in `content-range` unless `count` is off.
  */
 function recording(answer: (sent: Sent) => unknown, { maxRows = 1000, count = true }: { maxRows?: number; count?: boolean } = {}) {
   const sent: Sent[] = [];
@@ -44,9 +45,14 @@ function recording(answer: (sent: Sent) => unknown, { maxRows = 1000, count = tr
         let body = answer(request);
         const headers: Record<string, string> = { "content-type": "application/json" };
         if (Array.isArray(body) && url.searchParams.has("limit")) {
-          const offset = Number(url.searchParams.get("offset") ?? 0);
-          const rows = body.slice(offset, offset + Math.min(Number(url.searchParams.get("limit")), maxRows));
-          if (count) headers["content-range"] = `${rows.length ? `${offset}-${offset + rows.length - 1}` : "*"}/${body.length}`;
+          let matched = body as Record<string, unknown>[];
+          for (const [field, filter] of url.searchParams) {
+            if (!filter.startsWith("gt.")) continue;
+            const bound = filter.slice(3);
+            matched = matched.filter((row) => (typeof row[field] === "number" ? Number(row[field]) > Number(bound) : String(row[field]) > bound));
+          }
+          const rows = matched.slice(0, Math.min(Number(url.searchParams.get("limit")), maxRows));
+          if (count) headers["content-range"] = `${rows.length ? `0-${rows.length - 1}` : "*"}/${matched.length}`;
           body = rows;
         }
         return new Response(JSON.stringify(body), { status: 200, headers });
@@ -154,9 +160,10 @@ describe("loadSong", () => {
       const { client, sent } = recording((r) => (r.path === "/rest/v1/songs" ? last : r.path === "/rest/v1/variants" ? rows : []), { maxRows: 2, count });
       const loaded = await loadSong(client, "s", catalog);
       expect(loaded.variants.map((v) => v.label)).toEqual(["v1.0", "v1.1", "v1.2", "v1.3", "v1.4"]);
-      // With the count it stops at the last row; without, at the first empty page.
-      const offsets = sent.filter((r) => r.path === "/rest/v1/variants").map((r) => r.query.get("offset"));
-      expect(offsets).toEqual(count ? ["0", "2", "4"] : ["0", "2", "4", "5"]);
+      // Each page after the last key read; with the count it stops at the last row, without
+      // it at the first empty page.
+      const cursors = sent.filter((r) => r.path === "/rest/v1/variants").map((r) => r.query.get("seq"));
+      expect(cursors).toEqual(count ? [null, "gt.2", "gt.4"] : [null, "gt.2", "gt.4", "gt.5"]);
       const base = loaded.variants.find((v) => v.id === loaded.song.baseVariantId) ?? null;
       expect(songAttachment(loaded, loaded.variants, base)).toMatchObject({ baseVariantId: "v-4", baseLabel: "v1.4" });
     }
@@ -204,7 +211,7 @@ describe("loadSong", () => {
 describe("listSongs", () => {
   it("lists every song past the server's row limit, most recently saved first, with every variant counted", async () => {
     const songs = ["a", "b", "c"].map((id, i) => ({ id, owner_id: "o", title: id.toUpperCase(), revision: 0, updated_at: `2026-09-26T1${i}:00:00+00:00` }));
-    const variants = [{ song_id: "a" }, { song_id: "c" }, { song_id: "c" }, { song_id: "c" }, { song_id: "a" }];
+    const variants = ["a", "c", "c", "c", "a"].map((song_id, i) => ({ id: `v-${i}`, song_id }));
     const { client } = recording((r) => (r.path === "/rest/v1/songs" ? songs : variants), { maxRows: 2 });
     const listed = await listSongs(client);
     expect(listed.map((s) => [s.id, s.variantCount])).toEqual([
@@ -212,6 +219,31 @@ describe("listSongs", () => {
       ["b", 0],
       ["a", 2],
     ]);
+  });
+});
+
+describe("paging by key", () => {
+  const summary = (id: string) => ({ id, owner_id: "o", title: id, revision: 0, updated_at: "2026-09-26T10:00:00+00:00" });
+
+  it("neither repeats nor skips a song when another tab deletes or adds one between pages", async () => {
+    // After the first page (s1, s2): s1 is deleted, which would shift an offset past s3; or
+    // s0 is added, which would shift one back onto s2.
+    for (const change of [(ids: string[]) => ids.filter((id) => id !== "s1"), (ids: string[]) => ["s0", ...ids]]) {
+      let ids = ["s1", "s2", "s3", "s4", "s5"];
+      let songPages = 0;
+      const { client } = recording(
+        (r) => {
+          if (r.path !== "/rest/v1/songs") return [];
+          const now = ids.map(summary);
+          if (++songPages === 1) ids = change(ids);
+          return now;
+        },
+        { maxRows: 2 },
+      );
+      const listed = (await listSongs(client)).map((s) => s.id);
+      expect(new Set(listed).size).toBe(listed.length);
+      expect(listed).toEqual(expect.arrayContaining(["s2", "s3", "s4", "s5"]));
+    }
   });
 });
 

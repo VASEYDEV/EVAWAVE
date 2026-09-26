@@ -1696,8 +1696,9 @@ Delivered:
 - **App.** `src/lib/library/songs.ts` (saves filter on the revision; zero rows is an
   error; `loadSong` derives each variant's diff and coverage, yielding every 16 ms so a
   long history never blocks the main thread in one task). Song, variant and take lists
-  are read a page at a time to the exact count, because PostgREST cuts a response at its
-  row limit without an error; the song is read before its variants, so the base it names
+  are read a page at a time, each page after the last key read, because PostgREST cuts a
+  response at its row limit without an error, and an offset would shift when another tab
+  adds or deletes a row; the song is read before its variants, so the base it names
   is always among them. Each opening of a song gets its own copy id, and a save or freeze
   attaches its result only to the copy it began on. Opening refuses, and says so, when the
   browser will not store the copy. The working copy in the browser carries its song attachment in the same
