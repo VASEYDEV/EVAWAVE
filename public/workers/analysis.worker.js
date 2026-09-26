@@ -359,10 +359,17 @@ function normalised({ b, a }) {
 /**
 * BS.1770 channel weights by channel count, for the standard WAV (WAVE_FORMAT_EXTENSIBLE) and
 * Web Audio orders: 1.41 for surrounds between 60° and 120° azimuth, 0 for the LFE, 1.0
-* otherwise. 5.0 is L R C Ls Rs; 5.1 is L R C LFE Ls Rs; 7.1 is L R C LFE Lb Rb Ls Rs, whose
-* backs sit behind 120°. Other counts carry no known layout and weigh every channel 1.0.
+* otherwise. Quad is L R Ls Rs (Web Audio's quad, and libebur128's default for four channels);
+* 5.0 is L R C Ls Rs; 5.1 is L R C LFE Ls Rs; 7.1 is L R C LFE Lb Rb Ls Rs, whose backs sit
+* behind 120°. Other counts carry no known layout and weigh every channel 1.0.
 */
 const LAYOUT_WEIGHTS = {
+	4: [
+		1,
+		1,
+		1.41,
+		1.41
+	],
 	5: [
 		1,
 		1,

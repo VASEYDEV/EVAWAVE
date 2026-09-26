@@ -62,11 +62,13 @@ describe("loudness (ITU-R BS.1770)", () => {
     expect(analyseAudio(mixOf(only(2)), 48000, only(2)).loudness.integratedLufs).toBeCloseTo(-23.01, 1);
   });
 
-  it("weights 5.0 surrounds and 7.1 side surrounds by 1.41, and leaves out the 7.1 LFE", () => {
+  it("weights quad and 5.0 surrounds and 7.1 side surrounds by 1.41, and leaves out the 7.1 LFE", () => {
     const tone = sine(1000, -20, 10, 48000);
     const only = (count: number, index: number) => Array.from({ length: count }, (_, c) => (c === index ? tone : new Float32Array(tone.length)));
     const lufsOf = (channels: Float32Array[]) => analyseAudio(channels[0] as Float32Array, 48000, channels).loudness.integratedLufs;
     const surround = -23.01 + 10 * Math.log10(1.41);
+    expect(lufsOf(only(4, 1))).toBeCloseTo(-23.01, 1);
+    expect(lufsOf(only(4, 2))).toBeCloseTo(surround, 1);
     expect(lufsOf(only(5, 3))).toBeCloseTo(surround, 1);
     expect(lufsOf(only(8, 3))).toBe(-70);
     expect(lufsOf(only(8, 4))).toBeCloseTo(-23.01, 1);
