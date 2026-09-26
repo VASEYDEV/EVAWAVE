@@ -42,6 +42,40 @@ export interface SongSummary {
   variantCount: number;
 }
 
+/**
+ * Rows asked for per request. PostgREST cuts every response at its `max-rows` setting
+ * (1,000 on Supabase unless changed) without an error, so one request can return the first
+ * page of a long history and look complete.
+ */
+const PAGE_ROWS = 1000;
+
+/** Variant ids per `in.(…)` filter: 100 UUIDs keep a request's URL near 4 KB. */
+const IDS_PER_REQUEST = 100;
+
+type Page<T> = PromiseLike<{ data: T[] | null; error: { message: string } | null; count: number | null }>;
+
+/**
+ * Every row a query matches, a page at a time, until the exact count is reached or a page
+ * comes back empty. It moves on by the rows the server actually returned, so a `max-rows`
+ * below `PAGE_ROWS` still reads everything. `page(from, to)` must ask for
+ * `count: "exact"` and order by a unique, stable key, or rows could repeat or go missing
+ * between pages.
+ */
+async function allRows<T>(what: string, page: (from: number, to: number) => Page<T>): Promise<T[]> {
+  const rows: T[] = [];
+  for (;;) {
+    const result = await page(rows.length, rows.length + PAGE_ROWS - 1);
+    const batch = check(result, what);
+    rows.push(...batch);
+    if (!batch.length || (result.count !== null && rows.length >= result.count)) return rows;
+  }
+}
+
+/** Newest first by `created_at`, then by id, so equal times keep one order. */
+function newestFirst(a: { created_at: string; id: string }, b: { created_at: string; id: string }): number {
+  return Date.parse(b.created_at) - Date.parse(a.created_at) || (a.id < b.id ? 1 : a.id > b.id ? -1 : 0);
+}
+
 export function toSong(row: SongRow): StoredSong {
   return {
     song: {
@@ -84,14 +118,16 @@ export function toVariant(row: VariantRow, parent: MusicSpec | null, catalog: Ca
   };
 }
 
+/** The caller's songs, most recently saved first, each with its variant count. */
 export async function listSongs(client: LibraryClient): Promise<SongSummary[]> {
+  // Paged by id, which a save never changes, and sorted here by when each was saved.
   const [songs, variants] = await Promise.all([
-    client.from("songs").select("id, owner_id, title, revision, updated_at").order("updated_at", { ascending: false }),
-    client.from("variants").select("song_id"),
+    allRows("songs", (from, to) => client.from("songs").select("id, owner_id, title, revision, updated_at", { count: "exact" }).order("id").range(from, to)),
+    allRows("songs: variants", (from, to) => client.from("variants").select("song_id", { count: "exact" }).order("id").range(from, to)),
   ]);
   const counts = new Map<string, number>();
-  for (const v of check(variants, "songs: variants")) counts.set(v.song_id, (counts.get(v.song_id) ?? 0) + 1);
-  return check(songs, "songs").map((row) => ({
+  for (const v of variants) counts.set(v.song_id, (counts.get(v.song_id) ?? 0) + 1);
+  return songs.sort((a, b) => newestFirst({ created_at: a.updated_at, id: a.id }, { created_at: b.updated_at, id: b.id })).map((row) => ({
     id: row.id,
     ownerId: row.owner_id,
     title: row.title,
@@ -127,13 +163,14 @@ const yieldToMain = () => new Promise<void>((resolve) => setTimeout(resolve, 0))
  * thread in one task.
  */
 export async function loadSong(client: LibraryClient, id: string, catalog: Catalog): Promise<StoredSong & { variants: Variant[]; takes: Take[] }> {
-  const [song, variants] = await Promise.all([
+  // Every variant, however long the history: the song's base variant may be the newest,
+  // and a save from a copy that could not find it would clear it.
+  const [song, rows] = await Promise.all([
     client.from("songs").select("*").eq("id", id).maybeSingle(),
-    client.from("variants").select("*").eq("song_id", id).order("seq", { ascending: true }),
+    allRows("load song: variants", (from, to) => client.from("variants").select("*", { count: "exact" }).eq("song_id", id).order("seq", { ascending: true }).range(from, to)),
   ]);
   if (song.error) throw new LibraryError(`load song: ${song.error.message}`);
   if (!song.data) throw new LibraryError("load song: no such song for this account; it may have been deleted");
-  const rows = check(variants, "load song: variants");
   const snapshots = new Map(rows.map((row) => [row.id, row.spec_snapshot]));
   const loaded: Variant[] = [];
   let slice = performance.now();
@@ -144,19 +181,14 @@ export async function loadSong(client: LibraryClient, id: string, catalog: Catal
       slice = performance.now();
     }
   }
-  const takes = loaded.length
-    ? check(
-        await client
-          .from("takes")
-          .select("*")
-          .in(
-            "variant_id",
-            loaded.map((v) => v.id),
-          )
-          .order("created_at", { ascending: false }),
-        "load song: takes",
-      ).map(toTake)
-    : [];
+  // Takes for a few variants at a time, so the id list never makes the URL too long for a
+  // proxy; each batch paged by id, then all sorted newest first here.
+  const batches: string[][] = [];
+  for (let i = 0; i < loaded.length; i += IDS_PER_REQUEST) batches.push(loaded.slice(i, i + IDS_PER_REQUEST).map((v) => v.id));
+  const takeRows = await Promise.all(
+    batches.map((ids) => allRows("load song: takes", (from, to) => client.from("takes").select("*", { count: "exact" }).in("variant_id", ids).order("id").range(from, to))),
+  );
+  const takes = takeRows.flat().sort(newestFirst).map(toTake);
   return { ...toSong(song.data), variants: loaded, takes };
 }
 

@@ -9,7 +9,7 @@ import { LibraryError } from "@/lib/library/repository";
 import type { Database, SongRow, VariantRow } from "@/lib/library/schema";
 import { variantCoverage } from "@/core/musicspec/variants";
 import { hasUnsavedWork, openedCopy, workingHash } from "@/lib/composer/storage";
-import { clampText, coverageScores, createSong, deleteSong, deleteTake, describeChange, freezeVariant, loadSong, logTake, renderLink, saveSong, shortValue, songAttachment, songTitle, toSong, wordsBlamed, type TakeInput, type WorkingCopy } from "@/lib/library/songs";
+import { clampText, coverageScores, createSong, deleteSong, deleteTake, describeChange, freezeVariant, listSongs, loadSong, logTake, renderLink, saveSong, shortValue, songAttachment, songTitle, toSong, wordsBlamed, type TakeInput, type WorkingCopy } from "@/lib/library/songs";
 import { catalog } from "@/data/taxonomy";
 
 /**
@@ -28,8 +28,12 @@ interface Sent {
   body: unknown;
 }
 
-/** A client whose PostgREST answers each request with `answer(request)`, recording them all. */
-function recording(answer: (sent: Sent) => unknown) {
+/**
+ * A client whose PostgREST answers each request with `answer(request)`, recording them all.
+ * An array answer to a ranged request is served as PostgREST serves a table: the range
+ * asked for, cut at `maxRows`, with the total in `content-range` unless `count` is off.
+ */
+function recording(answer: (sent: Sent) => unknown, { maxRows = 1000, count = true }: { maxRows?: number; count?: boolean } = {}) {
   const sent: Sent[] = [];
   const client = createClient<Database>("https://project.supabase.test", "anon-key-for-tests", {
     global: {
@@ -37,7 +41,15 @@ function recording(answer: (sent: Sent) => unknown) {
         const url = new URL(String(input));
         const request: Sent = { method: init?.method ?? "GET", path: url.pathname, query: url.searchParams, body: init?.body ? JSON.parse(String(init.body)) : undefined };
         sent.push(request);
-        return new Response(JSON.stringify(answer(request)), { status: 200, headers: { "content-type": "application/json" } });
+        let body = answer(request);
+        const headers: Record<string, string> = { "content-type": "application/json" };
+        if (Array.isArray(body) && url.searchParams.has("limit")) {
+          const offset = Number(url.searchParams.get("offset") ?? 0);
+          const rows = body.slice(offset, offset + Math.min(Number(url.searchParams.get("limit")), maxRows));
+          if (count) headers["content-range"] = `${rows.length ? `${offset}-${offset + rows.length - 1}` : "*"}/${body.length}`;
+          body = rows;
+        }
+        return new Response(JSON.stringify(body), { status: 200, headers });
       }) as typeof fetch,
     },
     auth: { persistSession: false },
@@ -135,6 +147,42 @@ describe("loadSong", () => {
     expect(variants.map((v) => v.parentVariantId)).toEqual([undefined, "v-0", "v-0"]);
   });
 
+  it("reads every variant past the server's row limit, so a base variant on a later page is found", async () => {
+    const rows = Array.from({ length: 5 }, (_, i) => row(`v-${i}`, i + 1, i ? `v-${i - 1}` : null, i % 2 ? v12 : v11));
+    const last = { ...song, base_variant_id: "v-4" };
+    for (const count of [true, false]) {
+      const { client, sent } = recording((r) => (r.path === "/rest/v1/songs" ? last : r.path === "/rest/v1/variants" ? rows : []), { maxRows: 2, count });
+      const loaded = await loadSong(client, "s", catalog);
+      expect(loaded.variants.map((v) => v.label)).toEqual(["v1.0", "v1.1", "v1.2", "v1.3", "v1.4"]);
+      // With the count it stops at the last row; without, at the first empty page.
+      const offsets = sent.filter((r) => r.path === "/rest/v1/variants").map((r) => r.query.get("offset"));
+      expect(offsets).toEqual(count ? ["0", "2", "4"] : ["0", "2", "4", "5"]);
+      const base = loaded.variants.find((v) => v.id === loaded.song.baseVariantId) ?? null;
+      expect(songAttachment(loaded, loaded.variants, base)).toMatchObject({ baseVariantId: "v-4", baseLabel: "v1.4" });
+    }
+  });
+
+  it("reads takes for 100 variants per request, every page, newest first", async () => {
+    const rows = Array.from({ length: 150 }, (_, i) => row(`v-${String(i).padStart(3, "0")}`, i + 1, null, v12));
+    const takes = rows.map((v, i) => ({ id: `t-${String(i).padStart(3, "0")}`, owner_id: "o", variant_id: v.id, engine: "suno", engine_version: "v6", render_ref: null, verdict: "keep", drifted: [], words_blamed: [], notes: "", created_at: new Date(Date.UTC(2026, 8, 26, 0, i)).toISOString() }));
+    const { client, sent } = recording(
+      (r) => {
+        if (r.path === "/rest/v1/songs") return song;
+        if (r.path === "/rest/v1/variants") return rows;
+        const ids = (r.query.get("variant_id") ?? "").replace(/^in\.\(|\)$/g, "").split(",");
+        return takes.filter((t) => ids.includes(t.variant_id));
+      },
+      { maxRows: 40 },
+    );
+    const loaded = await loadSong(client, "s", catalog);
+    const requests = sent.filter((r) => r.path === "/rest/v1/takes");
+    const idsPerBatch = [...new Set(requests.map((r) => r.query.get("variant_id")))].map((list) => (list ?? "").split(",").length);
+    expect(idsPerBatch).toEqual([100, 50]);
+    expect(loaded.takes).toHaveLength(150);
+    expect(loaded.takes[0]?.id).toBe("t-149");
+    expect(loaded.takes.at(-1)?.id).toBe("t-000");
+  });
+
   it("derives each variant's coverage from its own snapshot", async () => {
     const rows = [row("v-0", 1, null, v11), row("v-1", 2, "v-0", v12)];
     const { client } = recording((r) => (r.path === "/rest/v1/songs" ? song : r.path === "/rest/v1/variants" ? rows : []));
@@ -142,6 +190,20 @@ describe("loadSong", () => {
     expect(variants[0]?.coverage).toEqual(variantCoverage(v11, catalog));
     expect(variants[1]?.coverage).toEqual(variantCoverage(v12, catalog));
     expect(Object.keys(variants[1]?.coverage ?? {}).sort()).toEqual(["eleven", "flow", "suno"]);
+  });
+});
+
+describe("listSongs", () => {
+  it("lists every song past the server's row limit, most recently saved first, with every variant counted", async () => {
+    const songs = ["a", "b", "c"].map((id, i) => ({ id, owner_id: "o", title: id.toUpperCase(), revision: 0, updated_at: `2026-09-26T1${i}:00:00+00:00` }));
+    const variants = [{ song_id: "a" }, { song_id: "c" }, { song_id: "c" }, { song_id: "c" }, { song_id: "a" }];
+    const { client } = recording((r) => (r.path === "/rest/v1/songs" ? songs : variants), { maxRows: 2 });
+    const listed = await listSongs(client);
+    expect(listed.map((s) => [s.id, s.variantCount])).toEqual([
+      ["c", 3],
+      ["b", 0],
+      ["a", 2],
+    ]);
   });
 });
 

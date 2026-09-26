@@ -123,9 +123,28 @@ Fourth round (Codex, on 87fae30), each reproduced against the scratch fake Supab
   task left is hydration, about 400 ms at 4x, the same as with 3 variants. At 1x, 63
   variants show after about 1.1 s rather than 0.85 s, and 23 show as before.
 
+Fifth round (Codex, on db09c94):
+
+- **P2: a history longer than the row limit.** PostgREST cuts every response at its
+  `max-rows` (1,000 on Supabase by default) without an error. `loadSong` read variants
+  and takes in one request each, so past the limit it saw only the oldest page. The
+  song's base variant could then be missing, and the next save would clear it. The same
+  cut applied to `listSongs`, both the songs and the variant counts. All of them now go
+  through `allRows`: pages ordered by a unique, stable key (sequence, or id with the sort
+  done after), read until the exact count or an empty page. It moves on by the rows the
+  server returned, so a limit below the page size still reads everything. Takes are
+  asked for 100 variant ids at a time, keeping the URL near 4 KB. Reproduced against the
+  scratch fake Supabase with a row limit of 1. On db09c94 the song page showed 1 of 3
+  variants and "not frozen yet", the composer "no variant yet", and the save sent
+  `base_variant_id: null`. On the fix it shows all 3 variants and both takes, "Saved ·
+  from v1.1", and the save keeps v1.1. Mutations: one page only, stopping at a short
+  page, and one takes request each fail their tests.
+- Not fixed here, listed: the S4 library reads (`loadLibrary`: profiles, files, tags and
+  their links) are single requests too, and would be cut the same way past the limit.
+
 ## Evidence
 
-Counts as of the fourth round.
+Counts as of the fifth round.
 
 - Core: `tests/unit/variants.test.ts` (18), including the Jinn v1.1 → v1.2 diff with
   `/D6/tempo/bpm` 142 → 140 and an exact replay over 60 seeded random edits. Mutations:
@@ -133,7 +152,7 @@ Counts as of the fourth round.
 - Database: `tests/integration/songs-rls.test.ts` (27). Mutations: dropping the revision
   predicate, granting variant updates, dropping the same-song parent key and dropping
   the revision bump each fail their tests.
-- App: `songs-repository.test.ts` (24 with the S7 take cases; dropping the revision
+- App: `songs-repository.test.ts` (27 with the S7 take cases; dropping the revision
   filter fails), `composer-storage.test.ts` (12).
 - E2e without Supabase: `songs.spec.ts` (3) and the song page in the layout and BEAM
   checks.
