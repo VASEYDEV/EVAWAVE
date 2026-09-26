@@ -8,6 +8,8 @@ export interface PcmAudio {
   /** Mono mix, one float per frame in −1…1. */
   samples: Float32Array;
   channels: number;
+  /** Each decoded channel, which loudness sums per BS.1770. A mono file's is the mix itself. */
+  channelData: Float32Array[];
 }
 
 export class WavError extends Error {
@@ -49,6 +51,7 @@ export function decodeWav(buffer: ArrayBuffer): PcmAudio {
   const bytes = bits / 8;
   const frames = Math.floor(dataLength / (bytes * channels));
   const samples = new Float32Array(frames);
+  const channelData = channels === 1 ? [samples] : Array.from({ length: channels }, () => new Float32Array(frames));
   const read = (at: number): number => {
     if (format === 3) return bits === 64 ? view.getFloat64(at, true) : view.getFloat32(at, true);
     switch (bits) {
@@ -68,10 +71,14 @@ export function decodeWav(buffer: ArrayBuffer): PcmAudio {
   };
   for (let f = 0; f < frames; f++) {
     let sum = 0;
-    for (let c = 0; c < channels; c++) sum += read(dataOffset + (f * channels + c) * bytes);
+    for (let c = 0; c < channels; c++) {
+      const value = read(dataOffset + (f * channels + c) * bytes);
+      (channelData[c] as Float32Array)[f] = value;
+      sum += value;
+    }
     samples[f] = sum / channels;
   }
-  return { sampleRate, samples, channels };
+  return { sampleRate, samples, channels, channelData };
 }
 
 /** Encodes mono samples as 16-bit PCM WAV. */

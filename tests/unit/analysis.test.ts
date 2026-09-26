@@ -40,6 +40,33 @@ describe("loudness (ITU-R BS.1770)", () => {
     expect(analyseAudio(sine(1000, -75, 6, 48000), 48000).loudness.integratedLufs).toBe(-70);
   });
 
+  it("sums channel energies: the same sine on L and R reads 3 dB above one channel", () => {
+    const tone = sine(1000, -20, 10, 48000);
+    const silent = new Float32Array(tone.length);
+    expect(analyseAudio(tone, 48000, [tone, tone]).loudness.integratedLufs).toBeCloseTo(-20.0, 1);
+    expect(analyseAudio(tone.map((v) => v / 2), 48000, [tone, silent]).loudness.integratedLufs).toBeCloseTo(-23.01, 1);
+  });
+
+  it("reads phase-opposed stereo at its real loudness, not as the silence its mono mix is", () => {
+    const tone = sine(1000, -20, 10, 48000);
+    const features = analyseAudio(new Float32Array(tone.length), 48000, [tone, tone.map((v) => -v)]);
+    expect(features.loudness.integratedLufs).toBeCloseTo(-20.0, 1);
+  });
+
+  it("weights 5.1 surrounds by 1.41 and leaves out the LFE", () => {
+    const tone = sine(1000, -20, 10, 48000);
+    const only = (index: number) => Array.from({ length: 6 }, (_, c) => (c === index ? tone : new Float32Array(tone.length)));
+    const mixOf = (channels: Float32Array[]) => channels[0] as Float32Array;
+    expect(analyseAudio(mixOf(only(3)), 48000, only(3)).loudness.integratedLufs).toBe(-70);
+    expect(analyseAudio(mixOf(only(4)), 48000, only(4)).loudness.integratedLufs).toBeCloseTo(-23.01 + 10 * Math.log10(1.41), 1);
+    expect(analyseAudio(mixOf(only(2)), 48000, only(2)).loudness.integratedLufs).toBeCloseTo(-23.01, 1);
+  });
+
+  it("rejects channels that do not match the mix", () => {
+    expect(() => analyseAudio(new Float32Array(100), 48000, [new Float32Array(99)])).toThrow(RangeError);
+    expect(() => analyseAudio(new Float32Array(100), 48000, [])).toThrow(RangeError);
+  });
+
   it("measures a loudness range between a quiet and a loud half", () => {
     const quiet = sine(1000, -30, 10, 44100);
     const loud = sine(1000, -10, 10, 44100);
@@ -122,6 +149,7 @@ describe("WAV", () => {
     const decoded = decodeWav(encodeWav(samples, 8000));
     expect(decoded.sampleRate).toBe(8000);
     expect(decoded.channels).toBe(1);
+    expect(decoded.channelData).toEqual([decoded.samples]);
     decoded.samples.forEach((s, i) => expect(Math.abs(s - (samples[i] as number))).toBeLessThan(1 / 16384));
   });
 
@@ -156,7 +184,12 @@ describe("WAV", () => {
       });
       return buffer;
     };
-    expect(Array.from(decodeWav(make(3, 32, [[0.5, -0.5], [1, 0]])).samples)).toEqual([0, 0.5]);
+    const float = decodeWav(make(3, 32, [[0.5, -0.5], [1, 0]]));
+    expect(Array.from(float.samples)).toEqual([0, 0.5]);
+    expect(float.channelData.map((c) => Array.from(c))).toEqual([
+      [0.5, 1],
+      [-0.5, 0],
+    ]);
     const pcm24 = decodeWav(make(1, 24, [[0.5, 0.25]])).samples[0] as number;
     expect(pcm24).toBeCloseTo(0.375, 5);
   });

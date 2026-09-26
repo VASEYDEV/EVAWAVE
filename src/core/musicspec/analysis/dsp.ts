@@ -59,24 +59,6 @@ export interface Biquad {
   a: [number, number, number];
 }
 
-/** Direct form I biquad over a whole signal; returns a new array. */
-export function filter(signal: Float32Array | Float64Array, { b, a }: Biquad): Float64Array {
-  const out = new Float64Array(signal.length);
-  let x1 = 0, x2 = 0, y1 = 0, y2 = 0;
-  const [b0, b1, b2] = b.map((v) => v / a[0]) as [number, number, number];
-  const [a1, a2] = [a[1] / a[0], a[2] / a[0]];
-  for (let i = 0; i < signal.length; i++) {
-    const x = signal[i] as number;
-    const y = b0 * x + b1 * x1 + b2 * x2 - a1 * y1 - a2 * y2;
-    out[i] = y;
-    x2 = x1;
-    x1 = x;
-    y2 = y1;
-    y1 = y;
-  }
-  return out;
-}
-
 /** Averages `factor` samples at a time: a crude low-pass decimator, enough for descriptors. */
 export function decimate(signal: Float32Array, factor: number): Float32Array {
   if (factor <= 1) return signal;

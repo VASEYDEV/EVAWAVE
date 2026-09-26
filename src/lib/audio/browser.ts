@@ -10,12 +10,15 @@ export async function decodeWithWebAudio(bytes: ArrayBuffer): Promise<PcmAudio> 
   const context = new AudioContext();
   try {
     const buffer = await context.decodeAudioData(bytes.slice(0));
-    const samples = new Float32Array(buffer.length);
-    for (let c = 0; c < buffer.numberOfChannels; c++) {
-      const channel = buffer.getChannelData(c);
-      for (let i = 0; i < channel.length; i++) samples[i] = (samples[i] as number) + (channel[i] as number) / buffer.numberOfChannels;
+    const channelData = Array.from({ length: buffer.numberOfChannels }, (_, c) => buffer.getChannelData(c));
+    let samples = channelData[0] ?? new Float32Array(0);
+    if (channelData.length > 1) {
+      samples = new Float32Array(buffer.length);
+      for (const channel of channelData) {
+        for (let i = 0; i < channel.length; i++) samples[i] = (samples[i] as number) + (channel[i] as number) / channelData.length;
+      }
     }
-    return { sampleRate: buffer.sampleRate, samples, channels: buffer.numberOfChannels };
+    return { sampleRate: buffer.sampleRate, samples, channels: buffer.numberOfChannels, channelData };
   } finally {
     await context.close();
   }

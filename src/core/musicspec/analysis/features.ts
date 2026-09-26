@@ -9,12 +9,15 @@
  * - meter: autocorrelation of an amplitude-keeping accent envelope at 4-beat against 3-beat
  *   bar lags;
  * - key: chroma from the magnitude spectrum, correlated with the Krumhansl–Kessler profiles;
- * - loudness: ITU-R BS.1770 K-weighting with 400 ms gated blocks; range from 3 s windows
- *   (EBU Tech 3342);
+ * - loudness: ITU-R BS.1770 K-weighting per channel, summed with the channel weights, with
+ *   400 ms gated blocks; range from 3 s windows (EBU Tech 3342);
  * - spectrum: centroid, energy above 1.5 kHz, energy below 60 Hz, onsets per second.
+ *
+ * Memory is bounded for long recordings: the frame pass keeps running sums and two numbers
+ * per frame, never the spectra, and loudness keeps one number per 100 ms.
  */
 import type { AudioFeatures } from "../ir/types";
-import { decimate, filter, hann, magnitudes, meanOf, percentile, type Biquad } from "./dsp";
+import { decimate, hann, magnitudes, meanOf, percentile, type Biquad } from "./dsp";
 
 const PITCHES = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"] as const;
 const MAJOR = [6.35, 2.23, 3.48, 2.33, 4.38, 4.09, 2.52, 5.19, 2.39, 3.66, 2.29, 2.88];
@@ -24,51 +27,83 @@ const ANALYSIS_RATE = 22050;
 const FRAME = 2048;
 const HOP = 512;
 
-interface Frames {
+/** What one pass over the spectral frames keeps. */
+interface FramePass {
   rate: number;
   frameRate: number;
-  spectra: Float64Array[];
+  /** Half-wave-rectified log-magnitude flux per frame: the onset envelope. */
+  flux: Float64Array;
+  /** Spectral energy per frame, which the accent envelope differences. */
+  energy: Float64Array;
+  /** Energy per pitch class between 55 Hz and 2 kHz. */
+  chroma: number[];
+  /** Σ hz·magnitude and Σ magnitude, for the centroid. */
+  centroidSum: number;
+  magnitudeSum: number;
+  /** Energy above 1.5 kHz, below 60 Hz, and in total. */
+  brightEnergy: number;
+  subEnergy: number;
+  totalEnergy: number;
 }
 
-function spectralFrames(samples: Float32Array, sampleRate: number): Frames {
+function framePass(samples: Float32Array, sampleRate: number): FramePass {
   const factor = Math.max(1, Math.floor(sampleRate / ANALYSIS_RATE));
   const signal = decimate(samples, factor);
   const rate = sampleRate / factor;
   const window = hann(FRAME);
-  const spectra: Float64Array[] = [];
-  for (let offset = 0; offset + FRAME <= signal.length || (offset === 0 && signal.length > 0); offset += HOP) {
-    spectra.push(magnitudes(signal, offset, window));
-    if (offset + FRAME > signal.length) break;
-  }
-  return { rate, frameRate: rate / HOP, spectra };
-}
-
-/** Half-wave-rectified log-magnitude flux, one value per frame. */
-function onsetEnvelope(frames: Frames): Float64Array {
-  const env = new Float64Array(frames.spectra.length);
-  for (let t = 1; t < frames.spectra.length; t++) {
-    const cur = frames.spectra[t] as Float64Array;
-    const prev = frames.spectra[t - 1] as Float64Array;
-    let flux = 0;
-    for (let k = 1; k < cur.length; k++) {
-      const d = Math.log1p(100 * (cur[k] as number)) - Math.log1p(100 * (prev[k] as number));
-      if (d > 0) flux += d;
+  const binHz = rate / FRAME;
+  // A short signal still gives one zero-padded frame.
+  const count = signal.length === 0 ? 0 : signal.length < FRAME ? 1 : Math.floor((signal.length - FRAME) / HOP) + 1;
+  const pass: FramePass = {
+    rate,
+    frameRate: rate / HOP,
+    flux: new Float64Array(count),
+    energy: new Float64Array(count),
+    chroma: new Array<number>(12).fill(0),
+    centroidSum: 0,
+    magnitudeSum: 0,
+    brightEnergy: 0,
+    subEnergy: 0,
+    totalEnergy: 0,
+  };
+  let prev: Float64Array | null = null;
+  for (let t = 0; t < count; t++) {
+    const spectrum = magnitudes(signal, t * HOP, window);
+    if (prev) {
+      let flux = 0;
+      for (let k = 1; k < spectrum.length; k++) {
+        const d = Math.log1p(100 * (spectrum[k] as number)) - Math.log1p(100 * (prev[k] as number));
+        if (d > 0) flux += d;
+      }
+      pass.flux[t] = flux;
     }
-    env[t] = flux;
+    let frameEnergy = 0;
+    for (let k = 1; k < spectrum.length; k++) {
+      const hz = k * binHz;
+      const m = spectrum[k] as number;
+      const e = m ** 2;
+      frameEnergy += e;
+      pass.totalEnergy += e;
+      pass.centroidSum += hz * m;
+      pass.magnitudeSum += m;
+      if (hz >= 1500) pass.brightEnergy += e;
+      if (hz < 60) pass.subEnergy += e;
+      if (hz >= 55 && hz <= 2000) {
+        const pc = ((Math.round(12 * Math.log2(hz / 440)) + 69) % 12 + 12) % 12;
+        pass.chroma[pc] = (pass.chroma[pc] as number) + e;
+      }
+    }
+    pass.energy[t] = frameEnergy;
+    prev = spectrum;
   }
-  return env;
+  return pass;
 }
 
 /**
  * Positive frame-energy differences, one value per frame. Unlike the log flux it keeps
  * amplitude, so an accented downbeat stands out; the meter estimate reads it.
  */
-function accentEnvelope(frames: Frames): Float64Array {
-  const energy = frames.spectra.map((spectrum) => {
-    let sum = 0;
-    for (let k = 1; k < spectrum.length; k++) sum += (spectrum[k] as number) ** 2;
-    return sum;
-  });
+function accentEnvelope(energy: Float64Array): Float64Array {
   const env = new Float64Array(energy.length);
   for (let t = 1; t < energy.length; t++) env[t] = Math.max(0, (energy[t] as number) - (energy[t - 1] as number));
   return env;
@@ -138,17 +173,7 @@ function correlate(a: readonly number[], b: readonly number[]): number {
   return da && db ? num / Math.sqrt(da * db) : 0;
 }
 
-function estimateKey(frames: Frames): AudioFeatures["key"] {
-  const chroma = new Array<number>(12).fill(0);
-  const binHz = frames.rate / FRAME;
-  for (const spectrum of frames.spectra) {
-    for (let k = 1; k < spectrum.length; k++) {
-      const hz = k * binHz;
-      if (hz < 55 || hz > 2000) continue;
-      const pc = ((Math.round(12 * Math.log2(hz / 440)) + 69) % 12 + 12) % 12;
-      chroma[pc] = (chroma[pc] as number) + (spectrum[k] as number) ** 2;
-    }
-  }
+function estimateKey(chroma: readonly number[]): AudioFeatures["key"] {
   const scores: { tonic: number; mode: "major" | "minor"; r: number }[] = [];
   for (let tonic = 0; tonic < 12; tonic++) {
     const rotated = chroma.map((_, i) => chroma[(i + tonic) % 12] as number);
@@ -180,14 +205,66 @@ function kWeighting(sampleRate: number): [Biquad, Biquad] {
   return [shelf, highpass];
 }
 
-function blockPowers(weighted: Float64Array, sampleRate: number, blockSec: number, stepSec: number): number[] {
-  const size = Math.round(blockSec * sampleRate);
-  const step = Math.round(stepSec * sampleRate);
+interface Normalised {
+  b0: number;
+  b1: number;
+  b2: number;
+  a1: number;
+  a2: number;
+}
+
+function normalised({ b, a }: Biquad): Normalised {
+  return { b0: b[0] / a[0], b1: b[1] / a[0], b2: b[2] / a[0], a1: a[1] / a[0], a2: a[2] / a[0] };
+}
+
+/** BS.1770 channel weights for 5.1 in WAV and Web Audio order: L, R, C, LFE (excluded), Ls, Rs. */
+const SURROUND_WEIGHTS = [1, 1, 1, 0, 1.41, 1.41] as const;
+
+function channelWeight(index: number, count: number): number {
+  return count === 6 ? (SURROUND_WEIGHTS[index] as number) : 1;
+}
+
+/**
+ * K-weighted energy per 100 ms sub-block, summed across channels with their BS.1770 weights.
+ * The 400 ms gating blocks and the 3 s short-term windows are built from these sums, so the
+ * cost is ten numbers per second whatever the length or channel count.
+ */
+function weightedEnergy(channels: readonly Float32Array[], sampleRate: number): { sums: Float64Array; size: number } {
+  const size = Math.max(1, Math.round(0.1 * sampleRate));
+  const sums = new Float64Array(Math.floor((channels[0]?.length ?? 0) / size));
+  const [shelf, highpass] = kWeighting(sampleRate).map(normalised) as [Normalised, Normalised];
+  channels.forEach((channel, c) => {
+    const weight = channelWeight(c, channels.length);
+    if (!weight) return;
+    // The two biquads run inline, direct form I: this loop touches every sample of every channel.
+    let x1 = 0, x2 = 0, y1 = 0, y2 = 0, z1 = 0, z2 = 0;
+    for (let j = 0; j < sums.length; j++) {
+      let sum = 0;
+      for (let i = j * size; i < (j + 1) * size; i++) {
+        const x = channel[i] as number;
+        const y = shelf.b0 * x + shelf.b1 * x1 + shelf.b2 * x2 - shelf.a1 * y1 - shelf.a2 * y2;
+        const z = highpass.b0 * y + highpass.b1 * y1 + highpass.b2 * y2 - highpass.a1 * z1 - highpass.a2 * z2;
+        x2 = x1;
+        x1 = x;
+        y2 = y1;
+        y1 = y;
+        z2 = z1;
+        z1 = z;
+        sum += z * z;
+      }
+      sums[j] = (sums[j] as number) + weight * sum;
+    }
+  });
+  return { sums, size };
+}
+
+/** Mean-square power of each block of `length` sub-blocks, stepping `step` sub-blocks. */
+function blockPowers(sums: Float64Array, size: number, length: number, step: number): number[] {
   const powers: number[] = [];
-  for (let start = 0; start + size <= weighted.length; start += step) {
+  for (let start = 0; start + length <= sums.length; start += step) {
     let sum = 0;
-    for (let i = start; i < start + size; i++) sum += (weighted[i] as number) ** 2;
-    powers.push(sum / size);
+    for (let j = start; j < start + length; j++) sum += sums[j] as number;
+    powers.push(sum / (length * size));
   }
   return powers;
 }
@@ -202,12 +279,10 @@ function gatedLoudness(powers: readonly number[], relativeGate: number): { loudn
   return { loudness: kept.length ? lufs(meanOf(kept)) : -70, kept };
 }
 
-function measureLoudness(samples: Float32Array, sampleRate: number): AudioFeatures["loudness"] {
-  const [stage1, stage2] = kWeighting(sampleRate);
-  const weighted = filter(filter(samples, stage1), stage2);
-  const integrated = gatedLoudness(blockPowers(weighted, sampleRate, 0.4, 0.1), -10).loudness;
-  const shortTerm = blockPowers(weighted, sampleRate, 3, 1);
-  const { kept } = gatedLoudness(shortTerm, -20);
+function measureLoudness(channels: readonly Float32Array[], sampleRate: number): AudioFeatures["loudness"] {
+  const { sums, size } = weightedEnergy(channels, sampleRate);
+  const integrated = gatedLoudness(blockPowers(sums, size, 4, 1), -10).loudness;
+  const { kept } = gatedLoudness(blockPowers(sums, size, 30, 10), -20);
   const levels = kept.map(lufs);
   return { integratedLufs: integrated, loudnessRange: levels.length > 1 ? percentile(levels, 95) - percentile(levels, 10) : 0 };
 }
@@ -238,26 +313,12 @@ function sectionsFrom(curve: readonly number[], windowSec: number, durationSec: 
   return sections;
 }
 
-function spectralDescriptors(frames: Frames, env: Float64Array, durationSec: number): AudioFeatures["spectral"] {
-  const binHz = frames.rate / FRAME;
-  let weighted = 0, total = 0, bright = 0, sub = 0;
-  for (const spectrum of frames.spectra) {
-    for (let k = 1; k < spectrum.length; k++) {
-      const hz = k * binHz;
-      const m = spectrum[k] as number;
-      const e = m * m;
-      weighted += hz * m;
-      total += m;
-      if (hz >= 1500) bright += e;
-      if (hz < 60) sub += e;
-    }
-  }
-  let energy = 0;
-  for (const spectrum of frames.spectra) for (let k = 1; k < spectrum.length; k++) energy += (spectrum[k] as number) ** 2;
+function spectralDescriptors(pass: FramePass, durationSec: number): AudioFeatures["spectral"] {
+  const env = pass.flux;
   // Onsets: local peaks above mean + one standard deviation, at least 50 ms apart.
   const m = meanOf(env);
   const sd = Math.sqrt(meanOf(Array.from(env, (v) => (v - m) ** 2)));
-  const minGap = Math.ceil(0.05 * frames.frameRate);
+  const minGap = Math.ceil(0.05 * pass.frameRate);
   let onsets = 0, lastOnset = -Infinity;
   for (let t = 1; t < env.length - 1; t++) {
     const v = env[t] as number;
@@ -267,31 +328,36 @@ function spectralDescriptors(frames: Frames, env: Float64Array, durationSec: num
     }
   }
   return {
-    centroidHz: total ? weighted / total : 0,
-    brightness: energy ? bright / energy : 0,
-    subWeight: energy ? sub / energy : 0,
+    centroidHz: pass.magnitudeSum ? pass.centroidSum / pass.magnitudeSum : 0,
+    brightness: pass.totalEnergy ? pass.brightEnergy / pass.totalEnergy : 0,
+    subWeight: pass.totalEnergy ? pass.subEnergy / pass.totalEnergy : 0,
     transientDensity: durationSec ? onsets / durationSec : 0,
   };
 }
 
-/** Analyses mono PCM. `tags` stays empty: the v1 tagger is the null implementation (§1.7 step 3). */
-export function analyseAudio(samples: Float32Array, sampleRate: number): AudioFeatures {
+/**
+ * Analyses a recording. `samples` is the mono mix that tempo, meter, key, energy and spectrum
+ * read. `channels` are the decoded channels, whose K-weighted energies loudness sums per
+ * BS.1770; a mono source passes the mix as its one channel (the default). `tags` stays empty:
+ * the v1 tagger is the null implementation (§1.7 step 3).
+ */
+export function analyseAudio(samples: Float32Array, sampleRate: number, channels: readonly Float32Array[] = [samples]): AudioFeatures {
   if (!(sampleRate > 0)) throw new RangeError(`sampleRate must be positive, got ${sampleRate}`);
+  if (!channels.length || channels.some((c) => c.length !== samples.length)) throw new RangeError("every channel must have the mix's length");
   const durationSec = samples.length / sampleRate;
-  const frames = spectralFrames(samples, sampleRate);
-  const env = onsetEnvelope(frames);
-  const tempo = estimateTempo(env, frames.frameRate);
+  const pass = framePass(samples, sampleRate);
+  const tempo = estimateTempo(pass.flux, pass.frameRate);
   const { lag, ...bpm } = tempo;
   const { curve, windowSec } = energyCurve(samples, sampleRate, bpm.value);
   return {
     durationSec,
     bpm,
-    meter: estimateMeter(accentEnvelope(frames), lag),
-    key: estimateKey(frames),
-    loudness: measureLoudness(samples, sampleRate),
+    meter: estimateMeter(accentEnvelope(pass.energy), lag),
+    key: estimateKey(pass.chroma),
+    loudness: measureLoudness(channels, sampleRate),
     energyCurve: curve,
     sections: sectionsFrom(curve, windowSec, durationSec),
-    spectral: spectralDescriptors(frames, env, durationSec),
+    spectral: spectralDescriptors(pass, durationSec),
     tags: [],
   };
 }
