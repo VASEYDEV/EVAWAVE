@@ -20,7 +20,7 @@ two brands never conflate. Full scope: [`SPEC.md`](SPEC.md) §1.
 | Taxonomy data | `src/data/taxonomy/` | Curated JSON plus the generated instrument bank (`instruments/`, from the seed by `scripts/build-instrument-bank.mjs`); ids unique across banks; built and checked by `buildCatalog` at import | The Jinn catalog records (S1) and the seed's General MIDI, percussion, drum machine and world-set instruments (S3). The lineage name list lives in `src/data/lineage/` |
 | App | `src/app/`, `src/components/composer/` | Next.js 16 App Router; client components over the core | The composer (S3), with tap tempo, the metronome and the module icons (S5), styled to the brand system (ADR 0005), and the Song panel (S6). `/import` handles audio import and review (S5, `src/components/import/`, `src/lib/audio/`), with the analysis in a Web Worker bundled to `public/workers/analysis.worker.js`. The library is S4; songs and `/songs/[id]` are S6. The working copy's browser storage is `src/lib/composer/storage.ts` |
 | Proxy | `src/proxy.ts` | Next.js 16 proxy (the successor to `middleware.ts`) | Supabase Auth session refresh. Passes through while Supabase is unconfigured |
-| Supabase clients | `src/lib/supabase/`, `src/lib/library/` | Browser client, server client, proxy session update; typed library client and repository | The library (S4) and songs with their variants (S6, `src/lib/library/songs.ts`): migrations in `supabase/migrations/` with RLS on every table, `/library`, and email sign-in (`/login`, `/auth/confirm`, `/auth/signout`). Setup: `runbooks/supabase.md` |
+| Supabase clients | `src/lib/supabase/`, `src/lib/library/` | Browser client, server client, proxy session update; typed library client and repository | The library (S4), songs with their variants (S6, `src/lib/library/songs.ts`) and the take log (S7): migrations in `supabase/migrations/` with RLS on every table, `/library`, and email sign-in (`/login`, `/auth/confirm`, `/auth/signout`). Setup: `runbooks/supabase.md` |
 
 Hard rules for the core live in
 [`.claude/rules/musicspec-core.md`](../.claude/rules/musicspec-core.md): deterministic
@@ -36,8 +36,8 @@ golden file.
    never mutates the spec.
 3. `lint(spec, profile, catalog)` runs the rule ids in SPEC §2.7 on the IR and on each
    payload.
-4. The library persists style profiles, file metadata, genre tags, songs and their
-   immutable variants in Supabase under RLS. Reference audio stays on the device (OPFS),
+4. The library persists style profiles, file metadata, genre tags, songs, their
+   immutable variants and the takes logged against them in Supabase under RLS. Reference audio stays on the device (OPFS),
    and only features leave it.
 
 ## Specs

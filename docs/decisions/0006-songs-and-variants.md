@@ -52,7 +52,8 @@ v1.9, and `undefined` in a diff that JSON cannot carry.
   `Song` gains `baseVariantId`.
 - The browser's working copy carries its song attachment in the same `setItem`, and open
   composer tabs follow each other, so no tab writes back a stale attachment.
-- The take log (S7) hangs takes off variants with the same composite-key pattern.
+- The take log (S7) hangs takes off variants with the same composite-key pattern. Takes
+  are never edited either: a mistaken one is deleted and logged again.
 - The signed-in screens cannot run in CI until a Supabase project exists; the RLS suite
   and the repository tests hold the data paths, as in S4.
 - Override editing (§1.4 item 3) is still unbuilt; overrides are stored but nothing

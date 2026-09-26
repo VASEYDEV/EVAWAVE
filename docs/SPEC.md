@@ -49,7 +49,7 @@ Carried from scope v0.2 §1. **Confirmed** means Sean confirmed it. **Adopted** 
 | A4 | v1 intake: the à la carte composer plus audio import and analysis into a StyleProfile ("DSP listens, Claude writes"). Raw audio stays on the device. Text intake and the voice-memo review UI are not scheduled in S1–S5 | audio import adopted (S5) |
 | A5 | Target switching is a projection, not a mutation. It is lossless at the IR by construction, and every per-target payload ships with a coverage report. Manual payload edits are target-scoped overrides | adopted (S2) |
 | A6 | Reference audio never leaves the device in v1. Extracted features and the resulting StyleProfile persist | adopted (S4, S5) |
-| A7 | Library entities per §1.6. Supabase with RLS for entities, OPFS/IndexedDB for local audio | adopted in part (S4, S6) |
+| A7 | Library entities per §1.6. Supabase with RLS for entities, OPFS/IndexedDB for local audio | adopted (S4, S6, S7) |
 | A8 | Taxonomy is schema first, from a curated launch seed. It grows through Claude-drafted, Sean-approved batches. No user-generated taxonomy in v1 | adopted |
 | A9 | Metronome and tap tempo per §1.8 | **accepted** by Sean; adopted (S5) |
 | A10 | One monoline icon per composer module per §1.9. The per-module hues it also named were retired for the CORE palette by ADR 0005 | **accepted** by Sean; adopted (S5); hues retired 2026-09-26 |
@@ -122,7 +122,7 @@ engine). Udio: none.
 | Genre | Curated definition, criteria, profiling instruction, drift risks, engine notes | Supabase, curated, read-only for users (S4) |
 | Tag | Free label with optional colour. Genre tags link genres to profiles and files | Supabase (S4) |
 | Song, Variant | The working spec; immutable versions with field diffs, overrides and coverage | Supabase (S6) |
-| Take | Render log against a Variant | Types in §2; persistence planned in S7 |
+| Take | Render log against a Variant: engine and version, a render reference (never audio), verdict, drift, words blamed, notes | Supabase (S7) |
 | Instrument, Technique, Rhythm, Mode, RegionalBundle, DrumPattern, SynthRole | Taxonomy banks | Curated JSON in `src/data/taxonomy/` |
 
 ### 1.7 Audio import to StyleProfile
@@ -191,7 +191,7 @@ image-to-mood intake (v1.1).
 
 Not scheduled yet, still in scope: text intake; the Flow Producer script for Variant
 diffs; the end-to-end Jinn rebuild through the UI with an A/B Suno render. Song and
-Variant persistence landed in S6; the take log is planned as S7.
+Variant persistence landed in S6, and the take log in S7.
 
 ### 1.11 Open items
 
@@ -1703,4 +1703,24 @@ Delivered:
 
 Acceptance: user B cannot read or write user A's takes; a take can only be logged on the
 caller's own variant; a render reference cannot carry a `data:` URL.
+
+Delivered:
+
+- **`supabase/migrations/20260926000500_takes.sql`.** `takes`, keyed to a variant of the
+  same owner by a composite foreign key and removed with it (so a song's delete removes
+  its takes). Owner-only RLS, and the insert policy also checks the variant is the
+  caller's. Grants: select, delete, and insert on the content columns only; no UPDATE.
+  Checks: the live engines only (Udio is halted, A12); a version of 1–80 characters; a
+  render reference of at most 2,048 characters that is never a `data:` URL; the verdict
+  set; drift kinds from `DriftKind`; at most 50 non-empty words blamed; notes of at most
+  4,000 characters.
+- **App.** `logTake` and `deleteTake` in `src/lib/library/songs.ts` (a `data:` reference,
+  a missing version and more than 50 words are refused before sending; a delete of no row
+  fails), and `loadSong` returns the song's takes. On `/songs/[id]`, each variant has its
+  take list and a "Log a take" form (`TakeLog.tsx`). The engine version defaults to the
+  profile's; only `https:` references render as links; typed text is clamped by code
+  points, not by a native `maxLength`.
+- **Tests.** `tests/integration/takes-rls.test.ts` (B against A, logging only on one's own
+  variant, no edits, deletes, cascade from a song, the `data:` refusal and the other
+  checks) and the take cases in `songs-repository.test.ts`.
 

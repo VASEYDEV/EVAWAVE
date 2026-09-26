@@ -20,7 +20,7 @@
 ## Status
 
 **Pre-alpha. The spec is [`docs/SPEC.md`](docs/SPEC.md) (ADR 0004), and its build plan
-S1–S6 has landed.** The composer and audio import run in the browser today; the library
+S1–S7 has landed.** The composer and audio import run in the browser today; the library
 and songs need a Supabase project, which is not configured yet, and nothing is deployed.
 What exists:
 
@@ -58,6 +58,9 @@ What exists:
   parent and a coverage report per engine. `/songs/<id>` shows the history, and any
   variant opens in the composer to fork from. A save from a stale tab is refused, never
   applied over newer work. Needs Supabase, like the library.
+- The take log, from S7, on each song page: what an engine did with a variant (engine and
+  version, a link or id for the render, never the audio), your verdict, the drift you
+  heard and the words you blame for it.
 - Audio import, from S5, at `/import`. A reference track is analysed on this device, in a
   background worker so the page stays responsive:
   tempo, meter, key, BS.1770 loudness, energy and spectrum. EVAWAVE proposes a style

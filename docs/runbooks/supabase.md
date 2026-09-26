@@ -24,7 +24,8 @@ project is configured, the library and sign-in pages say so and nothing else cha
    `20260926000400_songs.sql` adds songs and their immutable variants with RLS, and
    `public.freeze_variant`, which saves a song and freezes it as the next variant in one
    transaction when the song is still at the revision the caller read (security invoker;
-   `authenticated` only).
+   `authenticated` only). `20260926000500_takes.sql` adds the take log: takes on the
+   caller's own variants, with RLS and no edits.
 3. Optional: regenerate the typed schema with
    `supabase gen types typescript --project-id <ref>`. Compare it with
    `src/lib/library/schema.ts`; the RLS test pins the column lists.

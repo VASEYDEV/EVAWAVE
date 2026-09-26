@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- S7, the take log (SPEC §3): migration `20260926000500_takes.sql` (takes on a variant of the same owner, removed with it; owner-only RLS; no edits; live engines only; a render reference that is never a `data:` URL), `logTake` and `deleteTake`, and on `/songs/[id]` each variant's takes with a form for the engine and version, render link or id, verdict, drift heard, words blamed and notes. Tests: takes RLS and the repository cases.
 - S6, songs and variants (SPEC §3, ADR 0006):
   - `src/core/musicspec/variants.ts`: the field diff between specs (objects by key, arrays by index, an added, removed or retyped subtree at its root, natural pointer order), its exact replay, a key-order-free spec hash, variant labels, coverage per live engine, and the LN-1 check that refuses a freeze. IR: `FieldDiff.before` and `after` are optional; `Song` gains `baseVariantId`.
   - Migration `20260926000400_songs.sql`: `songs` and immutable `variants` under owner-only RLS, per-column grants, composite keys that keep a variant in its owner's song and a parent in the same song, a revision on every song, and `public.freeze_variant`, which saves and snapshots in one transaction only at the revision the copy was read at.
