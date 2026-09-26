@@ -38,6 +38,19 @@ describe("tap tempo (§1.8)", () => {
     expect(Math.round(reading(tapAll([3501, 4168, 4835], second)).bpm ?? 0)).toBe(90);
   });
 
+  it("follows a move to double time, whose every other tap lands on the old grid", () => {
+    // 120 BPM, then 240 BPM (250 ms): 2000 and 2500 fit the old 500 ms grid from the kept taps.
+    const state = tapAll([0, 500, 1000, 1500, 1750, 2000, 2250, 2500]);
+    expect(state.taps).toEqual([1750, 2000, 2250, 2500]);
+    expect(reading(state).bpm).toBeCloseTo(240, 10);
+  });
+
+  it("keeps the tempo through one stray tap between beats", () => {
+    const state = tapAll([0, 500, 1000, 1500, 1650, 2000]);
+    expect(state.taps).toEqual([500, 1000, 1500, 2000]);
+    expect(reading(state).bpm).toBeCloseTo(120, 10);
+  });
+
   it("recovers from a late tap without waiting for the 2 s reset", () => {
     const state = tapAll([0, 428, 856, 1400, 1712, 2140, 2568, 2996]);
     expect(state.taps).toEqual([1712, 2140, 2568, 2996]);

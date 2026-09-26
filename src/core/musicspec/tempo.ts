@@ -18,6 +18,8 @@ export interface TapState {
   taps: number[];
   /** True when the last tap was discarded as an outlier. */
   discarded: boolean;
+  /** When the discarded tap came, while `discarded`. */
+  rejectedAt?: number;
 }
 
 export interface TapReading {
@@ -47,11 +49,22 @@ export function tap(state: TapState, timeMs: number): TapState {
   const interval = timeMs - last;
   if (current.length > 0) {
     const running = mean(current);
-    if (Math.abs(interval - running) > TAP_OUTLIER * running) {
+    const outlier = (gap: number) => Math.abs(gap - running) > TAP_OUTLIER * running;
+    if (outlier(interval)) {
       // Intervals are measured from the last kept tap, so after a tempo change or a late tap
       // every later tap would miss the band until the 2 s reset. Two misses in a row mean the
       // kept taps no longer describe what the person is tapping: start again from this one.
-      return state.discarded ? { taps: [timeMs], discarded: false } : { taps: state.taps, discarded: true };
+      return state.discarded ? { taps: [timeMs], discarded: false } : { taps: state.taps, discarded: true, rejectedAt: timeMs };
+    }
+    // This tap fits the kept grid, but after a discard it may be a new tempo that lands on the
+    // old grid every other tap (double time: 250 ms taps over a 500 ms grid). If its gap from
+    // the discarded tap misses the band too, and matches the gap that tap left, the person is
+    // keeping the new tempo: start again from the discarded tap. A stray tap matches neither.
+    const rejectedAt = state.discarded ? state.rejectedAt : undefined;
+    if (rejectedAt !== undefined) {
+      const fromRejected = timeMs - rejectedAt;
+      const rejectedGap = rejectedAt - last;
+      if (outlier(fromRejected) && Math.abs(fromRejected - rejectedGap) <= TAP_OUTLIER * rejectedGap) return { taps: [rejectedAt, timeMs], discarded: false };
     }
   }
   return { taps: [...state.taps, timeMs].slice(-TAP_WINDOW), discarded: false };
