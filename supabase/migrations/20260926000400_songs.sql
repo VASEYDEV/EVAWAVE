@@ -150,7 +150,9 @@ revoke execute on function public.variants_assign_seq() from public, anon, authe
 --
 -- It takes from the caller only what a plain save takes (the title and the spec, the
 -- caller's own content) and the parent, which must be a variant of the same song. The
--- overrides come from the song row; the diff and coverage are not stored at all.
+-- overrides come from the song row; the diff and coverage are not stored at all. It refuses
+-- a spec that names an artist or producer (LN-1, against `public.lineage_names`), as the
+-- app does before calling it: a caller can skip the app, and a variant never changes.
 create function public.freeze_variant(
   p_song_id uuid,
   p_expected_revision integer,
@@ -183,6 +185,18 @@ begin
      for update;
   if not found then
     raise exception 'freeze: the song changed elsewhere or is not yours; reload it';
+  end if;
+
+  -- Every string in the spec counts, except the references, which are never sent to an
+  -- engine and hold no prose: a superset of the spec fields the app's LN-1 reads (the prose
+  -- fields, the lyrics and patch values).
+  if exists (
+    select 1
+      from jsonb_path_query(p_spec - 'references', 'strict $.**') as t (v)
+      join public.lineage_names n on (t.v #>> '{}') ~* n.pattern
+     where jsonb_typeof(t.v) = 'string'
+  ) then
+    raise exception 'freeze: the spec names an artist or producer (LN-1); describe the sound instead';
   end if;
 
   insert into public.variants (owner_id, song_id, parent_variant_id, spec_snapshot, overrides)

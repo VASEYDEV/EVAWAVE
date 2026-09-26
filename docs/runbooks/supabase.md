@@ -21,6 +21,8 @@ project is configured, the library and sign-in pages say so and nothing else cha
    `20260926000300_file_record.sql` adds `public.file_record`, which says whether the
    caller has a file record for a hash and who the caller is (security invoker;
    `authenticated` only). `/library` uses it before removing a local copy.
+   `20260926000350_lineage_names.sql` adds the lineage names `freeze_variant` refuses
+   (LN-1), readable by no API role; it mirrors `src/data/lineage/names.json`.
    `20260926000400_songs.sql` adds songs and their immutable variants with RLS, and
    `public.freeze_variant`, which saves a song and freezes it as the next variant in one
    transaction when the song is still at the revision the caller read. It is the only way

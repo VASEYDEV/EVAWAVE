@@ -21,6 +21,7 @@ const B = "00000000-0000-4000-8000-00000000000b";
 const fixture = (name: string) => JSON.parse(readFileSync(fileURLToPath(new URL(`../fixtures/${name}`, import.meta.url)), "utf8")) as MusicSpec;
 const v11 = fixture("jinn-v1.1.spec.json");
 const v12 = fixture("jinn-v1.2.spec.json");
+const lineageNames = JSON.parse(readFileSync(fileURLToPath(new URL("../../src/data/lineage/names.json", import.meta.url)), "utf8")) as string[];
 
 const SONG_TABLES = ["songs", "variants", "takes"] as const;
 
@@ -217,6 +218,51 @@ describe("a variant holds only what the client may write", () => {
     const [variant] = await h.truth("variants", "id = $1", [frozen.variant_id]);
     const [row] = await h.truth("songs", "id = $1", [id]);
     expect([variant?.overrides, row?.overrides]).toEqual([overrides, overrides]);
+  });
+});
+
+describe("LN-1 in the database", () => {
+  it("holds the lineage names of src/data/lineage/names.json, and no API role can read them", async () => {
+    const stored = (await h.truth("lineage_names", "true", [])).map((row) => String(row.name));
+    expect(stored.sort()).toEqual([...lineageNames].sort());
+    await expect(h.as(A, () => h.rows("select name from public.lineage_names"))).rejects.toThrow(/permission denied/);
+    await expect(h.as(null, () => h.rows("select name from public.lineage_names"))).rejects.toThrow(/permission denied/);
+  });
+
+  it("refuses to freeze a spec that names one, anywhere but its references, as a whole word", async () => {
+    // Invented names only, added for this test and removed after it.
+    await h.db.exec("reset role");
+    await h.rows("insert into public.lineage_names (name) values ('Quillon Vantreese'), ('Q.V.')");
+    try {
+      const id = await song(A, "LN-1");
+      const named = (edit: (spec: MusicSpec) => void) => {
+        const spec = structuredClone(v12);
+        edit(spec);
+        return spec;
+      };
+      for (const spec of [
+        named((s) => (s.D1.formPhrase = `${s.D1.formPhrase} in the style of Quillon Vantreese`)),
+        named((s) => (s.D7.sections[0]!.label = "intro after quillon vantreese")),
+        named((s) => (s.D10.title = "A Q.V. homage")),
+      ]) {
+        const rev = await revision(id);
+        await expect(freeze(A, id, { spec })).rejects.toThrow(/LN-1/);
+        expect(await h.truth("variants", "song_id = $1", [id])).toEqual([]);
+        expect(await revision(id)).toBe(rev);
+      }
+      // Inside a longer word, with the escaped dots matching anything, or in the references,
+      // which are never sent to an engine: frozen.
+      for (const spec of [
+        named((s) => (s.D1.formPhrase = `${s.D1.formPhrase} after Quillon Vantreeses`)),
+        named((s) => (s.D10.title = "QxVx")),
+        { ...v12, references: [{ id: "Quillon Vantreese", kind: "song", roles: [], weight: 0.5, provenance: { kind: "hand-built" } }] },
+      ]) {
+        await expect(freeze(A, id, { spec })).resolves.toMatchObject({ owner: A });
+      }
+    } finally {
+      await h.db.exec("reset role");
+      await h.rows("delete from public.lineage_names where name in ('Quillon Vantreese', 'Q.V.')");
+    }
   });
 });
 

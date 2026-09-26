@@ -47,10 +47,14 @@ v1.9, and `undefined` in a diff that JSON cannot carry.
    variant is unsaved.
 8. **The undo tree stays on the device.** Opening a song or a variant starts a fresh
    history; variants are the durable history.
-9. **A freeze refuses LN-1.** An artist or producer name frozen into an immutable variant
-   could only leave with the whole song. The check runs in the app, where the lineage
-   names live; the database does not repeat it. A caller who goes around the app through
-   the raw API can freeze only their own spec into their own song.
+9. **A freeze refuses LN-1, in the app and in the database.** An artist or producer name
+   frozen into an immutable variant could only leave with the whole song. The app lints
+   first. Because a caller can skip the app, `freeze_variant` checks as well, against
+   `public.lineage_names`, a copy of `src/data/lineage/names.json` that a test holds equal
+   (a name added to the file needs a migration). It reads every string in the spec except
+   the references, which are never sent to an engine, so on the spec it is at least as
+   strict as LN-1's prose fields. The catalog data and the Jinn fixtures hold no lineage
+   name, so it refuses nothing the app would allow from them.
 10. **Kept small for now.** No song-to-style-profile or song-tag links (read as empty
     lists); no `active_target` column (A5: read from `D10`); the title is derived from
     `D10.title` on every save. `Song.brand` is stored and checked as `VASEY.AUDIO` and

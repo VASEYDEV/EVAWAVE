@@ -197,14 +197,36 @@ Eighth round (Codex, on 7991daa):
   Node, and adding one is a new dependency), and the signed-in e2e needs a Supabase
   project, as stated for S4.
 
+Ninth round (Codex, on c35e4aa):
+
+- **P2: LN-1 only in the app.** Raised a second time, after round 4 had left it as an app
+  check (ADR 0006, decision 9 then). A caller skipping the app could freeze a name into
+  a variant for good. The database now checks as well. `public.lineage_names` copies
+  `names.json` (15 names), and a test holds the two equal, so a new name needs a
+  migration. `freeze_variant` refuses a spec in which any string except the references
+  holds one as a whole, case-insensitive word, as `termPattern` matches. That is every
+  string, not LN-1's prose-field list, so on the spec it is at least as strict. Before
+  choosing that, I scanned the 18 catalog and profile data files and both Jinn fixtures
+  for all 15 names: no hits, so it refuses nothing the app allows from them. PostgreSQL
+  reads `[.` in a bracket as a collating element, so the escape class starts with `]`
+  and puts `[` later. Tests, with invented names added and removed: refused in a prose
+  field, a nested label (lowercase) and the title with dots; allowed inside a longer
+  word, where the escaped dots would otherwise match any character, and in the
+  references. API roles cannot read the table. Mutations: no check, names unescaped,
+  and references checked each fail the test.
+- **P2: the delete did not mention takes.** Deleting a song removes its variants and,
+  through the cascade, every take logged on them, but the confirmation named only the
+  variants. It now says "…its N variants and every take logged on them" (or just the
+  title when there are none).
+
 ## Evidence
 
-Counts as of the seventh round.
+Counts as of the ninth round.
 
 - Core: `tests/unit/variants.test.ts` (18), including the Jinn v1.1 → v1.2 diff with
   `/D6/tempo/bpm` 142 → 140 and an exact replay over 60 seeded random edits. Mutations:
   plain text sort and ascending removals each fail.
-- Database: `tests/integration/songs-rls.test.ts` (27). Mutations: dropping the revision
+- Database: `tests/integration/songs-rls.test.ts` (29). Mutations: dropping the revision
   predicate, granting variant updates, dropping the same-song parent key and dropping
   the revision bump each fail their tests.
 - App: `songs-repository.test.ts` (29 with the S7 take cases; dropping the revision

@@ -1149,7 +1149,9 @@ Every container has a default, so an empty spec is valid.
   copy descends from (`Song.baseVariantId`): opening an earlier variant and freezing
   forks from it. Labels run `v1.0`, `v1.1`, … in freeze order per song. A freeze is
   refused while LN-1 blocks, in the spec or any live engine's payload, since a frozen
-  variant cannot be edited. Target overrides are not client-writable until an override
+  variant cannot be edited. The database refuses it too, for a caller that skips the app:
+  any string in the spec but its references that holds a lineage name as a whole word.
+  Target overrides are not client-writable until an override
   editor (§1.4 item 3) brings a write path that lints them; a freeze copies the song's
   own into the variant. A song's title is
   its `D10.title` ("Untitled" when empty); its active target is read from `D10`, and
@@ -1693,6 +1695,10 @@ Delivered:
   - A variant stores its snapshot, parent and overrides, nothing derived. The function
     takes the title, the spec and the parent; it copies the song's overrides, which no
     client can write (review of #14).
+  - The function refuses LN-1 itself: `20260926000350_lineage_names.sql` holds the
+    lineage names (a test keeps them equal to `src/data/lineage/names.json`), and any
+    string in the spec but its references that names one as a whole word stops the
+    freeze (review of #14).
 - **App.** `src/lib/library/songs.ts` (saves filter on the revision; zero rows is an
   error; `loadSong` derives each variant's diff and coverage, yielding every 16 ms so a
   long history never blocks the main thread in one task). Song, variant and take lists
