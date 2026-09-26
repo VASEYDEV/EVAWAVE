@@ -119,26 +119,6 @@ S5 per SPEC §3. The methods are listed in SPEC §3 S5 "Delivered".
   - **Listed, not fixed (CLAUDE.md §1.1):** the `/library` page's profile-name input
     (S4, `src/components/library/Library.tsx`) has the same missing limit. Using
     `PROFILE_NAME_MAX` there is a one-line follow-up.
-
-## Decisions
-
-- **The profile base** is the default D1–D6, D8 and D9. Every draft op targets a path that
-  exists there, so any subset of accepted fields is a valid profile.
-- **Mood words carry 0.4 confidence** and start unticked (PT-1). Tempo, meter and key
-  carry the analyser's own confidence; loudness character is 0.8 because it is measured.
-- **PV-1** reads a StyleProfile, not a MusicSpec, so it is `lintStyleProfile`, not a
-  member of `RULES`. The badge lasts until the tempo source is no longer `analysis`.
-- **Icons are provisional** and their source is JSON, so the app draws them inline with
-  `currentColor` (the module hue). Standalone SVGs are generated for the Vector
-  Iconography project.
-
-## Cut, and why
-
-- **Share-sheet import.** It needs a PWA manifest with `share_target`, and the PWA tooling
-  is not set up (A15). Picker and drop ship.
-- **Worker analysis.** Analysis runs on the main thread after the status paints. A
-  3-minute 44.1 kHz signal took 2.3 s in Node on this build container's CPU, and phones
-  will be slower. Moving it to a Web Worker is the upgrade (SPEC §1.11).
 - **Seventh review: the blob of an unsaved profile.** After Create, choosing another file
   discarded the in-memory profile but not its stored blob. Every orphan finding had one
   root: the blob was stored before anything durable referred to it. It is now stored
@@ -223,3 +203,21 @@ S5 per SPEC §3. The methods are listed in SPEC §3 S5 "Delivered".
   as they were. Tests cover a failed row delete (the copy is restored byte for byte), a
   successful delete, and a locked copy (the row delete never runs). Dropping the restore
   fails the first test.
+
+## Decisions
+
+- **The profile base** is the default D1–D6, D8 and D9. Every draft op targets a path that
+  exists there, so any subset of accepted fields is a valid profile.
+- **Mood words carry 0.4 confidence** and start unticked (PT-1). Tempo, meter and key
+  carry the analyser's own confidence; loudness character is 0.8 because it is measured.
+- **PV-1** reads a StyleProfile, not a MusicSpec, so it is `lintStyleProfile`, not a
+  member of `RULES`. The badge lasts until the tempo source is no longer `analysis`.
+- **Icons are provisional** and their source is JSON, so the app draws them inline with
+  `currentColor` (the module hue). Standalone SVGs are generated for the Vector
+  Iconography project.
+
+## Cut, and why
+
+- **Share-sheet import.** It needs a PWA manifest with `share_target`, and the PWA tooling
+  is not set up (A15). Picker and drop ship.
+- ~~**Worker analysis.**~~ Resolved in the tenth review: analysis runs in a Web Worker.
