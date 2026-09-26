@@ -495,6 +495,18 @@ describe("local audio on the device", () => {
     await vi.waitFor(() => expect(holder.blobInTab(a("broadcast-sha"))).toBeUndefined());
   });
 
+  it("tells other tabs to drop their in-memory copy once OPFS holds the file", async () => {
+    vi.resetModules();
+    const holder = await import("@/lib/audio/browser");
+    vi.resetModules();
+    const saver = await import("@/lib/audio/browser");
+    // The holder's write fell back to memory; later OPFS works and another tab saves the file.
+    expect(await holder.storeInOpfs(a("recovered-elsewhere-sha"), new Blob([wav]))).toBe("memory");
+    fakeOpfs();
+    expect(await saver.storeInOpfs(a("recovered-elsewhere-sha"), new Blob([wav]))).toBe("opfs");
+    await vi.waitFor(() => expect(holder.blobInTab(a("recovered-elsewhere-sha"))).toBeUndefined());
+  });
+
   it("drops the in-tab copy once OPFS takes the file", async () => {
     const blob = new Blob([wav]);
     expect(await storeInOpfs(a("recovered-sha"), blob)).toBe("memory");

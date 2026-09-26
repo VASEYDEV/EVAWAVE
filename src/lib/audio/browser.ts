@@ -81,15 +81,15 @@ const tabKey = ({ ownerId, sha256 }: LocalAudioKey) => `${ownerId}/${sha256}`;
 let channel: BroadcastChannel | undefined;
 
 /**
- * Tabs of this origin tell each other when a file's record is deleted, so another tab holding
- * a fallback copy in memory drops it too: its memory is its own, and no lock can reach it. A
- * tab starts listening once it holds such a copy.
+ * Tabs of this origin tell each other when a fallback copy in memory is no longer needed:
+ * after its record is deleted, or once OPFS holds the file. Another tab's memory is its own,
+ * and no lock can reach it. A tab starts listening once it holds such a copy.
  */
 function audioChannel(): BroadcastChannel | undefined {
   if (channel || typeof BroadcastChannel !== "function") return channel;
   channel = new BroadcastChannel("evawave:local-audio");
-  channel.onmessage = (event: MessageEvent<{ deleted?: unknown }>) => {
-    if (typeof event.data?.deleted === "string") tabMemory.delete(event.data.deleted);
+  channel.onmessage = (event: MessageEvent<{ drop?: unknown }>) => {
+    if (typeof event.data?.drop === "string") tabMemory.delete(event.data.drop);
   };
   // Node keeps a process running while a channel is open; browsers have no unref.
   (channel as unknown as { unref?: () => void }).unref?.();
@@ -114,8 +114,10 @@ export async function storeInOpfs(key: LocalAudioKey, file: Blob): Promise<"opfs
       await writable.write(file);
       await writable.close();
     }
-    // OPFS holds it now, so an earlier fallback copy would only keep the recording in memory.
+    // OPFS holds it now, so an earlier fallback copy, here or in another tab, would only keep
+    // the recording in memory.
     tabMemory.delete(tabKey(key));
+    audioChannel()?.postMessage({ drop: tabKey(key) });
     return "opfs";
   } catch {
     // Some browsers (and private windows) have no OPFS or no createWritable; the analysis
@@ -234,7 +236,7 @@ async function deleteOnce(key: LocalAudioKey, deleteRecord: () => Promise<void>)
     }
     throw error;
   }
-  audioChannel()?.postMessage({ deleted: tabKey(key) });
+  audioChannel()?.postMessage({ drop: tabKey(key) });
 }
 
 /** The blob the memory fallback holds for this account's file, if this tab kept one. */
