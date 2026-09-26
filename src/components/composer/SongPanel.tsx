@@ -6,7 +6,7 @@
  * without either it says so, and the composer keeps working in this browser.
  */
 import Link from "next/link";
-import { useEffect, useMemo, useState, type ReactNode } from "react";
+import { useMemo, useState, type ReactNode } from "react";
 
 import { nextVariantLabel } from "@/core/musicspec/variants";
 import { identityOf, newCopyId, workingHash, type SongAttachment } from "@/lib/composer/storage";
@@ -14,6 +14,7 @@ import { createLibraryClient } from "@/lib/library/client";
 import { createSong, freezeVariant, saveSong, songTitle } from "@/lib/library/songs";
 import { getSupabasePublicConfig } from "@/lib/supabase/config";
 
+import { useViewer } from "../library/useViewer";
 import { useComposer } from "./state";
 
 type Setup = "ready" | "absent" | "partial";
@@ -31,28 +32,11 @@ export function SongPanel() {
   const { spec, catalog, song, attach } = useComposer();
   const setup = supabaseSetup();
   const client = useMemo(() => (setup === "ready" ? createLibraryClient() : null), [setup]);
-  // undefined while the session is being checked, null when signed out.
-  const [userId, setUserId] = useState<string | null | undefined>(undefined);
+  // Followed on return to the tab too: a sign-out or switch elsewhere must not leave the
+  // previous account's Save and Freeze here. Undefined while checking, null when signed out.
+  const userId = useViewer(client);
   const [status, setStatus] = useState("");
   const [busy, setBusy] = useState(false);
-
-  useEffect(() => {
-    if (!client) return;
-    let live = true;
-    client.auth.getSession().then(
-      ({ data }) => {
-        if (live) setUserId(data.session?.user.id ?? null);
-      },
-      () => {
-        if (live) setUserId(null);
-      },
-    );
-    const { data } = client.auth.onAuthStateChange((_event, session) => setUserId(session?.user.id ?? null));
-    return () => {
-      live = false;
-      data.subscription.unsubscribe();
-    };
-  }, [client]);
 
   /** Runs a library action, reporting its outcome in the panel's live line. */
   const run = async (what: string, action: (library: NonNullable<typeof client>) => Promise<string>) => {

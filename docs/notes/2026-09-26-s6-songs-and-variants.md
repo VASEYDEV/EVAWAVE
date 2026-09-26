@@ -183,6 +183,20 @@ Seventh round (Codex, on 8762294):
   fake Supabase now serves `gt.` cursors, and at a row limit of 1 the song page, the
   library and a save behave as in round 5.
 
+Eighth round (Codex, on 7991daa):
+
+- **P2: the Song panel kept the previous account.** The composer's panel checked the
+  session once, then listened only for changes made in its own tab. After a sign-out or
+  switch elsewhere it still offered that account's Save and Freeze. It now uses the
+  shared `useViewer`, which also checks again when the tab regains focus; the hook
+  accepts no client for an unconfigured deployment. Reproduced against the scratch fake
+  Supabase by switching the cookies and focusing the tab. On 7991daa the panel still
+  showed A's "Save song" and "Freeze" for B and when signed out. On the fix, B gets "came
+  from another account's song… Save as new song", and a signed-out viewer the sign-in
+  prompt. There is no unit test: the repo has no DOM test harness (Vitest runs in
+  Node, and adding one is a new dependency), and the signed-in e2e needs a Supabase
+  project, as stated for S4.
+
 ## Evidence
 
 Counts as of the seventh round.
