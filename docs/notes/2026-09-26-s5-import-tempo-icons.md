@@ -211,3 +211,8 @@ S5 per SPEC §3. The methods are listed in SPEC §3 S5 "Delivered".
   Both orders are unit-tested, and storing first fails. The e2e checks that Download
   leaves OPFS empty. The save-then-store path has no e2e, because the library needs a
   live Supabase session.
+- **Fifteenth review: OPFS root failures.** `removeLocalAudio` still treated any
+  `getDirectory()` failure as "no OPFS", so a transient error could report success before
+  the row was deleted. Now only a missing API or a private window's `SecurityError` counts
+  as nothing to remove. `storeInOpfs` falls back to memory in both cases, so OPFS holds
+  nothing. Other errors reject. A test covers both paths; it fails on the old code.
