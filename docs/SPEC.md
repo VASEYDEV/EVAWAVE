@@ -1513,8 +1513,8 @@ Delivered:
   keeps one energy sum per 100 ms. In the browser the analysis runs in a Web Worker
   (`public/workers/analysis.worker.js`, bundled from `src/lib/audio/analysis.worker.ts`),
   which a newer file choice terminates. Tempo, key and spectrum read the mono mix unless phase
-  cancellation took most of its energy (under a quarter of the channels' mean); then they
-  read the loudest channel.
+  cancellation took most of its energy (under half the 1/N of the channels' mean energy
+  that an average of N uncorrelated channels keeps); then they read the loudest channel.
 
   Vectors: a −20 dBFS 1 kHz sine at 48 kHz reads −23.01 LUFS; click tracks give their
   tempo within 1.5 BPM and their 4/4 or 3/4 accents; triads give their key.

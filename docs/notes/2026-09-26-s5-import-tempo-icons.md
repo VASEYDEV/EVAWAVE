@@ -178,3 +178,8 @@ S5 per SPEC §3. The methods are listed in SPEC §3 S5 "Delivered".
     played in a burst. `scheduleClicks` now takes `now` and skips to the first grid step
     at or after it, keeping the bar position. A test stalls from 0.3 s to 10 s and gets
     one downbeat at 10 s; it fails on the old scheduler.
+- **Eleventh review: the cancellation floor for surround.** The fixed floor of a quarter of
+  the channels' mean energy fits stereo only. An average of N uncorrelated channels keeps
+  1/N, so ordinary 5.1 (1/6) fell under it and read one channel. The floor is now half of
+  1/N: 0.25 for stereo as before, and about 0.083 for 5.1. A six-channel test reads the
+  mix; it fails on the old floor.
