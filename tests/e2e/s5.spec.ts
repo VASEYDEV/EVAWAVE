@@ -10,7 +10,7 @@ import { clickTrack, mix, triad } from "../support/signals";
 /**
  * S5 acceptance on the mobile viewport (docs/SPEC.md §3): an imported WAV yields an
  * audio-analysis StyleProfile through the review diff, with no audio on the wire; tap tempo
- * assigns 140 BPM from taps 428 ms apart; every module header shows its hue and icon.
+ * assigns 140 BPM from taps 428 ms apart; every module header shows its icon (ADR 0005).
  */
 const TAGS = ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "wcag22aa"];
 

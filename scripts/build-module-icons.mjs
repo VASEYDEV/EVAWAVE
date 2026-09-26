@@ -2,7 +2,8 @@
 /**
  * Writes one standalone SVG per module icon to assets/icons/modules/ from the single source,
  * assets/icons/modules.json (docs/SPEC.md §1.9), for designers and the Vector Iconography
- * project. The app renders the same JSON inline so the stroke takes the module hue.
+ * project. The app renders the same JSON inline, so the stroke takes the icon colour the
+ * brand system sets (ADR 0005).
  *
  * Usage: node scripts/build-module-icons.mjs            write the SVGs
  *        node scripts/build-module-icons.mjs --check    exit 1 if they are out of date

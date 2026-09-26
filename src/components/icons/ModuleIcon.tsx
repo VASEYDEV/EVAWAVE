@@ -8,7 +8,8 @@ export type ModuleKey = keyof typeof source.icons;
 type Shape = [string, Record<string, string>];
 
 /**
- * A module's monoline icon, drawn inline so its stroke takes the module hue (`currentColor`).
+ * A module's monoline icon, drawn inline so its stroke takes the colour the brand system sets
+ * (`currentColor`; ADR 0005).
  * Decorative: the module heading carries the name, so the icon is hidden from assistive tech.
  */
 export function ModuleIcon({ name, ...props }: { name: ModuleKey } & SVGProps<SVGSVGElement>) {
