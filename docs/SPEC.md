@@ -1575,7 +1575,9 @@ Delivered:
     per-field review with low-confidence suggestions left unticked. Create makes the
     profile in memory, with the PV-1 badge, a device-made id and a name capped at 200
     characters. The profile holds only the accepted fields: a tempo, meter or key not
-    proposed or not accepted is absent, not a default (`StyleProfileSpec`, §2.2).
+    proposed or not accepted is absent, not a default (`StyleProfileSpec`, §2.2). The
+    profile follows the review and the name after Create, keeping its id
+    (`profileFromReview`), so Save and Download send what the page shows.
     Recordings over 10 minutes by their metadata, or over 20 channel-minutes by the
     channel count their header declares, are refused before they are read. Decoding runs
     at a fixed 48 kHz. Import, Create and Download store nothing: the file goes to OPFS (or an

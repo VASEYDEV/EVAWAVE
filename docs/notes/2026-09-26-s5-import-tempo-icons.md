@@ -454,6 +454,15 @@ S5 per SPEC §3. The methods are listed in SPEC §3 S5 "Delivered".
   reconciliation now does too, after the removal and inside the file's turn. A test with
   two module instances checks that the other tab drops the orphan and keeps a copy whose
   record still exists. Without the announcement it fails.
+- **Thirty-sixth review: a stale profile after Create.** Confirmed. Create stored a snapshot,
+  so unticking a field or renaming afterwards left Save and Download sending the old
+  profile, including a field the review now showed as rejected. Create now fixes only the
+  profile's id. The profile is derived from the current review and name
+  (`profileFromReview` in `import.ts`), so there is no second copy to go stale. A unit
+  test builds the profile, unticks the tempo and renames it, and checks the id stays while
+  the tempo goes. The S5 e2e now does the same through the page: it unticks the tempo and
+  renames after Create, sees "not set", downloads again, and reads the file. The old
+  component fails that e2e, still showing "140 BPM (analysis)".
 
 ## Decisions
 
