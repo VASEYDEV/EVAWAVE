@@ -105,11 +105,12 @@ export function toTag(row: TagRow): Tag {
 export const PROFILE_NAME_MAX = 200;
 
 /**
- * A profile name the library accepts: the typed name, else the fallback, cut to the limit in
- * code points, as Postgres counts them, so no emoji is split into a lone surrogate.
+ * A profile name the library accepts: the typed name, else the fallback, else "audio", cut
+ * to the limit in code points, as Postgres counts them, so no emoji is split into a lone
+ * surrogate.
  */
 export function profileName(typed: string, fallback: string): string {
-  return Array.from(typed.trim() || fallback.trim())
+  return Array.from(typed.trim() || fallback.trim() || "audio")
     .slice(0, PROFILE_NAME_MAX)
     .join("")
     .trim();

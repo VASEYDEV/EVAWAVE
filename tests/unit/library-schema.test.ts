@@ -53,6 +53,8 @@ describe("profile names", () => {
   it("keeps names inside the library's 200-character limit, from the typed name or the filename", () => {
     expect(profileName("  Desert loop  ", "desert-loop.wav")).toBe("Desert loop");
     expect(profileName("   ", "desert-loop.wav")).toBe("desert-loop.wav");
+    // A nameless file and no typed name still give the library a name.
+    expect(profileName("", "  ")).toBe("audio");
     expect(profileName("x".repeat(250), "a.wav")).toHaveLength(PROFILE_NAME_MAX);
     expect(profileName("", `${"y".repeat(240)}.wav`)).toHaveLength(PROFILE_NAME_MAX);
     // An emoji straddling the limit is kept whole or dropped, never split.
