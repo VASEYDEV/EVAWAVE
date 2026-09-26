@@ -407,6 +407,21 @@ S5 per SPEC §3. The methods are listed in SPEC §3 S5 "Delivered".
     media element's duration to 11 minutes and checks the page refuses the file with no
     worker started. With the probe unwired, the e2e fails. Chromium reports a truncated
     WAV's real length rather than its header's, so the e2e stubs the duration instead.
+- **Thirty-third review: compound meters read as 3/4.** Confirmed with synthetic accent
+  patterns: every 6/8 and 12/8 signal read 3/4, or unknown when the tempo halved the eighth
+  rate. Three detectors were tried, and none held up (CLAUDE.md §1.3):
+  - Comparing 6-beat with 3-beat lags: 3/4 at 150 BPM read 6/8.
+  - The same comparison on local peaks: plain 3/4 and even uniform beats read compound.
+  - A guard for a compound pulse under the beat: it never caught 6/8 at eighth level, and
+    it made 4/4 at 180 and 210 BPM unknown.
+
+  The root cause is that autocorrelation at 43 frames per second is too spiky: frame
+  alignment outweighs the accent hierarchy that separates 3/4 from 6/8. The analysis is
+  therefore unchanged. Instead, intake no longer asserts what it cannot tell apart: a 3/4
+  reading goes out at no more than `THREE_BEAT_CONFIDENCE` (0.4), so it starts unticked,
+  and its rationale names 6/8. A test runs a real 6/8 eighth-note signal through analysis
+  and intake. Without the cap it proposes 3/4 at 0.51, auto-ticked. A 4/4 reading keeps
+  its own confidence. SPEC §1.11 lists beat-phase tracking as the upgrade.
 
 ## Decisions
 

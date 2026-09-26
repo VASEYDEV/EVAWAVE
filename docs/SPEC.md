@@ -234,6 +234,11 @@ end-to-end Jinn rebuild through the UI with an A/B Suno render.
   can hold 109 minutes). Ten minutes of stereo at 48 kHz decodes to about 230 MB. When the
   metadata cannot tell, only the byte cap applies. A streaming decoder (WebCodecs) would
   lift both caps.
+- **Compound meters.** The analysis cannot name 6/8 or 12/8. Autocorrelation at 43 frames per
+  second is too spiky for the 3-against-6-beat comparison that would tell 3/4 from a 6/8
+  bar; two variants were tried and both misread plain meters. Intake therefore proposes 3/4
+  unticked, noting 6/8. Beat-synchronous accent analysis (beat-phase tracking) is the
+  upgrade.
 - **Lockup**: `EVAWAVE` vs `EVA/WAVE`.
 
 ---
@@ -1513,7 +1518,9 @@ Delivered:
   - tempo: spectral-flux onsets with autocorrelation over 60–200 BPM and a 120 BPM
     log-normal prior, the value folded by octaves into 60–200 BPM (a 58 BPM pulse reads
     116, with 58 as its half-time candidate);
-  - meter: an accent envelope at 4-beat against 3-beat lags;
+  - meter: an accent envelope at 4-beat against 3-beat lags. A three-beat grouping may be
+    half a 6/8 bar counted in eighths, so intake proposes 3/4 at no more than 0.4
+    confidence (unticked) and names 6/8;
   - key: chroma against the Krumhansl–Kessler profiles;
   - loudness: BS.1770 K-weighting per channel, summed with the channel weights (1.41 on
     quad, 5.0 and 5.1 surrounds and 7.1 side surrounds, LFE left out), with gating, and the
