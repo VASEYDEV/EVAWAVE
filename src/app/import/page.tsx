@@ -1,4 +1,3 @@
-import type { CSSProperties } from "react";
 import type { Metadata } from "next";
 
 import { ModuleIcon } from "@/components/icons/ModuleIcon";
@@ -9,7 +8,7 @@ export const metadata: Metadata = { title: "Import audio · EVAWAVE" };
 /** Audio import to a StyleProfile (docs/SPEC.md §1.7): analysis runs on this device. */
 export default function ImportPage() {
   return (
-    <main id="main" className="page" style={{ "--hue": "var(--mod-intake)" } as CSSProperties}>
+    <main id="main" className="page">
       <div className="page-head">
         <h2>
           <ModuleIcon name="intake" className="page-icon" /> Import audio

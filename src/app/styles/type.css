@@ -1,0 +1,132 @@
+/*
+ * Type (guide §06). Display: Bebas Neue, one size per composition, never below 17 px.
+ * Interface: Reddit Sans, 400 body, 600 headings, 700 labels. Technical: JetBrains Mono for
+ * values read as data, ligatures off, tabular figures. Hierarchy comes from the scale, not
+ * from a grey ramp: there is no muted text colour.
+ */
+
+/* Display */
+.wordmark {
+  margin: var(--space-1) 0 0;
+  font-family: var(--font-display);
+  font-size: 2.375rem; /* D5 */
+  font-weight: 400;
+  line-height: 1;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: var(--text);
+}
+
+.kicker {
+  display: flex;
+  gap: 0.05em;
+  font-family: var(--font-display);
+  font-size: 1.0625rem; /* Kicker: the smallest permitted display size */
+  font-weight: 400;
+  line-height: 1;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--text);
+}
+
+/* Interface headings */
+h1,
+h2,
+h3,
+h4 {
+  margin: 0;
+  color: var(--text);
+  font-weight: 600;
+  text-wrap: balance;
+}
+
+.page h2 {
+  font-size: 1.625rem; /* H2 */
+  line-height: 1.2;
+  letter-spacing: -0.005em;
+  color: var(--heading);
+}
+
+.module h2 {
+  font-size: 1.3125rem; /* H3 */
+  line-height: 1.3;
+  color: var(--heading);
+}
+
+.panel h2,
+h3 {
+  font-size: 1.125rem; /* H4 */
+  line-height: 1.35;
+}
+
+h4 {
+  font-size: 0.875rem;
+  line-height: 1.6;
+}
+
+.tagline {
+  font-size: 0.875rem; /* BodyS */
+  line-height: 1.6;
+}
+
+/* Labels and captions */
+label {
+  font-size: 0.875rem; /* BodyS at the label weight: a stated deviation from Label's 11 px */
+  font-weight: 700;
+  line-height: 1.4;
+}
+
+legend,
+.module-owns {
+  font-size: 0.6875rem; /* Label */
+  font-weight: 700;
+  line-height: 1.1;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.hint,
+.features dt,
+.chips li {
+  font-size: 0.8125rem; /* Caption */
+  font-weight: 500;
+  line-height: 1.45;
+}
+
+/* Technical: numbers and machine truth */
+.readout,
+.tap,
+.module-number,
+.features dd,
+.panel p[aria-live],
+.meters label {
+  font-family: var(--mono);
+  font-size: 0.75rem; /* Data */
+  font-weight: 500;
+  letter-spacing: 0.03em;
+  font-variant-numeric: tabular-nums;
+  font-variant-ligatures: none;
+}
+
+code,
+.grid,
+textarea[readonly] {
+  font-family: var(--mono);
+  font-size: 0.875rem; /* Code */
+  font-weight: 400;
+  font-variant-ligatures: none;
+}
+
+code {
+  font-size: 0.875em;
+  overflow-wrap: anywhere;
+}
+
+.badge {
+  font-family: var(--mono);
+  font-size: 0.625rem; /* Micro */
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  font-variant-ligatures: none;
+}

@@ -1,0 +1,110 @@
+/*
+ * Base: the document, focus, links and motion. Tokens live in tokens.css, the type scale in
+ * type.css. Mobile-first; the field is Deep Turquoise so the brand reads in empty space.
+ */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+  background: var(--bg);
+}
+
+body {
+  margin: 0;
+  min-height: 100dvh;
+  background: var(--bg);
+  color: var(--text);
+  font: 400 1rem/1.65 var(--font);
+  font-variant-ligatures: none;
+}
+
+/* Motion describes signal travel, never personality; without it nothing is lost. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    transition: none !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+a {
+  color: var(--action);
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.15em;
+  transition: color var(--dur-quick) var(--ease-standard);
+}
+
+a:hover {
+  color: var(--text);
+}
+
+/* Turquoise ring, 5.23:1 on Charcoal and 6.07:1 on the field. */
+:focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: 2px;
+}
+
+::selection {
+  background: var(--vm-turquoise);
+  color: var(--vm-charcoal);
+}
+
+img,
+svg {
+  display: block;
+  max-width: 100%;
+}
+
+p {
+  margin: 0;
+  max-width: 75ch;
+}
+
+.skip-link {
+  position: absolute;
+  z-index: 1; /* above the positioned header that follows it in the DOM */
+  left: var(--space-2);
+  top: -3rem;
+  padding: var(--space-2) var(--space-3);
+  background: var(--surface);
+  color: var(--text);
+  border-radius: var(--radius-button);
+  font-weight: 600;
+}
+
+.skip-link:focus {
+  top: var(--space-2);
+}
+
+main {
+  padding: var(--space-4);
+}
+
+@media (min-width: 64rem) {
+  main {
+    padding: var(--space-5) var(--space-7);
+  }
+}
+
+@media (min-width: 90rem) {
+  main {
+    padding: var(--space-6) var(--space-9);
+  }
+}
+
+/* Grid children may shrink below their content's min-content width, so a wide table or a
+ * long token scrolls inside its own box instead of widening the page on a phone. */
+.page > *,
+.import,
+.import > *,
+.library > *,
+.panel,
+.module-body > * {
+  min-width: 0;
+}

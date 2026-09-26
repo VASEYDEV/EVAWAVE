@@ -1,0 +1,500 @@
+/*
+ * Components. Surfaces are Charcoal on the Deep Turquoise field; controls sit in field-
+ * coloured wells bounded by the one permitted tint. Turquoise is the action and iconography
+ * colour and carries Charcoal ink. Severity and danger read from text and weight, never from
+ * colour alone (guide §10 leaves semantic states undefined; WCAG 1.4.1).
+ */
+
+/* Modules: a numbered, collapsible landmark. The rule is Teal closed, Turquoise open. */
+.module,
+.panel {
+  background: var(--surface);
+  border-radius: var(--radius-panel);
+}
+
+.module {
+  border-top: 3px solid var(--structure);
+  transition: border-top-color var(--dur-quick) var(--ease-standard);
+}
+
+.module:has(details[open]) {
+  border-top-color: var(--action);
+}
+
+.module summary {
+  position: relative;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-1) var(--space-3);
+  padding: var(--space-3) var(--space-8) var(--space-3) var(--space-4);
+  min-height: 44px;
+  cursor: pointer;
+  list-style: none;
+  border-radius: var(--radius-panel);
+}
+
+.module summary::-webkit-details-marker {
+  display: none;
+}
+
+/* The disclosure chevron: a Turquoise corner at the row's end that turns on open. */
+.module summary::after {
+  content: "";
+  position: absolute;
+  right: var(--space-5);
+  top: 50%;
+  width: 10px;
+  height: 10px;
+  border-right: 2px solid var(--action);
+  border-bottom: 2px solid var(--action);
+  transform: translateY(-70%) rotate(45deg);
+  transition: transform var(--dur-quick) var(--ease-standard);
+}
+
+.module details[open] > summary::after {
+  transform: translateY(-30%) rotate(-135deg);
+}
+
+.module-icon {
+  width: 28px;
+  height: 28px;
+  flex: none;
+  color: var(--vm-turquoise);
+  transition: filter var(--dur-quick) var(--ease-standard);
+}
+
+.module details[open] > summary .module-icon {
+  filter: drop-shadow(0 0 6px var(--vm-turquoise));
+}
+
+.module-number {
+  display: inline-block;
+  min-width: 1.75rem;
+  color: var(--text);
+}
+
+.module-owns {
+  flex-basis: 100%;
+  color: var(--text);
+}
+
+@media (min-width: 40rem) {
+  .module-owns {
+    flex-basis: auto;
+    margin-left: var(--space-2);
+  }
+}
+
+.module-body {
+  padding: 0 var(--space-4) var(--space-4);
+  display: grid;
+  gap: var(--gap);
+}
+
+.panel {
+  padding: var(--space-3) var(--space-4) var(--space-4);
+  display: grid;
+  gap: var(--space-2);
+  align-content: start;
+}
+
+.page-icon {
+  width: 32px;
+  height: 32px;
+  color: var(--action);
+}
+
+/* Fields and groups */
+.field {
+  display: grid;
+  gap: var(--space-1);
+  min-width: 0;
+}
+
+.field-check {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+}
+
+fieldset {
+  margin: 0;
+  min-width: 0;
+  padding: var(--space-2) var(--space-3) var(--space-3);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-card);
+  display: grid;
+  gap: var(--space-2);
+}
+
+legend {
+  padding: 0 var(--space-1);
+}
+
+/* The engine radios read as one row. */
+.targets {
+  grid-template-columns: repeat(auto-fit, minmax(10rem, max-content));
+  gap: var(--space-2) var(--space-5);
+}
+
+/* A toggle that reveals a sub-object: dashed until the object exists. */
+.optional:not(:has(.optional-body)) {
+  border-style: dashed;
+}
+
+.optional-body,
+.list {
+  display: grid;
+  gap: var(--gap);
+}
+
+.row {
+  display: grid;
+  gap: var(--space-2);
+  grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr));
+  align-items: end;
+}
+
+.row-actions,
+.add-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  align-items: center;
+}
+
+.hint {
+  color: var(--text);
+}
+
+/* Controls */
+input,
+select,
+textarea {
+  font: inherit;
+  color: var(--text);
+  background: var(--well);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-input);
+  min-height: 44px;
+  padding: var(--space-2) var(--space-3);
+  max-width: 100%;
+  transition: border-color var(--dur-quick) var(--ease-standard);
+}
+
+input:hover,
+select:hover,
+textarea:hover {
+  border-color: var(--text);
+}
+
+input[type="checkbox"],
+input[type="radio"] {
+  min-height: auto;
+  width: 1.25rem;
+  height: 1.25rem;
+  margin: 0;
+  accent-color: var(--action);
+}
+
+input[type="range"] {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  accent-color: var(--action);
+}
+
+input[type="color"] {
+  padding: var(--space-1);
+  min-width: 44px;
+}
+
+textarea {
+  resize: vertical;
+  width: 100%;
+}
+
+button {
+  font: inherit;
+  font-weight: 600;
+  color: var(--text);
+  background: transparent;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-button);
+  min-height: 44px;
+  padding: var(--space-2) var(--space-4);
+  max-width: 100%;
+  cursor: pointer;
+  transition:
+    background-color var(--dur-quick) var(--ease-standard),
+    color var(--dur-quick) var(--ease-standard),
+    border-color var(--dur-quick) var(--ease-standard);
+}
+
+button:hover {
+  border-color: var(--text);
+}
+
+/* The one primary action per panel: a Turquoise fill with Charcoal ink (5.23:1). */
+button.primary {
+  background: var(--action);
+  color: var(--action-ink);
+  border-color: var(--action);
+}
+
+button.primary:hover {
+  background: var(--text);
+  border-color: var(--text);
+}
+
+button:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+button.danger {
+  font-weight: 700;
+}
+
+.tap {
+  min-width: 6rem;
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.chip-remove {
+  border: 0;
+  min-width: 44px;
+  font-weight: 400;
+}
+
+/* Lists */
+.chips,
+.matches,
+.lint,
+.coverage,
+.meters,
+.branches,
+.cues {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: var(--space-2);
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.chips li {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  background: var(--well);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-input);
+  padding-left: var(--space-3);
+}
+
+.cues > li {
+  border-left: 3px solid var(--structure);
+  padding-left: var(--space-2);
+}
+
+/* Cards */
+.section-card,
+.review-item,
+.library-list > li {
+  border: 1px solid var(--line);
+  border-radius: var(--radius-card);
+  padding: var(--space-2) var(--space-3) var(--space-3);
+  display: grid;
+  gap: var(--space-2);
+}
+
+.section-card > summary {
+  cursor: pointer;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  font-weight: 600;
+}
+
+.library-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: var(--gap);
+}
+
+.library-list h4 {
+  margin: 0;
+}
+
+.swatch {
+  display: inline-block;
+  width: 0.875rem;
+  height: 0.875rem;
+  border-radius: 50%;
+  border: 1px solid var(--line);
+}
+
+/* Lint: severity by weight and a left rule, with the severity word in the text. */
+.lint li {
+  padding: var(--space-1) 0 var(--space-1) var(--space-3);
+  border-left: 3px solid transparent;
+}
+
+.lint-block {
+  border-left-color: var(--action);
+  font-weight: 700;
+}
+
+.lint-warn {
+  border-left-color: var(--structure);
+  font-weight: 600;
+}
+
+.lint-block strong,
+.lint-warn strong,
+.lint-info strong {
+  color: var(--text);
+}
+
+/* Budgets: a Turquoise fill on a field-coloured track. */
+/* Budget meters: one outlined track on the well, a Turquoise fill; the label carries the numbers. */
+meter {
+  appearance: none;
+  display: block;
+  width: 100%;
+  height: 10px;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  background: var(--well);
+  border-radius: var(--radius-input);
+}
+
+meter::-webkit-meter-bar {
+  background: var(--well);
+  border: 0;
+  border-radius: 0;
+}
+
+meter::-webkit-meter-optimum-value,
+meter::-webkit-meter-suboptimum-value,
+meter::-webkit-meter-even-less-good-value {
+  background: var(--action);
+  border-radius: var(--radius-input);
+}
+
+meter::-moz-meter-bar {
+  background: var(--action);
+  border-radius: var(--radius-input);
+}
+
+.readout {
+  color: var(--text);
+}
+
+.grid {
+  border-collapse: collapse;
+  display: block;
+  overflow-x: auto;
+  font-size: 0.75rem;
+}
+
+.grid th,
+.grid td {
+  border: 1px solid var(--line);
+  padding: var(--space-1) var(--space-2);
+  text-align: center;
+}
+
+.grid td.hit {
+  color: var(--action);
+  font-weight: 600;
+}
+
+/* Status and alerts: the pill is reserved for status. */
+[role="status"]:not(:empty),
+[role="alert"] {
+  width: fit-content;
+  max-width: 100%;
+  padding: var(--space-2) var(--space-4);
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-pill);
+}
+
+.panel [role="status"]:not(:empty),
+form [role="status"]:not(:empty) {
+  background: var(--well);
+}
+
+.badge {
+  display: inline-block;
+  padding: 2px var(--space-2);
+  background: var(--well);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-input);
+  color: var(--text);
+}
+
+/* Import */
+.dropzone {
+  display: grid;
+  gap: var(--space-2);
+  padding: var(--space-4);
+  border: 2px dashed var(--line);
+  border-radius: var(--radius-card);
+  transition:
+    border-color var(--dur-instant) var(--ease-standard),
+    background-color var(--dur-instant) var(--ease-standard);
+}
+
+.dropzone.dragging {
+  border-color: var(--action);
+  background: var(--surface);
+}
+
+.dropzone input[type="file"] {
+  width: 100%;
+}
+
+/* The picker's native button, set like every other quiet button. */
+.dropzone input[type="file"]::file-selector-button {
+  margin-right: var(--space-3);
+  padding: var(--space-1) var(--space-3);
+  font: inherit;
+  font-weight: 600;
+  color: var(--text);
+  background: transparent;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-button);
+  cursor: pointer;
+}
+
+.features {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: var(--space-1) var(--space-4);
+  margin: 0;
+}
+
+.features dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.review {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: var(--gap);
+}

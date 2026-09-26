@@ -9,7 +9,13 @@
   <img src="https://img.shields.io/badge/status-pre--alpha-orange" alt="Status: pre-alpha">
 </p>
 
-> The logo is deferred until the brand pass settles the lockup (ADR 0001 and 0002).
+> The mark is deferred until the VASEY/AI vector master is supplied (ADR 0005): marks are
+> traced, never invented. The interface itself is set to the Vasey Multimedia Brand System
+> v2.0, applied as recorded in [`docs/design/brand-application.md`](docs/design/brand-application.md).
+
+<p align="center">
+  <img src="docs/design/screenshots/composer-pixel7.png" width="360" alt="The EVAWAVE composer on a phone: the VASEY/AI kicker and EVAWAVE wordmark over a Deep Turquoise field, module 1 (Engine + Form) open on a Charcoal panel with Turquoise headings and Silver text.">
+</p>
 
 ## Status
 

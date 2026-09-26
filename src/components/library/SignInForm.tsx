@@ -25,7 +25,7 @@ export function SignInForm({ next }: { next: string }) {
         <label htmlFor={id}>Email</label>
         <input id={id} type="email" autoComplete="email" required value={email} onChange={(e) => setEmail(e.target.value)} />
       </div>
-      <button type="submit" disabled={state.kind === "sending"}>
+      <button type="submit" className="primary" disabled={state.kind === "sending"}>
         Email me a sign-in link
       </button>
       <p role="status" aria-live="polite">

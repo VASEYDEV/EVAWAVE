@@ -1,7 +1,14 @@
 import type { Metadata, Viewport } from "next";
 import Link from "next/link";
 
-import "./globals.css";
+import { bebas, jetbrains, sans } from "./fonts";
+
+// Cascade order: tokens, then the document, the type scale, components, pages.
+import "./styles/tokens.css";
+import "./styles/base.css";
+import "./styles/type.css";
+import "./styles/components.css";
+import "./styles/pages.css";
 
 export const metadata: Metadata = {
   title: "EVAWAVE",
@@ -14,19 +21,24 @@ export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
   colorScheme: "dark",
-  themeColor: "#07090d",
+  // Deep Turquoise, the brand's native field (Vasey Multimedia Brand System v2.0 §03).
+  themeColor: "#052e3a",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="en">
+    <html lang="en" className={`${sans.variable} ${bebas.variable} ${jetbrains.variable}`}>
       <body>
         <a className="skip-link" href="#main">
           Skip to content
         </a>
         <header className="app-header">
-          <h1>EVAWAVE</h1>
-          <p>Compose musical intent once; compile it for Suno, ElevenLabs Music and Google Flow Music. Pre-alpha.</p>
+          {/* The entity lockup (ADR 0005): the slash is BEAM, the page's one signature use. */}
+          <p className="kicker">
+            VASEY<span className="beam">/</span>AI
+          </p>
+          <h1 className="wordmark">EVAWAVE</h1>
+          <p className="tagline">Compose musical intent once; compile it for Suno, ElevenLabs Music and Google Flow Music. Pre-alpha.</p>
           <nav aria-label="Site">
             <ul>
               <li>

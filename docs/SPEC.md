@@ -154,28 +154,33 @@ engine). Udio: none.
 
 ### 1.9 Module iconography
 
-One hue per module, used for the icon stroke, the module header rule and the active glow.
-Panels stay void-dark glass. Icons are monoline, one stroke weight, 400×400 viewBox, with
-no fills except the brand teal beam when a module is armed. Hues are `oklch(78% 0.14 H)`.
+Icons are monoline, one stroke weight, 400×400 viewBox, drawn inline so the stroke takes
+`currentColor`. Every module icon is CORE Turquoise (`--vm-turquoise`), the brand's
+iconography colour; the open module's icon glows Turquoise. The per-module hue table that
+S5 shipped (`oklch(78% 0.14 H)`, one hue per module) is retired by ADR 0005: the Vasey
+Multimedia Brand System v2.0 fixes CORE at five chromatic values and two bookends, four
+inks per composition and one signature per frame, and thirteen hues on one screen cannot
+meet it. Modules differentiate by icon, number and typography instead.
 
-| Module | Token | H | Icon motif |
-| --- | --- | --- | --- |
-| Engine + Form | `--mod-form` | 190 (brand teal) | metronome pendulum inside a bar frame |
-| Key + Mode | `--mod-key` | 300 | key glyph with a bent second |
-| Drum Grammar | `--mod-drums` | 60 | 16-slot grid with three lit slots |
-| Regional Bundle | `--mod-bundle` | 35 | globe with a single meridian |
-| Instruments + Synths | `--mod-instruments` | 340 | oud body overlapping a saw wave |
-| Expression + Technique | `--mod-technique` | 250 | slur line over two noteheads |
-| Textures | `--mod-textures` | 270 | layered waves |
-| Transitions | `--mod-transitions` | 120 | riser arrow with a hard stop |
-| Sections | `--mod-sections` | 215 | eight blocks, one raised |
-| Mood + Imagery | `--mod-mood` | 20 | horizon with a low sun |
-| Negative Space + Output | `--mod-output` | 0 chroma (neutral) | shield over a field frame |
-| Library | `--mod-library` | 160 | three stacked cards |
-| Intake | `--mod-intake` | 95 | waveform entering a bracket |
+| Module | Icon key | Icon motif |
+| --- | --- | --- |
+| Engine + Form | `form` | metronome pendulum inside a bar frame |
+| Key + Mode | `key` | key glyph with a bent second |
+| Drum Grammar | `drums` | 16-slot grid with three lit slots |
+| Regional Bundle | `bundle` | globe with a single meridian |
+| Instruments + Synths | `instruments` | oud body overlapping a saw wave |
+| Expression + Technique | `technique` | slur line over two noteheads |
+| Textures | `textures` | layered waves |
+| Transitions | `transitions` | riser arrow with a hard stop |
+| Sections | `sections` | eight blocks, one raised |
+| Mood + Imagery | `mood` | horizon with a low sun |
+| Negative Space + Output | `output` | shield over a field frame |
+| Library | `library` | three stacked cards |
+| Intake | `intake` | waveform entering a bracket |
 
 The final icon geometry belongs to the Vector Iconography project. S5 ships provisional
-monoline icons to this table and flags them as provisional.
+monoline icons to this table and flags them as provisional. The applied brand system
+(tokens, type, surfaces, motion) is documented in `docs/design/brand-application.md`.
 
 ### 1.10 Out of scope for v1
 
@@ -253,7 +258,10 @@ end-to-end Jinn rebuild through the UI with an A/B Suno render.
   bar; two variants were tried and both misread plain meters. Intake therefore proposes 3/4
   unticked, noting 6/8. Beat-synchronous accent analysis (beat-phase tracking) is the
   upgrade.
-- **Lockup**: `EVAWAVE` vs `EVA/WAVE`.
+- ~~**Lockup**: `EVAWAVE` vs `EVA/WAVE`.~~ Resolved by ADR 0005: `EVAWAVE`, set in Bebas
+  Neue, with a `VASEY/AI` kicker whose slash is BEAM.
+- **PWA icon suite and favicon** (CLAUDE.md §10, brand guide §08) need the VASEY/AI vector
+  mark. Marks are traced masters, never invented, so the suite waits for the master.
 
 ---
 
