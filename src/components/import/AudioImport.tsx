@@ -14,7 +14,7 @@ import { browserImportDeps, inTurnForLocalAudio, keepAudioFor } from "@/lib/audi
 import { importAudio, ImportLengthUnknownError, ImportTooLargeError, ImportTooLongError, profileFromReview, type ImportResult } from "@/lib/audio/import";
 import { createLibraryClient } from "@/lib/library/client";
 import { saveImportAndKeepAudio } from "@/lib/library/repository";
-import { PROFILE_NAME_MAX, recordFilename, recordMime } from "@/lib/library/schema";
+import { clampProfileName, recordFilename, recordMime } from "@/lib/library/schema";
 import { getSupabasePublicConfig } from "@/lib/supabase/config";
 
 function formatSec(sec: number): string {
@@ -259,7 +259,7 @@ export function AudioImport() {
           </ul>
           <div className="add-row">
             <label htmlFor={nameId}>Profile name</label>
-            <input id={nameId} type="text" maxLength={PROFILE_NAME_MAX} value={name} onChange={(e) => setName(e.target.value)} />
+            <input id={nameId} type="text" value={name} onChange={(e) => setName(clampProfileName(e.target.value))} />
             <button type="button" onClick={createProfile}>
               Create style profile
             </button>

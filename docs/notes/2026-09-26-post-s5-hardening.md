@@ -14,8 +14,9 @@ list.
   `deleteFile` has since the S5 review. The `/library` page already shows a thrown
   message as its status, so no UI change was needed.
 - **Profile-name limit.** The `/library` profile-name input took names past the
-  200-character limit the migration enforces, so a long name failed only on save. It now
-  caps at `PROFILE_NAME_MAX`, as `/import`'s does.
+  200-character limit the database enforces, so a long name failed only on save. It first
+  gained the `maxLength` attribute `/import`'s input had; the review (below) replaced both
+  with a clamp by code points.
 - **README Status.** The headline said "Nothing in the app is usable yet" above a list that
   described the composer, library and import as working; the S1 bullet still said "no UI
   yet"; S2 was missing. The headline now says the S1–S5 plan has landed, what runs today,
@@ -33,11 +34,21 @@ list.
 - `PLAYWRIGHT_CHROMIUM_EXECUTABLE=/opt/pw-browsers/chromium bash scripts/gate.sh`:
   `GATE: PASS` (618 unit and integration, 16 e2e).
 
+## Review round
+
+Codex, P2 on the `/library` input: a native `maxLength` counts UTF-16 code units, while the
+migration's check (`char_length`) and `profileName` count code points, so an emoji-heavy
+name was refused at 100 characters when the library accepts 200. Fixed with
+`clampProfileName` in `src/lib/library/schema.ts`, used by both inputs in place of the
+attribute (`/import`'s carried the same defect since S5). `library-schema.test.ts` holds
+200 emoji unchanged, cuts a 201st, keeps a typed trailing space, and never splits a
+surrogate pair; the mutation "return the typed name unchanged" fails exactly that test.
+
 ## Not tested, and why
 
-- The `maxLength` attribute on the `/library` input. The form renders only behind a live
-  Supabase session, which CI and local runs do not have, and there is no component harness.
-  Same gap as the S5 wiring points; the limit's value is tested where it lives.
+- The clamp's wiring to the `/library` and `/import` inputs. The `/library` form renders only
+  behind a live Supabase session, which CI and local runs do not have, and there is no
+  component harness. Same gap as the S5 wiring points; the clamp is tested where it lives.
 
 ## Next
 

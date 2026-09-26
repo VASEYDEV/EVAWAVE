@@ -21,7 +21,7 @@ import {
   setLink,
   type LibraryData,
 } from "@/lib/library/repository";
-import { PROFILE_NAME_MAX } from "@/lib/library/schema";
+import { clampProfileName } from "@/lib/library/schema";
 
 const COMPOSER_KEY = "evawave:composer:v1";
 
@@ -112,7 +112,7 @@ export function Library() {
         <h3 id="profiles-heading">Style profiles</h3>
         <div className="add-row">
           <label htmlFor={nameId}>Profile name</label>
-          <input id={nameId} type="text" maxLength={PROFILE_NAME_MAX} value={profileName} onChange={(e) => setProfileName(e.target.value)} />
+          <input id={nameId} type="text" value={profileName} onChange={(e) => setProfileName(clampProfileName(e.target.value))} />
           <button
             type="button"
             disabled={!profileName.trim()}

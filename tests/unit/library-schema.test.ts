@@ -5,7 +5,7 @@ import { describe, expect, it } from "vitest";
 
 import type { MusicSpec } from "@/core/musicspec/ir/types";
 import { profileSpecFrom } from "@/lib/library/repository";
-import { FILENAME_MAX, MIME_MAX, PROFILE_NAME_MAX, profileName, recordFilename, recordMime, toReferenceAsset, toStyleProfile, toTag, type FileRow, type StyleProfileRow } from "@/lib/library/schema";
+import { clampProfileName, FILENAME_MAX, MIME_MAX, PROFILE_NAME_MAX, profileName, recordFilename, recordMime, toReferenceAsset, toStyleProfile, toTag, type FileRow, type StyleProfileRow } from "@/lib/library/schema";
 
 const spec = JSON.parse(readFileSync(fileURLToPath(new URL("../fixtures/jinn-v1.2.spec.json", import.meta.url)), "utf8")) as MusicSpec;
 
@@ -62,6 +62,22 @@ describe("profile names", () => {
     expect(Array.from(straddling)).toHaveLength(PROFILE_NAME_MAX);
     expect(straddling.isWellFormed()).toBe(true);
     expect(straddling.endsWith("🎵")).toBe(true);
+  });
+
+  it("clamps a typed name by code points, so the fields accept every name the library does", () => {
+    // 200 emoji are 400 UTF-16 code units: a native maxLength of 200 would stop at 100 of them,
+    // half of what the migration's check (char_length) allows.
+    const full = "🎵".repeat(PROFILE_NAME_MAX);
+    expect(clampProfileName(full)).toBe(full);
+    expect(clampProfileName(`${full}🎵`)).toBe(full);
+    expect(clampProfileName("x".repeat(PROFILE_NAME_MAX + 5))).toHaveLength(PROFILE_NAME_MAX);
+    // A name still being typed is returned as is, spaces included: only the cut applies.
+    expect(clampProfileName("Desert loop ")).toBe("Desert loop ");
+    expect(clampProfileName("")).toBe("");
+    // The cut never splits a surrogate pair.
+    const cut = clampProfileName(`${"x".repeat(PROFILE_NAME_MAX - 1)}🎵🎵`);
+    expect(Array.from(cut)).toHaveLength(PROFILE_NAME_MAX);
+    expect(cut.isWellFormed()).toBe(true);
   });
 
   it("keeps a MIME type the library accepts, else the generic binary type", () => {
