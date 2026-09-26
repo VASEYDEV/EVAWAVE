@@ -18,6 +18,9 @@ project is configured, the library and sign-in pages say so and nothing else cha
    `public.save_import`, which saves an audio import's file metadata and style profile
    in one transaction under RLS (security invoker; `authenticated` only) and returns the
    file id, the profile id and the owner the rows were written for.
+   `20260926000300_file_record.sql` adds `public.file_record`, which says whether the
+   caller has a file record for a hash and who the caller is (security invoker;
+   `authenticated` only). `/library` uses it before removing a local copy.
 3. Optional: regenerate the typed schema with
    `supabase gen types typescript --project-id <ref>`. Compare it with
    `src/lib/library/schema.ts`; the RLS test pins the column lists.

@@ -362,6 +362,21 @@ S5 per SPEC §3. The methods are listed in SPEC §3 S5 "Delivered".
   - **Reading a file after the import was already superseded.** `importAudio` now checks
     the signal before reading the file, as well as after. A test aborts first and checks
     that the file is never read.
+- **Thirtieth review.** Each fix ships with a test that fails under a mutation.
+  - **A reconciliation check that ran as another account.** If another tab switched
+    accounts mid-check, RLS answered for the new account, and the old account's copy
+    looked orphaned. A new migration, `20260926000300_file_record.sql`, adds
+    `public.file_record(sha256)`. It is `security invoker` and `authenticated`-only, and
+    returns `present` together with `auth.uid()`. `hasFileRecord(client, ownerId, sha256)`
+    counts a record as gone only when the answer came from `ownerId`. The RLS suite checks
+    the answers for the owner, for another account, and signed out. A unit test covers
+    the three cases, and ignoring the returned owner fails it.
+  - **Fallback copies in this tab.** Reconciliation looked only at OPFS, so an in-memory
+    copy stayed after its record was deleted elsewhere. This account's in-tab keys are
+    now candidates too, with or without OPFS. A test without OPFS removes the orphan and
+    keeps the listed copy and another account's copy. Leaving the tab's keys out fails
+    it. The reconcile tests run on a fresh module, so copies left by earlier tests do
+    not join them.
 
 ## Decisions
 
