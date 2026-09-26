@@ -216,3 +216,10 @@ S5 per SPEC §3. The methods are listed in SPEC §3 S5 "Delivered".
   the row was deleted. Now only a missing API or a private window's `SecurityError` counts
   as nothing to remove. `storeInOpfs` falls back to memory in both cases, so OPFS holds
   nothing. Other errors reject. A test covers both paths; it fails on the old code.
+- **Sixteenth review: a recoverable delete across two stores.** Removing the local copy
+  first protected the hash, but a failed row delete then left the record without its
+  audio. `deleteWithLocalAudio` reads the copy into memory, removes it, deletes the row,
+  and stores the copy again if the row delete fails, so each failure leaves both stores
+  as they were. Tests cover a failed row delete (the copy is restored byte for byte), a
+  successful delete, and a locked copy (the row delete never runs). Dropping the restore
+  fails the first test.
