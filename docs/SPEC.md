@@ -1004,14 +1004,15 @@ export interface Song {
   styleProfileIds: string[];
   overrides: TargetOverride[];
   tags: string[];
+  baseVariantId?: string;                           // the variant the working copy descends from
   createdAt: string;
   updatedAt: string;
 }
 
 export interface FieldDiff {
-  path: string;
-  before: unknown;
-  after: unknown;
+  path: string;                                     // RFC 6901 pointer; an added, removed or retyped subtree is one entry at its root
+  before?: unknown;                                 // absent: the path was added
+  after?: unknown;                                  // absent: the path was removed
 }
 
 export interface Variant {
@@ -1365,7 +1366,8 @@ Every other type in §2.2 is carried over as written.
 | `EngineField` | Gains `notes` | Every installed profile field carries notes |
 | `EngineProfile` | Gains `verification`, `halted`, `houseBudgets`, `repairRules`, `exports` and the note fields | They are in the installed profile JSON |
 | `CoverageReport` | `compiledAt` optional | Serializers are pure; the app layer stamps time |
-| `Song` | Gains `overrides` | Scope stores overrides on `Variant` only; the working copy needs them for target switching |
+| `Song` | Gains `overrides` and `baseVariantId` | Scope stores overrides on `Variant` only; the working copy needs them for target switching. `baseVariantId` names the variant the working copy was opened from, so a freeze diffs against it and a fork from an earlier variant keeps its parent (S6) |
+| `FieldDiff` | `before` and `after` optional | JSON cannot carry `undefined`, so an added path has no `before` and a removed path no `after` (S6) |
 | `Variant` | `coverage` is `Partial<Record<…>>` | A halted engine has no coverage report |
 | `ReferenceAsset` | `palette` uses `PaletteSwatch` | Shared with `ToneMood` |
 

@@ -717,14 +717,15 @@ export interface Song {
   styleProfileIds: string[];
   overrides: TargetOverride[];
   tags: string[];
+  baseVariantId?: string;                           // the variant the working copy descends from
   createdAt: string;
   updatedAt: string;
 }
 
 export interface FieldDiff {
-  path: string;
-  before: unknown;
-  after: unknown;
+  path: string;                                     // RFC 6901 pointer; an added, removed or retyped subtree is one entry at its root
+  before?: unknown;                                 // absent: the path was added
+  after?: unknown;                                  // absent: the path was removed
 }
 
 export interface Variant {
