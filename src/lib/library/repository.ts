@@ -99,8 +99,14 @@ export async function deleteTag(client: LibraryClient, id: string): Promise<void
   check(await client.from("tags").delete().eq("id", id).select("id"), "delete tag");
 }
 
+/**
+ * Deletes one file record, and rejects unless exactly that row went. RLS hides other owners'
+ * rows, so after the signed-in account changes, a delete of a row loaded earlier succeeds
+ * with no rows; the caller must see that as a failure, to keep (or restore) the local audio.
+ */
 export async function deleteFile(client: LibraryClient, id: string): Promise<void> {
-  check(await client.from("files").delete().eq("id", id).select("id"), "delete file");
+  const deleted = check(await client.from("files").delete().eq("id", id).select("id"), "delete file");
+  if (deleted.length !== 1) throw new LibraryError("delete file: no such record for this account; reload the library");
 }
 
 type LinkTable = "style_profile_genres" | "style_profile_tags" | "file_genres" | "file_tags";

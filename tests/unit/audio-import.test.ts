@@ -7,7 +7,7 @@ import { applyReviewedPatch, audioProfileBase, AUDIO_DRAFT_MODEL, reviewPatch } 
 import { lintStyleProfile } from "@/core/musicspec/lint";
 import { blobInTab, deleteWithLocalAudio, removeLocalAudio, storeInOpfs } from "@/lib/audio/browser";
 import { importAudio, sha256Hex, type ImportDeps } from "@/lib/audio/import";
-import { saveImport, saveImportAndKeepAudio, type ImportRecord } from "@/lib/library/repository";
+import { deleteFile, LibraryError, saveImport, saveImportAndKeepAudio, type ImportRecord } from "@/lib/library/repository";
 import type { Database } from "@/lib/library/schema";
 
 import { clickTrack, mix, triad } from "../support/signals";
@@ -371,6 +371,21 @@ describe("local audio on the device", () => {
     await expect(deleteWithLocalAudio(a("fallback-locked-sha"), deleteRecord)).rejects.toBe(locked);
     expect(deleteRecord).not.toHaveBeenCalled();
     expect(blobInTab(a("fallback-locked-sha"))).toBe(blob);
+  });
+
+  it("restores the copy when the record delete removes no row, as after an account change", async () => {
+    const files = fakeOpfs();
+    await storeInOpfs(a("hidden-sha"), new Blob([wav]));
+    // RLS hides another owner's row, so PostgREST answers the delete with 200 and no rows.
+    const answering = (rows: unknown[]) =>
+      createClient<Database>("https://project.supabase.test", "anon-key-for-tests", {
+        global: { fetch: (async () => new Response(JSON.stringify(rows), { status: 200, headers: { "content-type": "application/json" } })) as typeof fetch },
+        auth: { persistSession: false },
+      });
+    await expect(deleteWithLocalAudio(a("hidden-sha"), () => deleteFile(answering([]), "file-id"))).rejects.toThrow(LibraryError);
+    expect(files.has(`audio/${OWNER_A}/hidden-sha`)).toBe(true);
+    await deleteWithLocalAudio(a("hidden-sha"), () => deleteFile(answering([{ id: "file-id" }]), "file-id"));
+    expect(files.has(`audio/${OWNER_A}/hidden-sha`)).toBe(false);
   });
 
   it("removes the in-tab copy where OPFS is missing", async () => {
