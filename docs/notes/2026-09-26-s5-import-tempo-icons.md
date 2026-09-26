@@ -499,6 +499,15 @@ S5 per SPEC §3. The methods are listed in SPEC §3 S5 "Delivered".
   phone, with no drag and drop, the only retry was another file or a reload. The input is
   now cleared once its file is taken. The length-refusal e2e checks the picker is empty
   afterwards; the previous component fails it, still holding `C:\fakepath\long-take.wav`.
+- **Fortieth review: two decodes at once.** Confirmed. A newer file choice aborts the import
+  in flight, but `decodeAudioData` takes no signal, so the old decode kept running while the
+  new import read and decoded its own file. Two recordings near the limit then held their
+  samples together, doubling the budget. The read, hash and decode now take turns
+  (`decodeTurn` in `import.ts`). A newer import waits for a superseded one's to settle, and
+  one superseded while waiting never reads its file. The turn settles to nothing, so it
+  keeps no decoded audio alive. A test holds the first decode open and supersedes it twice:
+  the second import never reads, and the third reads only after the first decode ends.
+  Without the turn it fails.
 
 ## Decisions
 

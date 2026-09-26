@@ -240,7 +240,9 @@ end-to-end Jinn rebuild through the UI with an A/B Suno render.
   When the header does not say, the import assumes 32 channels, the most a Web Audio buffer
   holds (Chromium refuses 33), so such a recording takes up to 37.5 seconds. A recording
   whose metadata gives no finite duration is refused, since nothing else bounds its decode.
-  A streaming decoder (WebCodecs) would lift the caps.
+  Imports decode one at a time: Web Audio's decode takes no abort, so a newer file choice
+  waits for a superseded read and decode to settle before it reads. A streaming decoder
+  (WebCodecs) would lift the caps.
 - **Compound meters.** The analysis cannot name 6/8 or 12/8. Autocorrelation at 43 frames per
   second is too spiky for the 3-against-6-beat comparison that would tell 3/4 from a 6/8
   bar; two variants were tried and both misread plain meters. Intake therefore proposes 3/4
