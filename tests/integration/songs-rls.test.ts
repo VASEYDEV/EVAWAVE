@@ -11,9 +11,10 @@ import { openRlsDatabase, type RlsHarness } from "../support/rls";
 
 /**
  * S6 acceptance (docs/SPEC.md §3): songs and variants are owner-only under RLS, variants are
- * immutable, a save or freeze only lands on the revision it read, and forking Jinn v1.1 into
- * v1.2 stores the BPM 142 → 140 diff. The real migrations run in PGlite over the Supabase
- * shim (tests/support/rls.ts).
+ * immutable, a save or freeze only lands on the revision it read, nothing the client derives
+ * or may not write reaches a variant, and forking Jinn v1.1 into v1.2 keeps the snapshots
+ * whose diff is BPM 142 → 140. The real migrations run in PGlite over the Supabase shim
+ * (tests/support/rls.ts).
  */
 const A = "00000000-0000-4000-8000-00000000000a";
 const B = "00000000-0000-4000-8000-00000000000b";
@@ -27,7 +28,7 @@ let h: RlsHarness;
 /** Rows made in `beforeAll`: A's song with its first variant, and a second A song with one. */
 const ids = { song: "", variant: "", other: "", otherVariant: "" };
 
-const FREEZE = "select * from public.freeze_variant($1, $2, $3, $4::jsonb, $5::jsonb, $6, $7::jsonb, $8::jsonb)";
+const FREEZE = "select * from public.freeze_variant($1, $2, $3, $4::jsonb, $5)";
 type Frozen = { variant_id: string; variant_label: string; song_revision: number; owner: string };
 
 /** Creates a song as `user` and returns its id. */
@@ -42,12 +43,10 @@ async function revision(id: string): Promise<number> {
 }
 
 /** Freezes `id` as `user` at the song's current revision (or `rev`), with `spec` as the working copy. */
-async function freeze(user: string | null, id: string, options: { spec?: MusicSpec; parent?: string | null; diff?: unknown; rev?: number } = {}): Promise<Frozen> {
+async function freeze(user: string | null, id: string, options: { spec?: unknown; parent?: string | null; rev?: number } = {}): Promise<Frozen> {
   const rev = options.rev ?? (await revision(id));
   const spec = options.spec ?? v11;
-  const [row] = await h.as(user, () =>
-    h.rows(FREEZE, [id, rev, "Jinn", JSON.stringify(spec), "[]", options.parent ?? null, JSON.stringify(options.diff ?? []), JSON.stringify({})]),
-  );
+  const [row] = await h.as(user, () => h.rows(FREEZE, [id, rev, "Jinn", JSON.stringify(spec), options.parent ?? null]));
   return row as Frozen;
 }
 
@@ -115,7 +114,8 @@ describe("songs and variants: user B against user A's rows", () => {
 
 describe("variants are immutable", () => {
   it("the owner cannot update a variant", async () => {
-    await expect(h.as(A, () => h.rows("update public.variants set diff = '[]' where id = $1", [ids.variant]))).rejects.toThrow(/permission denied/);
+    await expect(h.as(A, () => h.rows("update public.variants set spec_snapshot = $2::jsonb where id = $1", [ids.variant, JSON.stringify(v12)]))).rejects.toThrow(/permission denied/);
+    await expect(h.as(A, () => h.rows("update public.variants set overrides = '[]' where id = $1", [ids.variant]))).rejects.toThrow(/permission denied/);
   });
 
   it("the owner cannot delete a variant", async () => {
@@ -176,12 +176,47 @@ describe("saving and freezing only land on the revision they read", () => {
     expect([row?.base_variant_id, (row?.spec as MusicSpec).D6.tempo.bpm, row?.title]).toEqual([frozen.variant_id, 140, "Jinn"]);
   });
 
-  it("a malformed diff aborts the freeze whole: no variant, no save", async () => {
-    const id = await song(A, "Bad diff");
-    await expect(freeze(A, id, { spec: v12, diff: { not: "an array" } })).rejects.toThrow(/check constraint/);
+  it("a spec that is not a MusicSpec aborts the freeze whole: no variant, no save", async () => {
+    const id = await song(A, "Bad spec");
+    await expect(freeze(A, id, { spec: { D6: { tempo: { bpm: 140 } } } })).rejects.toThrow(/check constraint/);
     expect(await h.truth("variants", "song_id = $1", [id])).toEqual([]);
     const [row] = await h.truth("songs", "id = $1", [id]);
     expect([row?.revision, (row?.spec as MusicSpec).D6.tempo.bpm]).toEqual([0, 142]);
+  });
+});
+
+describe("a variant holds only what the client may write", () => {
+  it("stores no diff and no coverage: both are derived from the snapshots on read", async () => {
+    const [row] = await h.truth("variants", "id = $1", [ids.variant]);
+    expect(Object.keys(row ?? {})).not.toContain("diff");
+    expect(Object.keys(row ?? {})).not.toContain("coverage");
+  });
+
+  it("freeze_variant takes no overrides, diff or coverage from the caller", async () => {
+    const rev = await revision(ids.song);
+    const legacy = "select * from public.freeze_variant($1, $2, 'Jinn', $3::jsonb, '[]'::jsonb, null, '[]'::jsonb, '{}'::jsonb)";
+    await expect(h.as(A, () => h.rows(legacy, [ids.song, rev, JSON.stringify(v12)]))).rejects.toThrow(/does not exist/);
+    expect(await revision(ids.song)).toBe(rev);
+  });
+
+  it("the owner cannot write a song's target overrides, on insert or update", async () => {
+    const override = JSON.stringify([{ engine: "suno", fieldId: "style", text: "hand-tuned", basedOnCompiledHash: "h", createdAt: "c" }]);
+    await expect(h.as(A, () => h.rows("insert into public.songs (title, spec, overrides) values ('x', $1::jsonb, $2::jsonb)", [JSON.stringify(v11), override]))).rejects.toThrow(/permission denied/);
+    await expect(h.as(A, () => h.rows("update public.songs set overrides = $2::jsonb where id = $1", [ids.song, override]))).rejects.toThrow(/permission denied/);
+    const [row] = await h.truth("songs", "id = $1", [ids.song]);
+    expect(row?.overrides).toEqual([]);
+  });
+
+  it("a freeze copies the song's own overrides into the variant, and keeps them on the song", async () => {
+    const id = await song(A, "Overrides");
+    const overrides = [{ engine: "flow", fieldId: "sound", text: "glassy pads", basedOnCompiledHash: "h", createdAt: "c" }];
+    // Written as the database owner: the path a future override editor would take.
+    await h.db.exec("reset role");
+    await h.rows("update public.songs set overrides = $2::jsonb where id = $1", [id, JSON.stringify(overrides)]);
+    const frozen = await freeze(A, id, { spec: v12 });
+    const [variant] = await h.truth("variants", "id = $1", [frozen.variant_id]);
+    const [row] = await h.truth("songs", "id = $1", [id]);
+    expect([variant?.overrides, row?.overrides]).toEqual([overrides, overrides]);
   });
 });
 
@@ -206,13 +241,15 @@ describe("labels, parents and bases", () => {
     await expect(h.as(A, () => h.rows("update public.songs set base_variant_id = $2 where id = $1", [ids.song, ids.otherVariant]))).rejects.toThrow(/foreign key/);
   });
 
-  it("forks Jinn v1.1 into v1.2 with the BPM 142 → 140 diff, and forks again from v1.0", async () => {
+  it("forks Jinn v1.1 into v1.2, whose stored snapshots give the BPM 142 → 140 diff, and forks again from v1.0", async () => {
     const id = await song(A, "Jinn", v11);
     const base = await freeze(A, id, { spec: v11 });
-    const fork = await freeze(A, id, { spec: v12, parent: base.variant_id, diff: diffSpecs(v11, v12) });
+    const fork = await freeze(A, id, { spec: v12, parent: base.variant_id });
+    const [parent] = await h.truth("variants", "id = $1", [base.variant_id]);
     const [stored] = await h.truth("variants", "id = $1", [fork.variant_id]);
     expect([stored?.label, stored?.parent_variant_id]).toEqual(["v1.1", base.variant_id]);
-    expect(stored?.diff).toContainEqual({ path: "/D6/tempo/bpm", before: 142, after: 140 });
+    // The diff the song page shows, derived from what the database kept.
+    expect(diffSpecs(parent?.spec_snapshot as MusicSpec, stored?.spec_snapshot as MusicSpec)).toContainEqual({ path: "/D6/tempo/bpm", before: 142, after: 140 });
     // A second fork from v1.0, while v1.1 exists, still numbers on and keeps its own parent.
     const again = await freeze(A, id, { spec: v11, parent: base.variant_id });
     const [second] = await h.truth("variants", "id = $1", [again.variant_id]);

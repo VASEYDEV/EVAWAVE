@@ -29,24 +29,32 @@ v1.9, and `undefined` in a diff that JSON cannot carry.
    song at the expected revision, inserts the variant and saves the working copy with the
    variant as its base. Because users may not insert variants directly (a direct insert
    would skip the revision check and the lock, and could never be undone), the function is
-   security definer and checks ownership itself, with an empty `search_path`. The client computes the diff and coverage with the pure core; the
-   revision check guarantees they were taken against the state the database holds.
-4. **Structure, not only policy.** Composite foreign keys tie a variant to a song of the
+   security definer and checks ownership itself, with an empty `search_path`. It takes
+   only what a save takes (the title and the spec) and the parent.
+4. **Nothing derived is stored.** A variant keeps its snapshot, its parent and the
+   overrides copied from its song. Its diff and coverage follow from the snapshots, so
+   the app derives them when it reads, with the pure core. A stored copy of either could
+   only be what the client sent, and a variant keeps whatever it is frozen with (review
+   of #14).
+5. **Structure, not only policy.** Composite foreign keys tie a variant to a song of the
    same owner, and a parent or base variant to the same song.
-5. **Labels come from a sequence.** The database numbers variants per song and generates
+6. **Labels come from a sequence.** The database numbers variants per song and generates
    `v1.<seq − 1>`; the composer's preview (`nextVariantLabel`) agrees, and a test holds
    them together.
-6. **Forks open a variant.** The working copy records the variant it descends from
+7. **Forks open a variant.** The working copy records the variant it descends from
    (`Song.baseVariantId`, an IR addition). Opening an earlier variant and freezing makes
-   it the parent.
-7. **The undo tree stays on the device.** Opening a song or a variant starts a fresh
+   it the parent. The base is part of the saved state: the same spec from another
+   variant is unsaved.
+8. **The undo tree stays on the device.** Opening a song or a variant starts a fresh
    history; variants are the durable history.
-8. **A freeze refuses LN-1.** An artist or producer name frozen into an immutable variant
-   could only leave with the whole song.
-9. **Kept small for now.** No song-to-style-profile or song-tag links (read as empty
-   lists); no `active_target` column (A5: read from `D10`); the title is derived from
-   `D10.title` on every save. `Song.brand` is stored and checked as `VASEY.AUDIO` and
-   never shown: the app is a VASEY/AI tool.
+9. **A freeze refuses LN-1.** An artist or producer name frozen into an immutable variant
+   could only leave with the whole song. The check runs in the app, where the lineage
+   names live; the database does not repeat it. A caller who goes around the app through
+   the raw API can freeze only their own spec into their own song.
+10. **Kept small for now.** No song-to-style-profile or song-tag links (read as empty
+    lists); no `active_target` column (A5: read from `D10`); the title is derived from
+    `D10.title` on every save. `Song.brand` is stored and checked as `VASEY.AUDIO` and
+    never shown: the app is a VASEY/AI tool.
 
 ## Consequences
 
@@ -58,5 +66,8 @@ v1.9, and `undefined` in a diff that JSON cannot carry.
   are never edited either: a mistaken one is deleted and logged again.
 - The signed-in screens cannot run in CI until a Supabase project exists; the RLS suite
   and the repository tests hold the data paths, as in S4.
-- Override editing (§1.4 item 3) is still unbuilt; overrides are stored but nothing
-  edits them yet.
+- Override editing (§1.4 item 3) is still unbuilt. Overrides are not client-writable:
+  a freeze copies them into a variant that never changes, so they wait for a write path
+  that lints them (LN-1). Until then every song's overrides are empty.
+- Reading a song compiles each variant's snapshot for its coverage, a few milliseconds a
+  variant; `loadSong` yields between them so a long history does not block the page.

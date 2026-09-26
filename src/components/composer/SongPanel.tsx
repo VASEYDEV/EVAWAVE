@@ -8,8 +8,8 @@
 import Link from "next/link";
 import { useEffect, useMemo, useState, type ReactNode } from "react";
 
-import { nextVariantLabel, specHash } from "@/core/musicspec/variants";
-import { identityOf, type SongAttachment } from "@/lib/composer/storage";
+import { nextVariantLabel } from "@/core/musicspec/variants";
+import { identityOf, workingHash, type SongAttachment } from "@/lib/composer/storage";
 import { createLibraryClient } from "@/lib/library/client";
 import { createSong, freezeVariant, saveSong, songTitle } from "@/lib/library/songs";
 import { getSupabasePublicConfig } from "@/lib/supabase/config";
@@ -73,20 +73,17 @@ export function SongPanel() {
       // The copy as it is now: edits made while the request runs stay unsaved.
       const saving = spec;
       const from = identityOf(song);
-      // A copy saved as a new song keeps the overrides it carries.
-      const overrides = song?.overrides ?? [];
-      const created = await createSong(library, saving, overrides);
+      const created = await createSong(library, saving);
       attach(
         {
           songId: created.song.id,
-        ownerId: created.song.ownerId,
-        title: created.song.title,
-        revision: created.revision,
-        savedHash: specHash(saving),
-        baseVariantId: null,
-        baseLabel: null,
+          ownerId: created.song.ownerId,
+          title: created.song.title,
+          revision: created.revision,
+          savedHash: workingHash(saving, null),
+          baseVariantId: null,
+          baseLabel: null,
           variantLabels: [],
-          overrides: created.song.overrides,
         },
         from,
       );
@@ -96,24 +93,23 @@ export function SongPanel() {
   const save = (attached: SongAttachment) =>
     run("Saving the song", async (library) => {
       const saving = spec;
-      // Overrides are not edited anywhere yet (SPEC §1.4), but the copy carries the song's, and a save keeps them.
-      const revision = await saveSong(library, { songId: attached.songId, revision: attached.revision, spec: saving, overrides: attached.overrides, baseVariantId: attached.baseVariantId });
-      attach({ ...attached, title: songTitle(saving), revision, savedHash: specHash(saving) }, identityOf(attached));
+      const revision = await saveSong(library, { songId: attached.songId, revision: attached.revision, spec: saving, baseVariantId: attached.baseVariantId });
+      attach({ ...attached, title: songTitle(saving), revision, savedHash: workingHash(saving, attached.baseVariantId) }, identityOf(attached));
       return "Saved.";
     });
 
   const freeze = (attached: SongAttachment) =>
     run("Freezing a variant", async (library) => {
       const freezing = spec;
-      const frozen = await freezeVariant(library, { songId: attached.songId, revision: attached.revision, spec: freezing, overrides: attached.overrides, baseVariantId: attached.baseVariantId }, catalog);
+      const frozen = await freezeVariant(library, { songId: attached.songId, revision: attached.revision, spec: freezing, baseVariantId: attached.baseVariantId }, catalog);
       attach(
         {
           ...attached,
           title: songTitle(freezing),
-        revision: frozen.revision,
-        savedHash: specHash(freezing),
-        baseVariantId: frozen.variantId,
-        baseLabel: frozen.label,
+          revision: frozen.revision,
+          savedHash: workingHash(freezing, frozen.variantId),
+          baseVariantId: frozen.variantId,
+          baseLabel: frozen.label,
           variantLabels: [...attached.variantLabels, frozen.label],
         },
         identityOf(attached),
@@ -149,7 +145,7 @@ export function SongPanel() {
       </>
     );
   } else {
-    const unsaved = specHash(spec) !== song.savedHash;
+    const unsaved = workingHash(spec, song.baseVariantId) !== song.savedHash;
     const next = nextVariantLabel(song.variantLabels);
     body = (
       <>

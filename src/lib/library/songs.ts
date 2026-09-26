@@ -3,12 +3,13 @@
  * row level security decides what is visible. A song is saved only at the revision it was
  * read at: a stale tab gets a `LibraryError`, never a silent overwrite. Variants are
  * frozen through `public.freeze_variant`, which saves the working copy and snapshots it in
- * one transaction; they are never updated or deleted, except with their song.
+ * one transaction; they are never updated or deleted, except with their song. A variant's
+ * diff and coverage are derived from the snapshots when it is read, never stored.
  */
 import { ENGINE_IDS } from "@/core/musicspec/engines";
-import type { Catalog, DriftKind, EngineId, FieldDiff, MusicSpec, Song, Take, TargetOverride, Variant } from "@/core/musicspec/ir/types";
-import { diffSpecs, freezeBlockers, normalise, specHash, variantCoverage } from "@/core/musicspec/variants";
-import type { SongAttachment } from "@/lib/composer/storage";
+import type { Catalog, DriftKind, EngineId, FieldDiff, MusicSpec, Song, Take, Variant } from "@/core/musicspec/ir/types";
+import { diffSpecs, freezeBlockers, normalise, variantCoverage } from "@/core/musicspec/variants";
+import { workingHash, type SongAttachment } from "@/lib/composer/storage";
 
 import { check, LibraryError, type LibraryClient } from "./repository";
 import type { SongRow, TakeRow, VariantRow } from "./schema";
@@ -63,16 +64,22 @@ export function toSong(row: SongRow): StoredSong {
   };
 }
 
-export function toVariant(row: VariantRow): Variant {
+/**
+ * A stored variant as the IR's `Variant`, with what the database does not store derived
+ * from the snapshots (SPEC §2.4): the field diff from `parent` (its parent's snapshot) and
+ * the coverage the current compiler gives its snapshot. A stored copy of either could only
+ * be what the client sent.
+ */
+export function toVariant(row: VariantRow, parent: MusicSpec | null, catalog: Catalog): Variant {
   return {
     id: row.id,
     songId: row.song_id,
     label: row.label,
     ...(row.parent_variant_id ? { parentVariantId: row.parent_variant_id } : {}),
     specSnapshot: row.spec_snapshot,
-    diff: row.diff,
+    diff: parent ? diffSpecs(parent, row.spec_snapshot) : [],
     overrides: row.overrides,
-    coverage: row.coverage,
+    coverage: variantCoverage(row.spec_snapshot, catalog),
     createdAt: row.created_at,
   };
 }
@@ -109,15 +116,34 @@ export function toTake(row: TakeRow): Take {
   };
 }
 
-/** A song with its variants, oldest first, and their takes, newest first. */
-export async function loadSong(client: LibraryClient, id: string): Promise<StoredSong & { variants: Variant[]; takes: Take[] }> {
+/** Lets the browser paint and take input before more work runs on the main thread. */
+const yieldToMain = () => new Promise<void>((resolve) => setTimeout(resolve, 0));
+
+/**
+ * A song with its variants, oldest first, and their takes, newest first. Each variant's
+ * diff is taken against its parent's snapshot, which is always among the song's own.
+ * Deriving costs a few milliseconds a variant (three compiles and a diff), which a slow
+ * phone multiplies, so the work yields every 16 ms: a long history never holds the main
+ * thread in one task.
+ */
+export async function loadSong(client: LibraryClient, id: string, catalog: Catalog): Promise<StoredSong & { variants: Variant[]; takes: Take[] }> {
   const [song, variants] = await Promise.all([
     client.from("songs").select("*").eq("id", id).maybeSingle(),
     client.from("variants").select("*").eq("song_id", id).order("seq", { ascending: true }),
   ]);
   if (song.error) throw new LibraryError(`load song: ${song.error.message}`);
   if (!song.data) throw new LibraryError("load song: no such song for this account; it may have been deleted");
-  const loaded = check(variants, "load song: variants").map(toVariant);
+  const rows = check(variants, "load song: variants");
+  const snapshots = new Map(rows.map((row) => [row.id, row.spec_snapshot]));
+  const loaded: Variant[] = [];
+  let slice = performance.now();
+  for (const row of rows) {
+    loaded.push(toVariant(row, row.parent_variant_id ? (snapshots.get(row.parent_variant_id) ?? null) : null, catalog));
+    if (performance.now() - slice > 16) {
+      await yieldToMain();
+      slice = performance.now();
+    }
+  }
   const takes = loaded.length
     ? check(
         await client
@@ -135,17 +161,21 @@ export async function loadSong(client: LibraryClient, id: string): Promise<Store
 }
 
 /** Saves `spec` as a new song. The owner comes from the session (auth.uid()). */
-export async function createSong(client: LibraryClient, spec: MusicSpec, overrides: readonly TargetOverride[] = []): Promise<StoredSong> {
-  const row = check(await client.from("songs").insert({ title: songTitle(spec), spec: normalise(spec), overrides: [...overrides] }).select("*").single(), "save as new song");
+export async function createSong(client: LibraryClient, spec: MusicSpec): Promise<StoredSong> {
+  const row = check(await client.from("songs").insert({ title: songTitle(spec), spec: normalise(spec) }).select("*").single(), "save as new song");
   return toSong(row);
 }
 
+/**
+ * What a save or freeze sends. Target overrides are not part of it: nothing edits them yet
+ * (SPEC §1.4), so the database does not let the client write them, and a freeze copies the
+ * song's own.
+ */
 export interface WorkingCopy {
   songId: string;
   /** The revision this copy was read or last saved at. */
   revision: number;
   spec: MusicSpec;
-  overrides: readonly TargetOverride[];
   baseVariantId: string | null;
 }
 
@@ -158,7 +188,7 @@ export async function saveSong(client: LibraryClient, copy: WorkingCopy): Promis
   const saved = check(
     await client
       .from("songs")
-      .update({ title: songTitle(copy.spec), spec: normalise(copy.spec), overrides: [...copy.overrides], base_variant_id: copy.baseVariantId })
+      .update({ title: songTitle(copy.spec), spec: normalise(copy.spec), base_variant_id: copy.baseVariantId })
       .eq("id", copy.songId)
       .eq("revision", copy.revision)
       .select("revision"),
@@ -177,24 +207,16 @@ export interface Frozen {
 }
 
 /**
- * Freezes the working copy as the song's next variant. The parent is the copy's base
- * variant, and the diff is taken against that variant's snapshot. Refused while LN-1
- * blocks, because a frozen variant cannot be edited. Coverage is stamped with `now`.
+ * Freezes the working copy as the song's next variant, with the copy's base variant as its
+ * parent. Refused while LN-1 blocks, because a frozen variant cannot be edited. Only the
+ * spec and the parent are sent: the variant takes the song's stored overrides, and its diff
+ * and coverage are derived when it is read.
  */
-export async function freezeVariant(client: LibraryClient, copy: WorkingCopy, catalog: Catalog, now: () => Date = () => new Date()): Promise<Frozen> {
-  const blocks = freezeBlockers(copy.spec, catalog, copy.overrides);
+export async function freezeVariant(client: LibraryClient, copy: WorkingCopy, catalog: Catalog): Promise<Frozen> {
+  const blocks = freezeBlockers(copy.spec, catalog);
   if (blocks.length) {
     throw new LibraryError(`freeze: remove the artist or producer name first (LN-1 at ${[...new Set(blocks.map((b) => b.path))].join(", ")}); a frozen variant cannot be edited`);
   }
-  let parentSpec: MusicSpec | null = null;
-  if (copy.baseVariantId) {
-    const parent = await client.from("variants").select("spec_snapshot").eq("id", copy.baseVariantId).maybeSingle();
-    if (parent.error) throw new LibraryError(`freeze: ${parent.error.message}`);
-    if (!parent.data) throw new LibraryError("freeze: the variant this copy came from is gone; reload the song");
-    parentSpec = parent.data.spec_snapshot;
-  }
-  const compiledAt = now().toISOString();
-  const coverage = Object.fromEntries(Object.entries(variantCoverage(copy.spec, catalog)).map(([engine, report]) => [engine, { ...report, compiledAt }])) as Variant["coverage"];
   const frozen = check(
     await client
       .rpc("freeze_variant", {
@@ -202,11 +224,8 @@ export async function freezeVariant(client: LibraryClient, copy: WorkingCopy, ca
         p_expected_revision: copy.revision,
         p_title: songTitle(copy.spec),
         p_spec: normalise(copy.spec),
-        p_overrides: [...copy.overrides],
         // Sent as null, never left out: PostgREST matches functions by their argument names.
         p_parent_variant_id: copy.baseVariantId ?? null,
-        p_diff: parentSpec ? diffSpecs(parentSpec, copy.spec) : [],
-        p_coverage: coverage,
       })
       .single(),
     "freeze",
@@ -220,10 +239,7 @@ export async function deleteSong(client: LibraryClient, id: string): Promise<voi
   if (deleted.length !== 1) throw new LibraryError("delete song: no such song for this account; reload the library");
 }
 
-/**
- * The coverage score of each engine a variant recorded, in the engines' build order (A3).
- * Postgres `jsonb` reorders object keys, so the stored order means nothing.
- */
+/** The coverage score of each engine with a report for a variant, in the engines' build order (A3). */
 export function coverageScores(variant: Pick<Variant, "coverage">): { engine: EngineId; score: number }[] {
   return ENGINE_IDS.flatMap((engine) => {
     const report = variant.coverage[engine];
@@ -248,21 +264,19 @@ export function describeChange(change: FieldDiff): string {
 /**
  * The composer attachment for opening a stored song, from `base` (a variant, for a fork) or
  * from the song's own working copy (`base` its base variant). The saved state is always the
- * song's working copy, so a variant opened over a different copy shows as unsaved.
- * `overrides` are the ones that belong to what is opened: the song's for its working copy,
- * the variant's for a variant. They travel with the copy so a save or freeze keeps them.
+ * song's working copy, spec and base together, so a variant opened over a different copy
+ * shows as unsaved, even when its snapshot equals the song's spec.
  */
-export function songAttachment(stored: StoredSong, variants: readonly Variant[], base: Variant | null, overrides: readonly TargetOverride[]): SongAttachment {
+export function songAttachment(stored: StoredSong, variants: readonly Variant[], base: Variant | null): SongAttachment {
   return {
     songId: stored.song.id,
     ownerId: stored.song.ownerId,
     title: stored.song.title,
     revision: stored.revision,
-    savedHash: specHash(stored.song.spec),
+    savedHash: workingHash(stored.song.spec, stored.song.baseVariantId ?? null),
     baseVariantId: base?.id ?? null,
     baseLabel: base?.label ?? null,
     variantLabels: variants.map((v) => v.label),
-    overrides: [...overrides],
   };
 }
 

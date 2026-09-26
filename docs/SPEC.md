@@ -1134,8 +1134,12 @@ Every container has a default, so an empty spec is valid.
   profile marks `none` drops every item in it. Blueprint-only content (`notes`,
   `harmony`) and `references` are never items. The score is expressed / total.
 - **Songs and variants** (`variants.ts`, S6). A song is the working copy; a variant is an
-  immutable snapshot of it with its field diff from its parent and a coverage report per
-  live engine. `diffSpecs(parent, child)` compares objects by key and arrays by index:
+  immutable snapshot of it, with its parent and the target overrides it carried. Its
+  field diff from its parent and its coverage per live engine are derived when it is
+  read, the diff from the two snapshots and the coverage by compiling its snapshot, and
+  are never stored: a stored copy could only be what the client sent. A copy's saved
+  state is its spec and its base variant together, so the same spec opened from another
+  variant is unsaved. `diffSpecs(parent, child)` compares objects by key and arrays by index:
   one entry per changed leaf, and one entry at the root of any subtree that was added,
   removed or changed type (an added path has no `before`, a removed path no `after`).
   Pointers run in natural order (`/D2` before `/D10`, element 2 before element 10), and
@@ -1144,8 +1148,10 @@ Every container has a default, so an empty spec is valid.
   a stale tab cannot overwrite newer work. The new variant's parent is the variant the
   copy descends from (`Song.baseVariantId`): opening an earlier variant and freezing
   forks from it. Labels run `v1.0`, `v1.1`, … in freeze order per song. A freeze is
-  refused while LN-1 blocks, in the spec, any live engine's payload or the target
-  overrides it would carry, since a frozen variant cannot be edited. A song's title is
+  refused while LN-1 blocks, in the spec or any live engine's payload, since a frozen
+  variant cannot be edited. Target overrides are not client-writable until an override
+  editor (§1.4 item 3) brings a write path that lints them; a freeze copies the song's
+  own into the variant. A song's title is
   its `D10.title` ("Untitled" when empty); its active target is read from `D10`, and
   `styleProfileIds` and `tags` are not stored yet.
 
@@ -1684,8 +1690,12 @@ Delivered:
     the expected revision, inserts the variant as the caller's and saves the working copy
     as its base. A direct insert would skip the revision check and the lock, and a
     variant can never be taken back (review of #14).
+  - A variant stores its snapshot, parent and overrides, nothing derived. The function
+    takes the title, the spec and the parent; it copies the song's overrides, which no
+    client can write (review of #14).
 - **App.** `src/lib/library/songs.ts` (saves filter on the revision; zero rows is an
-  error). The working copy in the browser carries its song attachment in the same
+  error; `loadSong` derives each variant's diff and coverage, yielding every 16 ms so a
+  long history never blocks the main thread in one task). The working copy in the browser carries its song attachment in the same
   `setItem` (`src/lib/composer/storage.ts`), tabs follow each other's writes, and nothing
   is written before the saved copy is read. The composer's Song panel, the `/library`
   Songs section (delete asks twice) and `/songs/[id]`. Opening over unsaved work asks
@@ -1696,8 +1706,8 @@ Delivered:
   songs, the Jinn fork stored with its parent), `songs-repository.test.ts`,
   `composer-storage.test.ts`, and `tests/e2e/songs.spec.ts` for the unconfigured states.
 - Not stored yet: a song's style-profile and tag links (read as empty lists). Overrides
-  are stored, and travel with the working copy so a save or freeze keeps them, but
-  nothing edits them until §1.4 item 3 has a UI.
+  are stored but not client-writable, so every song's are empty until §1.4 item 3 has a
+  UI and a write path that lints them.
 
 ### S7: The take log
 

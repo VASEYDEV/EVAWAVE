@@ -7,7 +7,7 @@
  */
 import { emptyHistory, type Step } from "@/core/musicspec/history";
 import { defaultMusicSpec } from "@/core/musicspec/ir/defaults";
-import type { MusicSpec, TargetOverride } from "@/core/musicspec/ir/types";
+import type { MusicSpec } from "@/core/musicspec/ir/types";
 import { specHash } from "@/core/musicspec/variants";
 
 export const COMPOSER_KEY = "evawave:composer:v1";
@@ -20,18 +20,13 @@ export interface SongAttachment {
   title: string;
   /** The song's revision when this copy was read or saved; a save must match it. */
   revision: number;
-  /** `specHash` of the spec as last saved, to tell saved from unsaved. */
+  /** `workingHash` of the copy as last saved, spec and base variant, to tell saved from unsaved. */
   savedHash: string;
   /** The variant this copy descends from: the parent of the next freeze. */
   baseVariantId: string | null;
   baseLabel: string | null;
   /** The song's variant labels, for the next label's preview. */
   variantLabels: string[];
-  /**
-   * The target overrides that belong to this copy (the song's, or the opened variant's).
-   * Nothing edits them yet (SPEC §1.4), but a save or freeze must carry them, never drop them.
-   */
-  overrides: TargetOverride[];
 }
 
 export interface SavedComposer extends Step<MusicSpec> {
@@ -41,7 +36,6 @@ export interface SavedComposer extends Step<MusicSpec> {
 function isAttachment(value: unknown): value is SongAttachment {
   if (typeof value !== "object" || value === null) return false;
   const v = value as Record<string, unknown>;
-  if (!Array.isArray(v.overrides)) return false;
   const text = (key: string) => typeof v[key] === "string";
   const textOrNull = (key: string) => v[key] === null || typeof v[key] === "string";
   return (
@@ -95,13 +89,23 @@ export function writeComposer(saved: SavedComposer): void {
 }
 
 /**
+ * A working copy as a song saves it: its spec and the variant it descends from. The base
+ * counts, because it is the next freeze's parent and a save stores it: a variant opened
+ * over a song whose spec it equals is still a different copy.
+ */
+export function workingHash(spec: MusicSpec, baseVariantId: string | null): string {
+  return `${specHash(spec)}:${baseVariantId ?? ""}`;
+}
+
+/**
  * True when replacing this working copy would lose work: an attached copy that differs from
- * its last save, or an unattached copy that differs from a fresh spec.
+ * its last save, in its spec or its base variant, or an unattached copy that differs from a
+ * fresh spec.
  */
 export function hasUnsavedWork(saved: SavedComposer | null): boolean {
   if (!saved) return false;
-  const hash = specHash(saved.spec);
-  return saved.song ? hash !== saved.song.savedHash : hash !== specHash(defaultMusicSpec());
+  if (saved.song) return workingHash(saved.spec, saved.song.baseVariantId) !== saved.song.savedHash;
+  return specHash(saved.spec) !== specHash(defaultMusicSpec());
 }
 
 /** Which copy of which song an action started from: the song, its base variant and its revision. */

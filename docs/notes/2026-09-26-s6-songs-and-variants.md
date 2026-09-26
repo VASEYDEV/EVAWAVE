@@ -66,7 +66,8 @@ Second round (Codex, on 498c5ad):
   in the song attachment (the song's for its working copy, the variant's for a variant),
   and save, freeze and "save as new song" send them. Checked against the scratch fake
   Supabase: an opened song's override reaches the stored attachment and the save body.
-  Mutations: linting without overrides fails 2 tests; saving `[]` fails 1.
+  Mutations: linting without overrides fails 2 tests; saving `[]` fails 1. Superseded in
+  the fourth round: overrides are no longer client-writable at all.
 
 Third round (Codex, on d1eaea8), three races, each reproduced against the scratch fake
 Supabase on d1eaea8 and gone on the fix:
@@ -85,23 +86,62 @@ Supabase on d1eaea8 and gone on the fix:
   (`stillCurrent`). Unfixed: the v1.0 copy was re-labelled "from v1.1"; fixed: it stays
   "from v1.0".
 
+Fourth round (Codex, on 87fae30), each reproduced against the scratch fake Supabase on
+87fae30 and gone on the fix:
+
+- **P2: the freeze stored what the client computed.** `freeze_variant` inserted the diff,
+  coverage and overrides it was sent, so a direct RPC call could freeze a forged history,
+  or an override LN-1 never saw, for good. The root cause was storing client-derived
+  data, so nothing derived is stored now. `variants` loses `diff` and `coverage`, and
+  `loadSong` derives them from the snapshots: the diff from the parent's, the coverage by
+  compiling. `songs.overrides` has no insert or update grant, and the function copies the
+  song's own into the variant. It takes the title, the spec and the parent, as a save
+  does. On 87fae30 the freeze body carried `p_overrides`, `p_diff` and `p_coverage`; on
+  the fix it carries five keys, and the song page shows the same diff and coverage,
+  derived. Tests: the old eight-argument call no longer exists; the owner cannot write
+  overrides; a freeze copies the song's; the diff is taken against the parent, not the
+  variant before it. Mutations: granting overrides back, freezing `[]` instead of the
+  song's, and diffing against the previous variant each fail their test. LN-1 on the
+  spec stays an app check (ADR 0006, decision 9).
+- **P1: `/library` after an account change.** The page kept the previous account's
+  songs, and its profiles, files and tags, after a sign-out or switch in another tab. The
+  session tracking the song page got in round 3 is now a shared hook, `useViewer`.
+  `/library` shows only what was loaded for the account signed in now, and a sign-in
+  prompt when signed out. Unfixed: user B and a signed-out viewer still saw A's song and
+  its Open button. Fixed: "No songs yet." for B, and the prompt when signed out, with no
+  axe violations and no sideways scroll at Pixel 7 and 1280.
+- **P2: unsaved ignored the base variant.** Say a variant's snapshot equals the song's
+  spec, and the song's base is another variant. Opened, that variant showed as saved:
+  Save was disabled, and opening the song over it did not ask. The saved fingerprint is
+  now `workingHash(spec, baseVariantId)`. The attachment no longer carries overrides,
+  since no save sends them. Unfixed: "Saved · from v1.2", Save disabled, and the library
+  opened over it without asking. Fixed: "Unsaved changes", Save enabled, and it asks.
+  Mutation: a hash without the base fails 3 tests.
+- **What deriving costs.** Coverage is three compiles, about 6 ms a variant in Node; the
+  diff is about 1.6 ms. On the song page at 4x CPU throttling, 23 variants made a 591 ms
+  long task and 63 made a 1,678 ms one. `loadSong` now yields every 16 ms. The longest
+  task left is hydration, about 400 ms at 4x, the same as with 3 variants. At 1x, 63
+  variants show after about 1.1 s rather than 0.85 s, and 23 show as before.
+
 ## Evidence
 
-- Core: `tests/unit/variants.test.ts` (16), including the Jinn v1.1 → v1.2 diff with
+Counts as of the fourth round.
+
+- Core: `tests/unit/variants.test.ts` (18), including the Jinn v1.1 → v1.2 diff with
   `/D6/tempo/bpm` 142 → 140 and an exact replay over 60 seeded random edits. Mutations:
   plain text sort and ascending removals each fail.
-- Database: `tests/integration/songs-rls.test.ts` (22). Mutations: dropping the revision
+- Database: `tests/integration/songs-rls.test.ts` (27). Mutations: dropping the revision
   predicate, granting variant updates, dropping the same-song parent key and dropping
   the revision bump each fail their tests.
-- App: `songs-repository.test.ts` (14; dropping the revision filter fails),
-  `composer-storage.test.ts` (8).
+- App: `songs-repository.test.ts` (24 with the S7 take cases; dropping the revision
+  filter fails), `composer-storage.test.ts` (12).
 - E2e without Supabase: `songs.spec.ts` (3) and the song page in the layout and BEAM
   checks.
 - Signed in, against a fake Supabase in scratch space (not committed): `/library`, the
   song page and the composer render at Pixel 7 and 1280 with no axe violations and no
   sideways scroll, and never show VASEY.AUDIO. Opening a song attaches it; an edit shows
-  unsaved and reaches a second tab; a freeze sends only the changed field against its
-  parent; opening v1.0 makes it the next parent; the unsaved guard and the two-step delete
+  unsaved and reaches a second tab; a frozen variant shows only the changed field against
+  its parent; opening v1.0 makes it the next parent; the unsaved guard and the two-step delete
   ask first.
 - Gate: see the PR body.
 

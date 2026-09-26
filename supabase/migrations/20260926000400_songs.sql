@@ -1,11 +1,16 @@
 -- S6: songs and their immutable variants (docs/SPEC.md §1.6, §3 S6; ADR 0006).
 --
 -- A song is the working copy of a MusicSpec. A variant is a frozen snapshot of it, with
--- the field diff from its parent variant and a coverage report per live engine. Variants
--- are immutable: users get no UPDATE or DELETE on them, and they leave only with their
--- song. They are created only by `freeze_variant`, never by a direct insert. Saving a song
--- is optimistic: every update bumps `revision`, and the app updates
--- only the revision it read, so a stale tab cannot overwrite newer work.
+-- its parent and the target overrides it carried. Variants are immutable: users get no
+-- UPDATE or DELETE on them, and they leave only with their song. They are created only by
+-- `freeze_variant`, never by a direct insert. Saving a song is optimistic: every update
+-- bumps `revision`, and the app updates only the revision it read, so a stale tab cannot
+-- overwrite newer work.
+--
+-- Nothing derived is stored. A variant's field diff follows from its parent's snapshot and
+-- its own, and its coverage from compiling its snapshot, so the app derives both when it
+-- reads (docs/SPEC.md §2.4). A stored copy could only be what the client sent, and a
+-- variant keeps whatever it is frozen with.
 --
 -- Ownership is structural as well as RLS: composite foreign keys tie a variant to a song
 -- of the same owner, and a variant's parent (and a song's base variant) to the same song.
@@ -46,9 +51,8 @@ create table public.variants (
   label text generated always as ('v1.' || (seq - 1)::text) stored,
   parent_variant_id uuid,
   spec_snapshot jsonb not null check (jsonb_typeof(spec_snapshot) = 'object' and spec_snapshot ? 'irVersion' and octet_length(spec_snapshot::text) <= 1000000),
-  diff jsonb not null default '[]'::jsonb check (jsonb_typeof(diff) = 'array' and octet_length(diff::text) <= 2000000),
+  -- Copied from the song by `freeze_variant`, never sent by the client.
   overrides jsonb not null default '[]'::jsonb check (jsonb_typeof(overrides) = 'array' and octet_length(overrides::text) <= 1000000),
-  coverage jsonb not null default '{}'::jsonb check (jsonb_typeof(coverage) = 'object' and octet_length(coverage::text) <= 1000000),
   created_at timestamptz not null default now(),
   unique (song_id, seq),
   unique (song_id, id),
@@ -60,7 +64,7 @@ create table public.variants (
   foreign key (song_id, parent_variant_id) references public.variants (song_id, id)
 );
 
-comment on table public.variants is 'Variant: an immutable snapshot of a song with its field diff from the parent and coverage per engine.';
+comment on table public.variants is 'Variant: an immutable snapshot of a song, with its parent and target overrides. Its diff and coverage are derived on read.';
 
 create index variants_owner_idx on public.variants (owner_id);
 create index variants_song_idx on public.variants (song_id);
@@ -122,12 +126,16 @@ create policy "Owners read their variants" on public.variants
 -- Columns are granted one by one: a user can never write an owner, the brand, the revision
 -- or any timestamp. Variants get no INSERT, UPDATE or DELETE at all: a direct insert would
 -- skip the revision check and the song's lock, and could never be taken back.
+--
+-- Target overrides are not writable either. Nothing edits them yet (SPEC §1.4 item 3), and
+-- a freeze copies them into a variant that can never change, so they wait for a write path
+-- that lints them (LN-1) before they are stored. Until then every song's overrides are `[]`.
 
 revoke all on public.songs, public.variants from anon, authenticated;
 
 grant select, delete on public.songs to authenticated;
-grant insert (id, title, spec, overrides) on public.songs to authenticated;
-grant update (title, spec, overrides, base_variant_id) on public.songs to authenticated;
+grant insert (id, title, spec) on public.songs to authenticated;
+grant update (title, spec, base_variant_id) on public.songs to authenticated;
 grant select on public.variants to authenticated;
 
 revoke execute on function public.songs_bump_revision() from public, anon, authenticated;
@@ -139,15 +147,16 @@ revoke execute on function public.variants_assign_seq() from public, anon, authe
 -- ownership explicitly (RLS does not apply to its owner): the song must be the caller's, at
 -- the revision the caller read. The variant's owner is the caller, and the composite keys
 -- still hold the parent to the same song. `search_path` is empty and every name qualified.
+--
+-- It takes from the caller only what a plain save takes (the title and the spec, the
+-- caller's own content) and the parent, which must be a variant of the same song. The
+-- overrides come from the song row; the diff and coverage are not stored at all.
 create function public.freeze_variant(
   p_song_id uuid,
   p_expected_revision integer,
   p_title text,
   p_spec jsonb,
-  p_overrides jsonb,
-  p_parent_variant_id uuid,
-  p_diff jsonb,
-  p_coverage jsonb
+  p_parent_variant_id uuid
 )
 returns table (variant_id uuid, variant_label text, song_revision integer, owner uuid)
 language plpgsql
@@ -157,6 +166,7 @@ as $$
 declare
   v_caller uuid := auth.uid();
   v_owner uuid;
+  v_overrides jsonb;
   v_variant uuid;
   v_label text;
   v_revision integer;
@@ -167,7 +177,7 @@ begin
   -- Only the caller's song, only at the revision the caller read. The row lock also makes
   -- two freezes of one song run one after the other, so their sequence numbers cannot
   -- collide.
-  select s.owner_id into v_owner
+  select s.owner_id, s.overrides into v_owner, v_overrides
     from public.songs s
    where s.id = p_song_id and s.owner_id = v_caller and s.revision = p_expected_revision
      for update;
@@ -175,13 +185,13 @@ begin
     raise exception 'freeze: the song changed elsewhere or is not yours; reload it';
   end if;
 
-  insert into public.variants (owner_id, song_id, parent_variant_id, spec_snapshot, diff, overrides, coverage)
-  values (v_caller, p_song_id, p_parent_variant_id, p_spec, p_diff, p_overrides, p_coverage)
+  insert into public.variants (owner_id, song_id, parent_variant_id, spec_snapshot, overrides)
+  values (v_caller, p_song_id, p_parent_variant_id, p_spec, v_overrides)
   returning variants.id, variants.label into v_variant, v_label;
 
   -- The working copy now equals the snapshot and descends from it.
   update public.songs s
-     set title = p_title, spec = p_spec, overrides = p_overrides, base_variant_id = v_variant
+     set title = p_title, spec = p_spec, base_variant_id = v_variant
    where s.id = p_song_id
   returning s.revision into v_revision;
 
@@ -189,8 +199,8 @@ begin
 end;
 $$;
 
-comment on function public.freeze_variant(uuid, integer, text, jsonb, jsonb, uuid, jsonb, jsonb) is
+comment on function public.freeze_variant(uuid, integer, text, jsonb, uuid) is
   'The only way to create a variant: saves the caller''s song and freezes it as the next variant in one transaction, if the song is still at the expected revision.';
 
-revoke execute on function public.freeze_variant(uuid, integer, text, jsonb, jsonb, uuid, jsonb, jsonb) from public, anon;
-grant execute on function public.freeze_variant(uuid, integer, text, jsonb, jsonb, uuid, jsonb, jsonb) to authenticated;
+revoke execute on function public.freeze_variant(uuid, integer, text, jsonb, uuid) from public, anon;
+grant execute on function public.freeze_variant(uuid, integer, text, jsonb, uuid) to authenticated;

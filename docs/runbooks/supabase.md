@@ -25,7 +25,8 @@ project is configured, the library and sign-in pages say so and nothing else cha
    `public.freeze_variant`, which saves a song and freezes it as the next variant in one
    transaction when the song is still at the revision the caller read. It is the only way
    to create a variant, so it is security definer and checks that the song is the
-   caller's itself (`authenticated` only). `20260926000500_takes.sql` adds the take log: takes on the
+   caller's itself (`authenticated` only). It takes the title, the spec and the parent; a
+   variant's diff and coverage are derived by the app, never stored. `20260926000500_takes.sql` adds the take log: takes on the
    caller's own variants, with RLS and no edits.
 3. Optional: regenerate the typed schema with
    `supabase gen types typescript --project-id <ref>`. Compare it with

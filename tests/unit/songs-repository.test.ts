@@ -6,8 +6,9 @@ import { describe, expect, it } from "vitest";
 
 import type { Catalog, MusicSpec } from "@/core/musicspec/ir/types";
 import { LibraryError } from "@/lib/library/repository";
-import type { Database, SongRow } from "@/lib/library/schema";
-import { specHash } from "@/core/musicspec/variants";
+import type { Database, SongRow, VariantRow } from "@/lib/library/schema";
+import { variantCoverage } from "@/core/musicspec/variants";
+import { hasUnsavedWork, openedCopy, workingHash } from "@/lib/composer/storage";
 import { clampText, coverageScores, createSong, deleteSong, deleteTake, describeChange, freezeVariant, loadSong, logTake, renderLink, saveSong, shortValue, songAttachment, songTitle, toSong, wordsBlamed, type TakeInput, type WorkingCopy } from "@/lib/library/songs";
 import { catalog } from "@/data/taxonomy";
 
@@ -44,7 +45,7 @@ function recording(answer: (sent: Sent) => unknown) {
   return { client, sent };
 }
 
-const copy = (over: Partial<WorkingCopy> = {}): WorkingCopy => ({ songId: "song-1", revision: 3, spec: v12, overrides: [], baseVariantId: null, ...over });
+const copy = (over: Partial<WorkingCopy> = {}): WorkingCopy => ({ songId: "song-1", revision: 3, spec: v12, baseVariantId: null, ...over });
 
 describe("songTitle", () => {
   it("takes the spec's title, cut to 200 code points, or Untitled", () => {
@@ -73,17 +74,7 @@ describe("createSong and saveSong", () => {
     const { client, sent } = recording(() => row);
     await createSong(client, v12);
     expect(sent[0]).toMatchObject({ method: "POST", path: "/rest/v1/songs" });
-    expect(sent[0]?.body).toEqual({ title: songTitle(v12), spec: v12, overrides: [] });
-  });
-
-  it("keeps the working copy's overrides on save and freeze, never dropping them", async () => {
-    const override = { engine: "suno" as const, fieldId: "style", text: "hand-tuned style", basedOnCompiledHash: "h", createdAt: "c" };
-    const saved = recording(() => [{ revision: 4 }]);
-    await saveSong(saved.client, copy({ overrides: [override] }));
-    expect(saved.sent[0]?.body).toMatchObject({ overrides: [override] });
-    const frozen = recording(() => ({ variant_id: "v", variant_label: "v1.0", song_revision: 4, owner: "o" }));
-    await freezeVariant(frozen.client, copy({ overrides: [override] }), catalog);
-    expect(frozen.sent[0]?.body).toMatchObject({ p_overrides: [override] });
+    expect(sent[0]?.body).toEqual({ title: songTitle(v12), spec: v12 });
   });
 
   it("saves only at the revision it read, and reads zero rows as a stale or deleted song", async () => {
@@ -92,7 +83,8 @@ describe("createSong and saveSong", () => {
     expect(sent[0]?.method).toBe("PATCH");
     expect(sent[0]?.query.get("id")).toBe("eq.song-1");
     expect(sent[0]?.query.get("revision")).toBe("eq.3");
-    expect(sent[0]?.body).toMatchObject({ title: songTitle(v12), base_variant_id: "v-2" });
+    // The spec, its title and its base: never the overrides, which the client may not write.
+    expect(sent[0]?.body).toEqual({ title: songTitle(v12), spec: v12, base_variant_id: "v-2" });
 
     const stale = recording(() => []);
     await expect(saveSong(stale.client, copy())).rejects.toBeInstanceOf(LibraryError);
@@ -102,29 +94,20 @@ describe("createSong and saveSong", () => {
 
 describe("freezeVariant", () => {
   const frozen = { variant_id: "v-new", variant_label: "v1.1", song_revision: 4, owner: "o" };
-  const now = () => new Date("2026-09-26T12:00:00.000Z");
 
-  it("sends a first variant's parent as null, an empty diff, and coverage stamped with the time", async () => {
+  it("sends only the spec, its title and a first variant's parent as null: nothing derived, no overrides", async () => {
     const { client, sent } = recording(() => frozen);
-    await expect(freezeVariant(client, copy(), catalog, now)).resolves.toEqual({ variantId: "v-new", label: "v1.1", revision: 4, ownerId: "o" });
+    await expect(freezeVariant(client, copy(), catalog)).resolves.toEqual({ variantId: "v-new", label: "v1.1", revision: 4, ownerId: "o" });
     expect(sent).toHaveLength(1);
     expect(sent[0]?.path).toBe("/rest/v1/rpc/freeze_variant");
-    const body = sent[0]?.body as Record<string, unknown>;
-    expect(body).toHaveProperty("p_parent_variant_id", null);
-    expect(body).toMatchObject({ p_song_id: "song-1", p_expected_revision: 3, p_title: songTitle(v12), p_diff: [] });
-    const coverage = body.p_coverage as Record<string, { compiledAt: string }>;
-    expect(Object.keys(coverage).sort()).toEqual(["eleven", "flow", "suno"]);
-    for (const report of Object.values(coverage)) expect(report.compiledAt).toBe("2026-09-26T12:00:00.000Z");
+    expect(sent[0]?.body).toEqual({ p_song_id: "song-1", p_expected_revision: 3, p_title: songTitle(v12), p_spec: v12, p_parent_variant_id: null });
   });
 
-  it("diffs against the base variant's snapshot: the Jinn fork carries BPM 142 → 140", async () => {
-    const { client, sent } = recording((request) => (request.path === "/rest/v1/variants" ? { spec_snapshot: v11 } : frozen));
-    await freezeVariant(client, copy({ baseVariantId: "v-base" }), catalog, now);
-    expect(sent.map((s) => s.path)).toEqual(["/rest/v1/variants", "/rest/v1/rpc/freeze_variant"]);
-    expect(sent[0]?.query.get("id")).toBe("eq.v-base");
-    const body = sent[1]?.body as { p_parent_variant_id: string; p_diff: unknown[] };
-    expect(body.p_parent_variant_id).toBe("v-base");
-    expect(body.p_diff).toContainEqual({ path: "/D6/tempo/bpm", before: 142, after: 140 });
+  it("sends the base variant as the parent, in one request", async () => {
+    const { client, sent } = recording(() => frozen);
+    await freezeVariant(client, copy({ baseVariantId: "v-base" }), catalog);
+    expect(sent.map((s) => s.path)).toEqual(["/rest/v1/rpc/freeze_variant"]);
+    expect(sent[0]?.body).toHaveProperty("p_parent_variant_id", "v-base");
   });
 
   it("refuses to freeze an invented producer name, and sends nothing", async () => {
@@ -132,22 +115,33 @@ describe("freezeVariant", () => {
     const withName: Catalog = { ...catalog, lineageNames: [...catalog.lineageNames, INVENTED] };
     const named = { ...v12, D1: { ...v12.D1, formPhrase: `${v12.D1.formPhrase} after ${INVENTED}` } };
     const { client, sent } = recording(() => frozen);
-    await expect(freezeVariant(client, copy({ spec: named }), withName, now)).rejects.toThrow(/LN-1 at \/D1\/formPhrase/);
+    await expect(freezeVariant(client, copy({ spec: named }), withName)).rejects.toThrow(/LN-1 at \/D1\/formPhrase/);
     expect(sent).toEqual([]);
   });
+});
 
-  it("refuses to freeze an invented producer name carried in a target override", async () => {
-    const INVENTED = "Quillon Vantreese";
-    const withName: Catalog = { ...catalog, lineageNames: [...catalog.lineageNames, INVENTED] };
-    const named = { engine: "suno" as const, fieldId: "style", text: `desert trap after ${INVENTED}`, basedOnCompiledHash: "h", createdAt: "c" };
-    const { client, sent } = recording(() => frozen);
-    await expect(freezeVariant(client, copy({ overrides: [named] }), withName, now)).rejects.toThrow(/LN-1 at overrides\/0/);
-    expect(sent).toEqual([]);
+describe("loadSong", () => {
+  const song: SongRow = { id: "s", owner_id: "o", title: "Jinn", brand: "VASEY.AUDIO", spec: v12, overrides: [], base_variant_id: "v-1", revision: 2, created_at: "c", updated_at: "u" };
+  const row = (id: string, seq: number, parent: string | null, spec: MusicSpec): VariantRow => ({ id, owner_id: "o", song_id: "s", seq, label: `v1.${seq - 1}`, parent_variant_id: parent, spec_snapshot: spec, overrides: [], created_at: "c" });
+
+  it("derives each diff from the parent's snapshot: the Jinn fork v1.0 → v1.1 shows BPM 142 → 140", async () => {
+    const rows = [row("v-0", 1, null, v11), row("v-1", 2, "v-0", v12), row("v-2", 3, "v-0", v11)];
+    const { client } = recording((r) => (r.path === "/rest/v1/songs" ? song : r.path === "/rest/v1/variants" ? rows : []));
+    const { variants } = await loadSong(client, "s", catalog);
+    expect(variants[0]?.diff).toEqual([]);
+    expect(variants[1]?.diff).toContainEqual({ path: "/D6/tempo/bpm", before: 142, after: 140 });
+    // A second fork from v1.0 is diffed against v1.0, not against the variant before it.
+    expect(variants[2]?.diff).toEqual([]);
+    expect(variants.map((v) => v.parentVariantId)).toEqual([undefined, "v-0", "v-0"]);
   });
 
-  it("fails clearly when the base variant is gone", async () => {
-    const { client } = recording(() => null);
-    await expect(freezeVariant(client, copy({ baseVariantId: "v-gone" }), catalog, now)).rejects.toThrow("the variant this copy came from is gone");
+  it("derives each variant's coverage from its own snapshot", async () => {
+    const rows = [row("v-0", 1, null, v11), row("v-1", 2, "v-0", v12)];
+    const { client } = recording((r) => (r.path === "/rest/v1/songs" ? song : r.path === "/rest/v1/variants" ? rows : []));
+    const { variants } = await loadSong(client, "s", catalog);
+    expect(variants[0]?.coverage).toEqual(variantCoverage(v11, catalog));
+    expect(variants[1]?.coverage).toEqual(variantCoverage(v12, catalog));
+    expect(Object.keys(variants[1]?.coverage ?? {}).sort()).toEqual(["eleven", "flow", "suno"]);
   });
 });
 
@@ -157,7 +151,7 @@ describe("deleteSong and coverageScores", () => {
     await expect(deleteSong(recording(() => [{ id: "s" }]).client, "s")).resolves.toBeUndefined();
   });
 
-  it("lists scores in build order whatever order the database kept", () => {
+  it("lists scores in build order whatever order the reports come in", () => {
     const report = (score: number) => ({ engine: "suno" as const, items: [], score });
     expect(coverageScores({ coverage: { flow: report(0.5), suno: report(0.9), eleven: report(0.7) } })).toEqual([
       { engine: "suno", score: 0.9 },
@@ -189,15 +183,20 @@ describe("songAttachment", () => {
   const variant = (id: string, label: string, spec: MusicSpec) => ({ id, songId: "s", label, specSnapshot: spec, diff: [], overrides: [], coverage: {}, createdAt: "c" });
   const variants = [variant("v-0", "v1.0", v11), variant("v-1", "v1.1", v12)];
 
-  const override = { engine: "suno" as const, fieldId: "style", text: "hand-tuned style", basedOnCompiledHash: "h", createdAt: "c" };
-
   it("opens a variant as the base of the next freeze, with the song's revision and saved state", () => {
-    const opened = songAttachment(stored, variants, variants[0] ?? null, [override]);
-    expect(opened).toEqual({ songId: "s", ownerId: "o", title: "Jinn", revision: 5, savedHash: specHash(v12), baseVariantId: "v-0", baseLabel: "v1.0", variantLabels: ["v1.0", "v1.1"], overrides: [override] });
+    const opened = songAttachment(stored, variants, variants[0] ?? null);
+    expect(opened).toEqual({ songId: "s", ownerId: "o", title: "Jinn", revision: 5, savedHash: workingHash(v12, "v-1"), baseVariantId: "v-0", baseLabel: "v1.0", variantLabels: ["v1.0", "v1.1"] });
   });
 
   it("opens a song with no variants as a copy with no base", () => {
-    expect(songAttachment(stored, [], null, [])).toMatchObject({ baseVariantId: null, baseLabel: null, variantLabels: [], overrides: [] });
+    expect(songAttachment(stored, [], null)).toMatchObject({ baseVariantId: null, baseLabel: null, variantLabels: [] });
+  });
+
+  it("opens the song's own copy as saved, and a variant equal to its spec but not its base as unsaved", () => {
+    expect(hasUnsavedWork(openedCopy(v12, songAttachment(stored, variants, variants[1] ?? null)))).toBe(false);
+    // Same spec, another parent for the next freeze: replacing it would lose the fork.
+    const twin = variant("v-2", "v1.2", v12);
+    expect(hasUnsavedWork(openedCopy(v12, songAttachment(stored, [...variants, twin], twin)))).toBe(true);
   });
 });
 
@@ -254,15 +253,15 @@ describe("the take log (S7)", () => {
 
   it("loads a song's takes for its variants, and asks for none when it has no variants", async () => {
     const song = { id: "s", owner_id: "o", title: "Jinn", brand: "VASEY.AUDIO", spec: v12, overrides: [], base_variant_id: null, revision: 1, created_at: "c", updated_at: "u" };
-    const variant = { id: "v-1", owner_id: "o", song_id: "s", seq: 1, label: "v1.0", parent_variant_id: null, spec_snapshot: v12, diff: [], overrides: [], coverage: {}, created_at: "c" };
+    const variant = { id: "v-1", owner_id: "o", song_id: "s", seq: 1, label: "v1.0", parent_variant_id: null, spec_snapshot: v12, overrides: [], created_at: "c" };
     const withVariants = recording((r) => (r.path === "/rest/v1/songs" ? song : r.path === "/rest/v1/variants" ? [variant] : [takeRow]));
-    const loaded = await loadSong(withVariants.client, "s");
+    const loaded = await loadSong(withVariants.client, "s", catalog);
     const takesRequest = withVariants.sent.find((r) => r.path === "/rest/v1/takes");
     expect(takesRequest?.query.get("variant_id")).toBe("in.(v-1)");
     expect(loaded.takes.map((t) => t.id)).toEqual(["t-1"]);
 
     const without = recording((r) => (r.path === "/rest/v1/songs" ? song : []));
-    expect((await loadSong(without.client, "s")).takes).toEqual([]);
+    expect((await loadSong(without.client, "s", catalog)).takes).toEqual([]);
     expect(without.sent.some((r) => r.path === "/rest/v1/takes")).toBe(false);
   });
 });

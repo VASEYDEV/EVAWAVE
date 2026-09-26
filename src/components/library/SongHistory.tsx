@@ -10,11 +10,13 @@ import { useEffect, useMemo, useState } from "react";
 
 import { ENGINE_PROFILES } from "@/core/musicspec/engines";
 import type { Take, Variant } from "@/core/musicspec/ir/types";
+import { catalog } from "@/data/taxonomy";
 import { createLibraryClient } from "@/lib/library/client";
 import { coverageScores, describeChange, loadSong, songAttachment, type StoredSong } from "@/lib/library/songs";
 
 import { OpenInComposer } from "./OpenInComposer";
 import { TakeLog } from "./TakeLog";
+import { useViewer } from "./useViewer";
 
 export function SongHistory({ songId }: { songId: string }) {
   const client = useMemo(() => createLibraryClient(), []);
@@ -23,41 +25,12 @@ export function SongHistory({ songId }: { songId: string }) {
   const [status, setStatus] = useState("");
   // Bumped after a take is logged or deleted; the effect below reloads when it changes.
   const [version, setVersion] = useState(0);
-  // The signed-in account: undefined while checking, null when signed out.
-  const [viewer, setViewer] = useState<string | null | undefined>(undefined);
-
-  // Follow the session: sign-in changes in this tab, and on return to the tab (a sign-out or
-  // an account switch elsewhere changes the cookies without telling this page).
-  useEffect(() => {
-    let live = true;
-    const check = () =>
-      client.auth.getSession().then(
-        ({ data }) => {
-          if (live) setViewer(data.session?.user.id ?? null);
-        },
-        () => {
-          if (live) setViewer(null);
-        },
-      );
-    void check();
-    const { data } = client.auth.onAuthStateChange((_event, session) => setViewer(session?.user.id ?? null));
-    const onReturn = () => {
-      if (document.visibilityState === "visible") void check();
-    };
-    document.addEventListener("visibilitychange", onReturn);
-    window.addEventListener("focus", onReturn);
-    return () => {
-      live = false;
-      data.subscription.unsubscribe();
-      document.removeEventListener("visibilitychange", onReturn);
-      window.removeEventListener("focus", onReturn);
-    };
-  }, [client]);
+  const viewer = useViewer(client);
 
   useEffect(() => {
     if (!viewer) return;
     let live = true;
-    loadSong(client, songId).then(
+    loadSong(client, songId, catalog).then(
       (song) => {
         if (live) setLoaded({ viewer, song });
       },
@@ -89,7 +62,7 @@ export function SongHistory({ songId }: { songId: string }) {
               {base ? `from ${base.label}` : "not frozen yet"}
             </p>
             <div className="row-actions">
-              <OpenInComposer label="Open the working copy in the composer" open={async () => ({ spec: data.song.spec, song: songAttachment(data, data.variants, base, data.song.overrides) })} onError={setStatus} />
+              <OpenInComposer label="Open the working copy in the composer" open={async () => ({ spec: data.song.spec, song: songAttachment(data, data.variants, base) })} onError={setStatus} />
             </div>
           </section>
           <section className="panel" aria-labelledby="variants-heading">
@@ -129,7 +102,7 @@ export function SongHistory({ songId }: { songId: string }) {
                         )
                       ) : null}
                       <div className="row-actions">
-                        <OpenInComposer label={`Open ${variant.label} in the composer`} open={async () => ({ spec: variant.specSnapshot, song: songAttachment(data, data.variants, variant, variant.overrides) })} onError={setStatus} />
+                        <OpenInComposer label={`Open ${variant.label} in the composer`} open={async () => ({ spec: variant.specSnapshot, song: songAttachment(data, data.variants, variant) })} onError={setStatus} />
                       </div>
                       <TakeLog
                         client={client}

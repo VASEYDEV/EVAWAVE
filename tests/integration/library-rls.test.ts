@@ -64,7 +64,7 @@ beforeAll(async () => {
     const spec = JSON.stringify({ irVersion: 1, D10: { activeTarget: "suno" } });
     ids.song = String((await rows("insert into public.songs (title, spec) values ('A song', $1::jsonb) returning id", [spec]))[0]?.id);
     ids.variant = String(
-      (await rows("select variant_id from public.freeze_variant($1, 0, 'A song', $2::jsonb, '[]'::jsonb, null, '[]'::jsonb, '{}'::jsonb)", [ids.song, spec]))[0]?.variant_id,
+      (await rows("select variant_id from public.freeze_variant($1, 0, 'A song', $2::jsonb, null)", [ids.song, spec]))[0]?.variant_id,
     );
     ids.take = String((await rows("insert into public.takes (variant_id, engine, engine_version, verdict) values ($1, 'suno', 'v6', 'keep') returning id", [ids.variant]))[0]?.id);
   });

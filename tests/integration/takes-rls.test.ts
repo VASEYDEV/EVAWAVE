@@ -32,7 +32,7 @@ async function log(user: string | null, variant: string, values: TakeValues = ta
 async function songWithVariant(user: string, title: string): Promise<[string, string]> {
   const [song] = await h.as(user, () => h.rows("insert into public.songs (title, spec) values ($1, $2::jsonb) returning id", [title, JSON.stringify(v12)]));
   const [frozen] = await h.as(user, () =>
-    h.rows("select * from public.freeze_variant($1, 0, $2, $3::jsonb, '[]'::jsonb, null, '[]'::jsonb, '{}'::jsonb)", [song?.id, title, JSON.stringify(v12)]),
+    h.rows("select * from public.freeze_variant($1, 0, $2, $3::jsonb, null)", [song?.id, title, JSON.stringify(v12)]),
   );
   return [String(song?.id), String(frozen?.variant_id)];
 }

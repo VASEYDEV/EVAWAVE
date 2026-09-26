@@ -3,7 +3,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { commit, emptyHistory } from "@/core/musicspec/history";
 import { defaultMusicSpec } from "@/core/musicspec/ir/defaults";
 import { specHash } from "@/core/musicspec/variants";
-import { COMPOSER_KEY, hasUnsavedWork, identityOf, openedCopy, parseComposer, stillCurrent, writeComposer, type SongAttachment } from "@/lib/composer/storage";
+import { COMPOSER_KEY, hasUnsavedWork, identityOf, openedCopy, parseComposer, stillCurrent, workingHash, writeComposer, type SongAttachment } from "@/lib/composer/storage";
 
 /** The composer's saved working copy and its song attachment (src/lib/composer/storage.ts). */
 const edited = () =>
@@ -14,11 +14,10 @@ const attachment = (over: Partial<SongAttachment> = {}): SongAttachment => ({
   ownerId: "owner-1",
   title: "Jinn",
   revision: 2,
-  savedHash: specHash(defaultMusicSpec()),
+  savedHash: workingHash(defaultMusicSpec(), null),
   baseVariantId: null,
   baseLabel: null,
   variantLabels: [],
-  overrides: [],
   ...over,
 });
 
@@ -42,8 +41,8 @@ describe("parseComposer", () => {
 
   it("keeps the working copy but drops a malformed attachment", () => {
     const step = edited();
-    const withoutOverrides = Object.fromEntries(Object.entries(attachment()).filter(([key]) => key !== "overrides"));
-    for (const song of [{ songId: "s" }, attachment({ revision: 1.5 }), { ...attachment(), variantLabels: [1] }, { ...attachment(), overrides: "none" }, withoutOverrides, "song-1"]) {
+    const withoutBase = Object.fromEntries(Object.entries(attachment()).filter(([key]) => key !== "baseVariantId"));
+    for (const song of [{ songId: "s" }, attachment({ revision: 1.5 }), { ...attachment(), variantLabels: [1] }, withoutBase, "song-1"]) {
       expect(parseComposer(JSON.stringify({ ...step, song }))).toEqual(step);
     }
   });
@@ -81,8 +80,26 @@ describe("hasUnsavedWork", () => {
 
   it("compares an attached copy with its last save", () => {
     const step = edited();
-    expect(hasUnsavedWork({ ...step, song: attachment({ savedHash: specHash(step.spec) }) })).toBe(false);
+    expect(hasUnsavedWork({ ...step, song: attachment({ savedHash: workingHash(step.spec, null) }) })).toBe(false);
     expect(hasUnsavedWork({ ...step, song: attachment() })).toBe(true);
+  });
+
+  it("counts the base variant as part of the copy: the same spec from another base is unsaved", () => {
+    const step = edited();
+    const saved = workingHash(step.spec, "v-1");
+    expect(hasUnsavedWork({ ...step, song: attachment({ baseVariantId: "v-1", savedHash: saved }) })).toBe(false);
+    expect(hasUnsavedWork({ ...step, song: attachment({ baseVariantId: "v-0", savedHash: saved }) })).toBe(true);
+    expect(hasUnsavedWork({ ...step, song: attachment({ baseVariantId: null, savedHash: saved }) })).toBe(true);
+  });
+});
+
+describe("workingHash", () => {
+  it("is the spec's hash with its base, so neither can match the other's", () => {
+    const spec = edited().spec;
+    expect(workingHash(spec, null)).not.toBe(workingHash(spec, "v-1"));
+    expect(workingHash(spec, "v-1")).toBe(workingHash(structuredClone(spec), "v-1"));
+    expect(workingHash(spec, "v-1")).not.toBe(workingHash(defaultMusicSpec(), "v-1"));
+    expect(workingHash(spec, null).startsWith(specHash(spec))).toBe(true);
   });
 });
 

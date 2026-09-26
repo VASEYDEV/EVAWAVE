@@ -8,6 +8,7 @@ import Link from "next/link";
 import { useEffect, useId, useMemo, useState } from "react";
 
 import type { MusicSpec } from "@/core/musicspec/ir/types";
+import { catalog } from "@/data/taxonomy";
 import { deleteWithLocalAudio, reconcileLocalAudio } from "@/lib/audio/browser";
 import { readComposer } from "@/lib/composer/storage";
 import { createLibraryClient } from "@/lib/library/client";
@@ -27,6 +28,7 @@ import { clampProfileName } from "@/lib/library/schema";
 import { deleteSong, listSongs, loadSong, songAttachment, type SongSummary } from "@/lib/library/songs";
 
 import { OpenInComposer } from "./OpenInComposer";
+import { useViewer } from "./useViewer";
 
 /** The composer's working spec from this browser, if there is one. */
 function composerSpec(): MusicSpec | null {
@@ -51,8 +53,10 @@ function Links({ legend, options, selected, onToggle }: { legend: string; option
 
 export function Library() {
   const client = useMemo(() => createLibraryClient(), []);
-  const [data, setData] = useState<LibraryData | null>(null);
-  const [songs, setSongs] = useState<SongSummary[] | null>(null);
+  const viewer = useViewer(client);
+  // What was loaded, and for whom: it is shown only while that account is signed in.
+  const [library, setLibrary] = useState<{ viewer: string; data: LibraryData } | null>(null);
+  const [songList, setSongList] = useState<{ viewer: string; songs: SongSummary[] } | null>(null);
   // The song whose delete is waiting for its second, explicit press.
   const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
   const [status, setStatus] = useState("");
@@ -67,10 +71,11 @@ export function Library() {
   const [version, setVersion] = useState(0);
 
   useEffect(() => {
+    if (!viewer) return;
     let live = true;
     loadLibrary(client).then(
       (loaded) => {
-        if (live) setData(loaded);
+        if (live) setLibrary({ viewer, data: loaded });
         // Housekeeping: drop this device's copies whose record was deleted on another device.
         // A failure leaves them for the next visit.
         const known = new Set(loaded.files.map((f) => f.asset.sha256));
@@ -86,7 +91,7 @@ export function Library() {
     // Songs load on their own, so a failure there leaves the rest of the library usable.
     listSongs(client).then(
       (loaded) => {
-        if (live) setSongs(loaded);
+        if (live) setSongList({ viewer, songs: loaded });
       },
       (error: unknown) => {
         if (live) setStatus(error instanceof Error ? error.message : "Could not load your songs.");
@@ -95,7 +100,11 @@ export function Library() {
     return () => {
       live = false;
     };
-  }, [client, version]);
+  }, [client, version, viewer]);
+
+  // Another account's (or a signed-out) view never shows what was loaded for someone else.
+  const data = library && library.viewer === viewer ? library.data : null;
+  const songs = songList && songList.viewer === viewer ? songList.songs : null;
 
   const run = async (what: string, action: () => Promise<void>) => {
     setStatus(`${what}…`);
@@ -110,6 +119,16 @@ export function Library() {
 
   const genreOptions = (data?.genres ?? []).map((g) => ({ id: g.id, label: g.name }));
   const tagOptions = (data?.tags ?? []).map((t) => ({ id: t.id, label: t.label }));
+
+  if (viewer === null) {
+    return (
+      <div className="library">
+        <p role="status" aria-live="polite">
+          You are signed out. <Link href="/login?next=/library">Sign in</Link> again to see your library.
+        </p>
+      </div>
+    );
+  }
 
   return (
     <div className="library">
@@ -132,9 +151,9 @@ export function Library() {
                   <OpenInComposer
                     label={`Open ${s.title} in the composer`}
                     open={async () => {
-                      const loaded = await loadSong(client, s.id);
+                      const loaded = await loadSong(client, s.id, catalog);
                       const base = loaded.variants.find((v) => v.id === loaded.song.baseVariantId) ?? null;
-                      return { spec: loaded.song.spec, song: songAttachment(loaded, loaded.variants, base, loaded.song.overrides) };
+                      return { spec: loaded.song.spec, song: songAttachment(loaded, loaded.variants, base) };
                     }}
                     onError={setStatus}
                   />
