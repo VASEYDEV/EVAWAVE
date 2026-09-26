@@ -144,7 +144,9 @@ export function AudioImport() {
       const kept =
         storedIn === "not-kept"
           ? "The account changed during the save, so the audio was not kept on this device; import the file again to keep it."
-          : `The audio stays ${storedIn === "opfs" ? "in this browser's private storage" : "in memory for this tab only"}.`;
+          : storedIn === "unsupported"
+            ? "This browser cannot coordinate its tabs (no Web Locks), so the audio was not kept on this device."
+            : `The audio stays ${storedIn === "opfs" ? "in this browser's private storage" : "in memory for this tab only"}.`;
       report(`Saved "${profile.name}" and the file's metadata to your library. ${kept}`);
     } catch (error) {
       report(error instanceof Error ? error.message : "Saving failed.");

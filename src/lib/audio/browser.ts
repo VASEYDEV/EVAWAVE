@@ -135,10 +135,16 @@ export async function storeInOpfs(key: LocalAudioKey, file: Blob): Promise<"opfs
  * The `store` step for a save made while holding `ownerId`'s turn: keeps the audio when the
  * rows were written for that account. If another tab switched accounts mid-save, the rows
  * belong to the new account, whose turn this is not, so nothing is kept and that account can
- * add the audio by importing the file again.
+ * add the audio by importing the file again. Without Web Locks nothing is kept either
+ * ("unsupported"): the turn cannot hold across tabs, so a delete in another tab could land
+ * between the save and the store and leave a copy with no record. With no copy, there is
+ * nothing for a save and a delete to race over.
  */
-export function keepAudioFor(ownerId: string): (saved: LocalAudioKey, audio: Blob) => Promise<"opfs" | "memory" | "not-kept"> {
-  return async (saved, audio) => (saved.ownerId === ownerId ? storeInOpfs(saved, audio) : "not-kept");
+export function keepAudioFor(ownerId: string): (saved: LocalAudioKey, audio: Blob) => Promise<"opfs" | "memory" | "not-kept" | "unsupported"> {
+  return async (saved, audio) => {
+    if (!webLocks()) return "unsupported";
+    return saved.ownerId === ownerId ? storeInOpfs(saved, audio) : "not-kept";
+  };
 }
 
 const isDomError = (error: unknown, name: string) => error instanceof DOMException && error.name === name;
@@ -193,14 +199,21 @@ async function readLocalAudio(key: LocalAudioKey): Promise<Blob | undefined> {
 /** Deletes in flight, by key, so a repeated delete of the same file joins the first. */
 const deleting = new Map<string, Promise<void>>();
 
+/** The origin's Web Locks, where the browser has them. */
+function webLocks(): LockManager | undefined {
+  const locks = typeof navigator === "undefined" ? undefined : navigator.locks;
+  return typeof locks?.request === "function" ? locks : undefined;
+}
+
 /**
  * Runs `task` holding a Web Lock named for this account's file, so a delete and a save that
  * keeps the audio never interleave, in this tab or across tabs of the origin. Where the API
- * is missing, runs it directly.
+ * is missing, runs it directly: keepAudioFor then keeps no audio, so no local copy exists
+ * for the turn to protect.
  */
 export async function inTurnForLocalAudio<T>(key: LocalAudioKey, task: () => Promise<T>): Promise<T> {
-  const locks = typeof navigator === "undefined" ? undefined : navigator.locks;
-  if (typeof locks?.request !== "function") return task();
+  const locks = webLocks();
+  if (!locks) return task();
   return await locks.request(`evawave:local-audio:${tabKey(key)}`, task);
 }
 

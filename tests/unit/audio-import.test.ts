@@ -703,8 +703,15 @@ describe("local audio on the device", () => {
     expect(files.has(`audio/${OWNER_A}/turns-sha`)).toBe(true);
   });
 
-  it("keeps the audio only when the save ran as the account whose turn it holds", async () => {
+  it("keeps no audio where the browser has no Web Locks, so a save and a delete cannot race", async () => {
     const files = fakeOpfs();
+    expect(await keepAudioFor(OWNER_A)(a("no-locks-sha"), new Blob([wav]))).toBe("unsupported");
+    expect(files.size).toBe(0);
+    expect(blobInTab(a("no-locks-sha"))).toBeUndefined();
+  });
+
+  it("keeps the audio only when the save ran as the account whose turn it holds", async () => {
+    const files = fakeOpfs({ locks: true });
     const keep = keepAudioFor(OWNER_A);
     // Another tab switched accounts mid-save: the rows are B's, so A's turn keeps nothing.
     expect(await keep(b("switched-sha"), new Blob([wav]))).toBe("not-kept");
