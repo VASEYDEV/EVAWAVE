@@ -43,8 +43,8 @@ test("imports a WAV into a reviewed audio-analysis style profile, sending no aud
   await expect(page.getByLabel("Accept /D6/tempo")).toBeChecked();
   await expect(page.getByLabel("Accept /D6/key")).toBeChecked();
 
-  // The blob is kept in OPFS under its sha256 only once something durable refers to it: not
-  // after import, not after Create, but with the downloaded profile (or a library save).
+  // The blob is kept in OPFS under its sha256 only with a library save: not after import, not
+  // after Create, and not with a download, which nothing in the app could later remove.
   const sha256 = createHash("sha256").update(wav).digest("hex");
   const kept = () =>
     page.evaluate(async (name) => {
@@ -66,8 +66,8 @@ test("imports a WAV into a reviewed audio-analysis style profile, sending no aud
   const downloaded = page.waitForEvent("download");
   await page.getByRole("button", { name: "Download profile JSON" }).click();
   expect((await downloaded).suggestedFilename()).toBe("desert-loop-style-profile.json");
-  await expect(page.getByRole("status")).toContainText("The audio stays in this browser's private storage.");
-  expect(await kept()).toBe(true);
+  await expect(page.getByRole("status")).toContainText("Only a library save keeps the audio on this device.");
+  expect(await kept()).toBe(false);
 
   const results = await new AxeBuilder({ page }).withTags(TAGS).analyze();
   expect(results.violations.map((v) => v.id)).toEqual([]);

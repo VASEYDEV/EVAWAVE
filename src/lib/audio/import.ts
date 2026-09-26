@@ -1,8 +1,8 @@
 /**
  * Audio import to a draft StyleProfile patch (docs/SPEC.md §1.7). Everything runs on the
  * device: the file is hashed, decoded and analysed here, and only metadata and features ever
- * leave (A6). Import itself stores nothing. The screen keeps the blob on the device only once
- * a durable reference to it exists (a saved library row or a downloaded profile), so no
+ * leave (A6). Import itself stores nothing. The screen keeps the blob on the device only after
+ * a library save succeeds: the saved row is the reference /library can remove it by, so no
  * stored blob is ever unreachable. The steps that touch the platform are injected, so tests
  * can run the same pipeline and prove no request carries audio.
  */

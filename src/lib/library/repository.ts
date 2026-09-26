@@ -138,3 +138,13 @@ export async function saveImport(client: LibraryClient, record: ImportRecord): P
   const saved = check(await client.rpc("save_import", record).single(), "save import");
   return { fileId: saved.file_id, profileId: saved.profile_id };
 }
+
+/**
+ * Saves an import, then keeps its audio on the device with `store`. The saved file row is the
+ * durable reference the local copy needs (and /library's delete removes both), so nothing is
+ * stored when the save fails. Resolves to where the audio went.
+ */
+export async function saveImportAndKeepAudio<Where>(client: LibraryClient, record: ImportRecord, audio: Blob, store: (sha256: string, blob: Blob) => Promise<Where>): Promise<Where> {
+  await saveImport(client, record);
+  return store(record.file.sha256, audio);
+}

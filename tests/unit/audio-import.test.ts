@@ -7,7 +7,7 @@ import { applyReviewedPatch, audioProfileBase, AUDIO_DRAFT_MODEL, reviewPatch } 
 import { lintStyleProfile } from "@/core/musicspec/lint";
 import { blobInTab, removeLocalAudio, storeInOpfs } from "@/lib/audio/browser";
 import { importAudio, sha256Hex, type ImportDeps } from "@/lib/audio/import";
-import { saveImport } from "@/lib/library/repository";
+import { saveImport, saveImportAndKeepAudio, type ImportRecord } from "@/lib/library/repository";
 import type { Database } from "@/lib/library/schema";
 
 import { clickTrack, mix, triad } from "../support/signals";
@@ -119,6 +119,28 @@ describe("audio import (§1.7)", () => {
     expect(carriesAudio(JSON.stringify({ data: Buffer.from(wavBytes.subarray(1000)).toString("base64") }))).toBe(true);
     expect(carriesAudio(Buffer.from(wavBytes.subarray(2000)).toString("hex"))).toBe(true);
     expect(carriesAudio(JSON.stringify({ features: { bpm: 140 } }))).toBe(false);
+  });
+});
+
+describe("keeping the audio with a library save", () => {
+  const record: ImportRecord = {
+    file: { filename: "desert-loop.wav", mime: "audio/wav", bytes: wav.byteLength, sha256: "c".repeat(64), features: { durationSec: 12 } as never },
+    profile: { id: PROFILE_ID, name: "Desert loop", spec: {}, analysedOn: "2026-09-26T12:00:00.000Z", model: AUDIO_DRAFT_MODEL },
+  };
+  const clientWith = (fetchMock: typeof fetch) => createClient<Database>("https://project.supabase.test", "anon-key-for-tests", { global: { fetch: fetchMock }, auth: { persistSession: false } });
+
+  it("stores the audio only after the save succeeds", async () => {
+    const { fetchMock } = recorder();
+    const store = vi.fn(async () => "opfs" as const);
+    await expect(saveImportAndKeepAudio(clientWith(fetchMock), record, file, store)).resolves.toBe("opfs");
+    expect(store).toHaveBeenCalledWith("c".repeat(64), file);
+  });
+
+  it("stores nothing when the save fails", async () => {
+    const failing = vi.fn(async () => new Response(JSON.stringify({ message: "connection lost" }), { status: 503, headers: { "content-type": "application/json" } }));
+    const store = vi.fn(async () => "opfs" as const);
+    await expect(saveImportAndKeepAudio(clientWith(failing as unknown as typeof fetch), record, file, store)).rejects.toThrow();
+    expect(store).not.toHaveBeenCalled();
   });
 });
 

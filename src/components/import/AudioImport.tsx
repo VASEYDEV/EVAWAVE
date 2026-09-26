@@ -14,7 +14,7 @@ import { catalog } from "@/data/taxonomy";
 import { browserImportDeps, storeInOpfs } from "@/lib/audio/browser";
 import { importAudio, type ImportResult } from "@/lib/audio/import";
 import { createLibraryClient } from "@/lib/library/client";
-import { saveImport } from "@/lib/library/repository";
+import { saveImportAndKeepAudio } from "@/lib/library/repository";
 import { PROFILE_NAME_MAX, profileName } from "@/lib/library/schema";
 import { getSupabasePublicConfig } from "@/lib/supabase/config";
 
@@ -107,23 +107,15 @@ export function AudioImport() {
       createdAt: result.analysedOn,
       updatedAt: result.analysedOn,
     });
-    setStatus(`Style profile created from ${reviewed.acceptedPaths.length} accepted field(s). Save it to the library or download it to keep it and its audio.`);
+    setStatus(`Style profile created from ${reviewed.acceptedPaths.length} accepted field(s). Save it to the library to keep it and its audio, or download it.`);
   };
 
-  /**
-   * Keeps the blob on the device (§1.7, A6). Called only once something durable refers to
-   * it, a library row or a downloaded profile, so no stored blob is ever unreachable.
-   */
-  const keepAudio = async (sha256: string, file: File): Promise<string> =>
-    (await storeInOpfs(sha256, file)) === "opfs" ? "in this browser's private storage" : "in memory for this tab only";
-
-  const downloadProfile = async () => {
-    if (!result || !profile || !source) return;
-    const current = inFlight.current;
-    // Download first, inside the click, so the browser keeps it tied to the gesture.
+  // A download keeps no audio on the device: nothing in the app could reach or remove it.
+  // The profile cites the audio by its sha256, and the person still has the original file.
+  const downloadProfile = () => {
+    if (!profile) return;
     download(`${profile.name.replace(/[^a-z0-9]+/gi, "-").toLowerCase() || "profile"}-style-profile.json`, `${JSON.stringify(profile, null, 2)}\n`);
-    const where = await keepAudio(result.asset.sha256, source);
-    if (inFlight.current === current) setStatus(`Downloaded "${profile.name}". The audio stays ${where}.`);
+    setStatus(`Downloaded "${profile.name}". Only a library save keeps the audio on this device.`);
   };
 
   const save = async () => {
@@ -141,11 +133,12 @@ export function AudioImport() {
         return;
       }
       const { asset, features, analysedOn } = result;
-      await saveImport(client, {
+      const record = {
         file: { filename: asset.filename, mime: asset.mime, bytes: asset.bytes, sha256: asset.sha256, features },
         profile: { id: profile.id, name: profile.name, spec: profile.spec, analysedOn, model: AUDIO_DRAFT_MODEL },
-      });
-      const where = await keepAudio(asset.sha256, source);
+      };
+      const storedIn = await saveImportAndKeepAudio(client, record, source, storeInOpfs);
+      const where = storedIn === "opfs" ? "in this browser's private storage" : "in memory for this tab only";
       if (inFlight.current === current) setStatus(`Saved "${profile.name}" and the file's metadata to your library. The audio stays ${where}.`);
     } catch (error) {
       setStatus(error instanceof Error ? error.message : "Saving failed.");
@@ -280,7 +273,7 @@ export function AudioImport() {
             <button type="button" onClick={() => void save()}>
               Save to library
             </button>
-            <button type="button" onClick={() => void downloadProfile()}>
+            <button type="button" onClick={downloadProfile}>
               Download profile JSON
             </button>
           </div>
