@@ -184,7 +184,8 @@ export async function inTurnForLocalAudio<T>(key: LocalAudioKey, task: () => Pro
  * Deletes a library file record and its local audio as one recoverable step. The local copy
  * is read into memory and removed first, so a failed removal keeps the record (and its hash)
  * for a retry. If deleting the record then fails, the copy is stored again, so a failure
- * leaves both stores as they were. Two deletes of the same file must not overlap: the second
+ * leaves both stores as they were; if OPFS will not take it back, the rejection says the audio
+ * is held in this tab only. Two deletes of the same file must not overlap: the second
  * would read the copy, find no row, and restore a copy nothing refers to. So a second call in
  * this tab joins the first, and other tabs wait their turn (inTurnForLocalAudio); by then the
  * copy is gone, and a failure there restores nothing.
@@ -200,11 +201,18 @@ export function deleteWithLocalAudio(key: LocalAudioKey, deleteRecord: () => Pro
 
 async function deleteOnce(key: LocalAudioKey, deleteRecord: () => Promise<void>): Promise<void> {
   const copy = await readLocalAudio(key);
+  // Read from OPFS unless the tab held it: then only an OPFS restore puts things back.
+  const durable = copy !== undefined && !tabMemory.has(tabKey(key));
   await removeLocalAudio(key);
   try {
     await deleteRecord();
   } catch (error) {
-    if (copy) await storeInOpfs(key, copy);
+    if (copy && (await storeInOpfs(key, copy)) === "memory" && durable) {
+      // The record stays, but its audio went back to this tab only, which closing it loses.
+      // Say so, rather than report the failed delete as though nothing had changed.
+      const reason = error instanceof Error ? error.message : String(error);
+      throw new Error(`${reason} Its audio could not be put back in this browser's storage and is held in this tab only; import the file again to keep it.`, { cause: error });
+    }
     throw error;
   }
 }

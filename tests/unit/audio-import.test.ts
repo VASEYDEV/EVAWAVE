@@ -360,6 +360,26 @@ describe("local audio on the device", () => {
     expect(files.has(path)).toBe(false);
   });
 
+  it("says so when a failed delete can put the audio back in this tab only", async () => {
+    // OPFS holds the file and lets it go, then refuses to take it back.
+    let present = true;
+    const blob = new Blob([wav]);
+    opfsWith({
+      getFileHandle: async () => ({
+        getFile: async () => (present ? blob : new Blob([])),
+        createWritable: async () => Promise.reject(new DOMException("quota exceeded", "QuotaExceededError")),
+      }),
+      removeEntry: async () => {
+        present = false;
+      },
+    });
+    const failure = deleteWithLocalAudio(a("unrestored-sha"), async () => Promise.reject(new Error("connection lost.")));
+    await expect(failure).rejects.toThrow(/connection lost\. Its audio could not be put back in this browser's storage and is held in this tab only/);
+    expect(present).toBe(false);
+    const held = blobInTab(a("unrestored-sha"));
+    expect(new Uint8Array(await (held as Blob).arrayBuffer())).toEqual(new Uint8Array(await blob.arrayBuffer()));
+  });
+
   it("keeps the record when the local copy cannot be removed", async () => {
     fakeOpfs();
     await storeInOpfs(a("stuck-sha"), new Blob([wav]));
@@ -468,6 +488,13 @@ describe("local audio on the device", () => {
     expect(await storeInOpfs(a("recovered-sha"), blob)).toBe("opfs");
     expect(files.has(`audio/${OWNER_A}/recovered-sha`)).toBe(true);
     expect(blobInTab(a("recovered-sha"))).toBeUndefined();
+  });
+
+  it("puts an in-tab copy back in the tab, as it was, when the record delete fails", async () => {
+    const blob = new Blob([wav]);
+    expect(await storeInOpfs(a("tab-only-sha"), blob)).toBe("memory");
+    await expect(deleteWithLocalAudio(a("tab-only-sha"), async () => Promise.reject(new Error("connection lost.")))).rejects.toThrow(/^connection lost\.$/);
+    expect(blobInTab(a("tab-only-sha"))).toBe(blob);
   });
 
   it("removes the in-tab copy where OPFS is missing", async () => {
