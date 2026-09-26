@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from "next";
+import Link from "next/link";
 
 import "./globals.css";
 
@@ -19,7 +20,26 @@ export const viewport: Viewport = {
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html lang="en">
-      <body>{children}</body>
+      <body>
+        <a className="skip-link" href="#main">
+          Skip to content
+        </a>
+        <header className="app-header">
+          <h1>EVAWAVE</h1>
+          <p>Compose musical intent once; compile it for Suno, ElevenLabs Music and Google Flow Music. Pre-alpha.</p>
+          <nav aria-label="Site">
+            <ul>
+              <li>
+                <Link href="/">Composer</Link>
+              </li>
+              <li>
+                <Link href="/library">Library</Link>
+              </li>
+            </ul>
+          </nav>
+        </header>
+        {children}
+      </body>
     </html>
   );
 }

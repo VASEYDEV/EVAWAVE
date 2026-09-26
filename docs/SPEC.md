@@ -1446,6 +1446,28 @@ Delivered:
 Acceptance: an RLS test proves user B cannot read or write user A's rows in every
 user-scoped table.
 
+Delivered:
+
+- **`supabase/migrations/20260926000000_library.sql`.** Seven user-scoped tables:
+  `style_profiles`, `files`, `tags`, and the link tables `style_profile_genres`,
+  `style_profile_tags`, `file_genres` and `file_tags`. Plus the curated `genres`.
+  - RLS is on everywhere, with owner-only policies. Link inserts must join rows that the
+    same user owns.
+  - `anon` gets nothing, and `authenticated` gets only what the policies allow.
+  - `files.local_only` is checked true (A6).
+- **`20260926000100_seed_genres.sql`**, generated from `genres.json` by
+  `scripts/build-genre-seed.mjs`, with a `--check` mode.
+- **Library page** (`/library`): style profiles saved from the composer's spec (D1–D6, D8,
+  D9), files, tags, and genre and tag links. Sign-in is by Supabase Auth email link
+  (`/login`, `/auth/confirm` with a same-site redirect guard, POST `/auth/signout`).
+  Setup: `docs/runbooks/supabase.md`.
+- **RLS test.** `tests/integration/library-rls.test.ts` runs the real migrations in PGlite
+  (Postgres in WASM) on a shim of Supabase's auth schema and API roles
+  (`tests/support/supabase-shim.sql`). For each user-scoped table, user B can neither
+  read, update, delete, forge a row owned by A, link A's rows, nor move a row to A. Anon
+  can reach no table. Genres are read-only. The table columns match
+  `src/lib/library/schema.ts`.
+
 ### S5: Audio import, metronome and tap tempo, module iconography
 
 - Audio import to StyleProfile per §1.7, on-device. A test that mocks `fetch` asserts no

@@ -4,8 +4,12 @@
 
 ```bash
 npm ci
-bash scripts/gate.sh     # or: npm run gate
+npx playwright install chromium   # once, for the e2e step
+bash scripts/gate.sh              # or: npm run gate
 ```
+
+Where Playwright's own browser cannot be downloaded, point
+`PLAYWRIGHT_CHROMIUM_EXECUTABLE` at an installed Chromium.
 
 Exit code 0 and a final `GATE: PASS` line mean every check passed. Node must match
 `package.json` `engines`: `^22.13.0 || ^24.0.0 || >=26.0.0`. The locked Vitest excludes 23
@@ -14,7 +18,7 @@ partway through the gate.
 
 ## What CI runs
 
-`.github/workflows/ci.yml` runs `npm ci` and then the same script on every pull request
+`.github/workflows/ci.yml` runs `npm ci`, installs Playwright's Chromium, and then runs the same script on every pull request
 and every push to `main`. It runs on two Node versions: 22.13.0 (the floor) and 24 (the
 current LTS line). Local and CI verification never diverge.
 
@@ -35,18 +39,19 @@ current LTS line). Local and CI verification never diverge.
    is ignored (ADR 0004).
 3. **Typecheck:** `next typegen && tsc --noEmit`. `next-env.d.ts` and route types are
    generated, not committed.
-4. **Unit:** `vitest run` over `tests/**/*.test.ts`.
+4. **Unit and integration:** `vitest run` over `tests/**/*.test.ts`.
+   `tests/integration/library-rls.test.ts` runs the Supabase migrations in PGlite and
+   proves each user-scoped table keeps user B out of user A's rows.
    `tests/unit/import-boundary.test.ts` proves the boundary rule rejects deliberate
    violations under the real ESLint config. `tests/unit/spec.test.ts` type-checks the IR v1
    block in `docs/SPEC.md` standalone and ties its worked example to the Jinn v1.2 file.
 5. **Build:** `next build` (Turbopack).
-6. **Client bundle:** `scripts/check-client-bundle.sh` fails if any server-only variable
+6. **E2E:** `playwright test` on a Pixel 7 viewport against `next start`. It covers the
+   composer acceptance (SPEC §3 S3), the library pages and axe WCAG 2.2 AA scans.
+7. **Client bundle:** `scripts/check-client-bundle.sh` fails if any server-only variable
    name from `.env.example` appears in `.next/static`.
-7. **Audit:** `npm audit --audit-level=critical`. Criticals block merge (§6); exceptions
+8. **Audit:** `npm audit --audit-level=critical`. Criticals block merge (§6); exceptions
    go in `SECURITY.md`.
-
-Integration tests join the gate when the first ones land (S4, Supabase RLS with two test
-users).
 
 ## Known toolchain constraints (2026-09-23)
 

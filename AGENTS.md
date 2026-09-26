@@ -45,8 +45,15 @@ UI (`src/components/composer/`); the library UI follows in S4. EVAWAVE never gen
 - **Playwright needs its own Chromium.** CI runs `npx playwright install --with-deps chromium`.
   Where that browser cannot be downloaded, set `PLAYWRIGHT_CHROMIUM_EXECUTABLE` to an
   installed Chromium (`playwright.config.ts` passes it as `executablePath`).
+- **RLS is tested without a Supabase project.** `tests/integration/library-rls.test.ts` runs
+  `supabase/migrations/*.sql` in PGlite on top of `tests/support/supabase-shim.sql`, which
+  mirrors Supabase's `auth.uid()`, `auth.users`, API roles and default privileges. A new
+  user-scoped table goes into `USER_SCOPED_TABLES` and `LIBRARY_COLUMNS`
+  (`src/lib/library/schema.ts`), and the test covers it.
 - **Generated files are never edited by hand:** `src/core/musicspec/ir/types.ts` (from the
-  SPEC) and `src/data/taxonomy/instruments/*.json` (from the seed). Curated instruments
+  SPEC) and `src/data/taxonomy/instruments/*.json` (from the seed), and
+  `supabase/migrations/20260926000100_seed_genres.sql` (from `genres.json`, by
+  `node scripts/build-genre-seed.mjs`). Curated instruments
   live in `src/data/taxonomy/instruments.json` and always win over generated ones.
 - **`next lint` does not exist in Next 16.** `npm run lint` calls ESLint directly.
 - **ESLint stays on 9.** `eslint-config-next@16.3.6` crashes under ESLint 10.
