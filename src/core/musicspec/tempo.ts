@@ -21,7 +21,7 @@ export interface TapState {
 }
 
 export interface TapReading {
-  /** Unrounded BPM, or null until two taps are in. */
+  /** Unrounded BPM, or null until TAP_WINDOW taps are in. */
   bpm: number | null;
   halfTime: number | null;
   doubleTime: number | null;
@@ -57,10 +57,13 @@ export function tap(state: TapState, timeMs: number): TapState {
   return { taps: [...state.taps, timeMs].slice(-TAP_WINDOW), discarded: false };
 }
 
-/** BPM from the mean interval across the kept taps, with its half- and double-time candidates. */
+/**
+ * BPM from the mean interval across the last four taps, with its half- and double-time
+ * candidates. Fewer taps read nothing, so one noisy interval can never be assigned.
+ */
 export function reading(state: TapState): TapReading {
+  if (state.taps.length < TAP_WINDOW) return { bpm: null, halfTime: null, doubleTime: null };
   const gaps = intervals(state.taps);
-  if (!gaps.length) return { bpm: null, halfTime: null, doubleTime: null };
   const bpm = 60000 / mean(gaps);
   return { bpm, halfTime: bpm / 2, doubleTime: bpm * 2 };
 }

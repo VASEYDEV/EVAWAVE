@@ -35,12 +35,12 @@ describe("tap tempo (§1.8)", () => {
     expect(first.discarded).toBe(true);
     const second = tap(first, 2834);
     expect(second).toEqual({ taps: [2834], discarded: false });
-    expect(Math.round(reading(tap(second, 3501)).bpm ?? 0)).toBe(90);
+    expect(Math.round(reading(tapAll([3501, 4168, 4835], second)).bpm ?? 0)).toBe(90);
   });
 
   it("recovers from a late tap without waiting for the 2 s reset", () => {
-    const state = tapAll([0, 428, 856, 1400, 1712, 2140]);
-    expect(state.taps).toEqual([1712, 2140]);
+    const state = tapAll([0, 428, 856, 1400, 1712, 2140, 2568, 2996]);
+    expect(state.taps).toEqual([1712, 2140, 2568, 2996]);
     expect(Math.round(reading(state).bpm ?? 0)).toBe(140);
   });
 
@@ -58,8 +58,11 @@ describe("tap tempo (§1.8)", () => {
     expect(tapsExpired(state, 856 + TAP_RESET_MS)).toBe(false);
   });
 
-  it("reads nothing from a single tap", () => {
+  it("reads nothing until four taps are in, so one interval cannot be assigned", () => {
     expect(reading(tap(emptyTaps(), 0)).bpm).toBeNull();
+    expect(reading(tapAll([0, 428])).bpm).toBeNull();
+    expect(reading(tapAll([0, 428, 856])).bpm).toBeNull();
+    expect(reading(tapAll([0, 428, 856, 1284])).bpm).not.toBeNull();
   });
 });
 
