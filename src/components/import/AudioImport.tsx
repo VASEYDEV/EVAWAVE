@@ -121,15 +121,19 @@ export function AudioImport() {
   const save = async () => {
     if (!result || !profile || !source) return;
     const current = inFlight.current;
+    // A newer file choice replaces the import in flight; this save must not report over it.
+    const report = (message: string) => {
+      if (inFlight.current === current) setStatus(message);
+    };
     if (!getSupabasePublicConfig()) {
-      setStatus("The library needs Supabase, which is not configured here. Download the profile instead.");
+      report("The library needs Supabase, which is not configured here. Download the profile instead.");
       return;
     }
     try {
       const client = createLibraryClient();
       const { data } = await client.auth.getSession();
       if (!data.session) {
-        setStatus("Sign in to save to your library (Library → Sign in).");
+        report("Sign in to save to your library (Library → Sign in).");
         return;
       }
       const { asset, features, analysedOn } = result;
@@ -145,9 +149,9 @@ export function AudioImport() {
         storedIn === "not-kept"
           ? "The account changed during the save, so the audio was not kept on this device; import the file again to keep it."
           : `The audio stays ${storedIn === "opfs" ? "in this browser's private storage" : "in memory for this tab only"}.`;
-      if (inFlight.current === current) setStatus(`Saved "${profile.name}" and the file's metadata to your library. ${kept}`);
+      report(`Saved "${profile.name}" and the file's metadata to your library. ${kept}`);
     } catch (error) {
-      setStatus(error instanceof Error ? error.message : "Saving failed.");
+      report(error instanceof Error ? error.message : "Saving failed.");
     }
   };
 
