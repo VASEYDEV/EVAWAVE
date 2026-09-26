@@ -24,7 +24,18 @@ S5 per SPEC §3. The methods are listed in SPEC §3 S5 "Delivered".
 - **Tap tempo** (`tests/unit/tempo.test.ts`): 4 taps 428 ms apart give 140 BPM; an outlier
   tap is discarded; a 2 s gap resets. On the phone viewport with Playwright's controlled
   clock, the same taps read "140 BPM · half 70 · double 280", Assign writes
-  `{ bpm: 140, source: 'tap' }`, and bar math shows 1.714 s per bar.
+  `{ bpm: 140, source: 'tap' }`, and bar math shows 1.714 s per bar. Two outliers in a
+  row start a new sequence: before that rule, a tempo change from 120 to 90 BPM or one
+  late tap kept every later tap discarded until the 2 s reset, because intervals are
+  measured from the last kept tap.
+- **Metronome** (same file): changing the subdivision mid-beat or shrinking the meter
+  mid-bar keeps beats advancing. Before the fix, switching from 16ths to 8ths at step 3
+  left the step counter past the subdivision, so the beat never advanced and every click
+  played as a subdivision click.
+- **Import storage** (`tests/unit/audio-import.test.ts`): where OPFS is missing, the blob
+  stays in the tab, as the status line says. Before the fix nothing held it. When two
+  files are chosen in quick succession, only the newer one's analysis lands. That race has
+  no automated test, because Playwright cannot order two Web Audio decodes.
 - **Iconography.** Each of the 11 module headers has its icon, and the icon's computed
   colour equals its `--mod-*` token. Removing the hue fails the test.
 - **Mutation checks.** Each of these failed its test:

@@ -1507,9 +1507,12 @@ Delivered:
     rejected patch changes nothing, and protected roots are refused (PT-2).
   - A profile starts from the default D1–D6, D8 and D9.
 - **Tempo** (`tempo.ts`): tap tempo is the mean of the last 3 intervals. An interval
-  more than ±25 % off the running mean is discarded, and a 2 s gap resets. Metronome
-  clicks come from a 25 ms tick with 100 ms lookahead, accenting beat 1, or beats 1 and 3
-  in half-time mode, with optional 8th or 16th clicks. The controls sit in module 1 and
+  more than ±25 % off the running mean is discarded, and a 2 s gap resets. A second
+  discard in a row starts a new sequence from that tap, so a tempo change or a late tap
+  recovers without waiting for the reset. Metronome clicks come from a 25 ms tick with
+  100 ms lookahead, accenting beat 1, or beats 1 and 3 in half-time mode, with optional
+  8th or 16th clicks. Changing the subdivision or meter while it runs moves the next
+  click onto the next beat. The controls sit in module 1 and
   `Assign` writes the rounded BPM with `source: 'tap'`.
 - **Lint:** PT-1 and PT-2 are spec-level rules and also run per patch
   (`lowConfidenceOps`, `protectedOps`). PV-1 is `lintStyleProfile`.
