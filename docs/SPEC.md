@@ -1543,9 +1543,10 @@ Delivered:
     next stage and terminates the worker. It shows the measured features, then a
     per-field review with low-confidence suggestions left unticked. Create makes the
     profile in memory, with the PV-1 badge, a device-made id and a name capped at 200
-    characters. Import and Create store nothing: the file goes to OPFS (or an in-tab
-    fallback) only once a durable reference exists, after a library save succeeds or
-    with the downloaded profile, so no stored blob is ever unreachable. Saving goes
+    characters. Import, Create and Download store nothing: the file goes to OPFS (or an
+    in-tab fallback) only after a library save succeeds, because a library record is the
+    one reference the app can later remove it by, so no stored blob is ever unreachable.
+    A downloaded profile cites the audio by its sha256. Saving goes
     through `public.save_import`, which writes the file metadata and the profile in one
     transaction under RLS, so saving twice writes one row and a failure leaves neither.
     Deleting a file record in `/library` removes its local copy first, and keeps the

@@ -204,3 +204,10 @@ S5 per SPEC §3. The methods are listed in SPEC §3 S5 "Delivered".
     makes a single RPC call. The RLS suite checks idempotence, rollback when the profile
     fails, another owner's id refused with none of that call's rows kept, and no access
     signed out. The refusal test fails if the function becomes `security definer`.
+- **Fourteenth review: audio kept for download-only profiles.** Nothing in the app could
+  reach or remove a blob stored for a download, because there is no profile-JSON import
+  and removal runs from a library row. Only a library save now keeps the audio, through
+  `saveImportAndKeepAudio`, which stores after the save succeeds and not when it fails.
+  Both orders are unit-tested, and storing first fails. The e2e checks that Download
+  leaves OPFS empty. The save-then-store path has no e2e, because the library needs a
+  live Supabase session.
