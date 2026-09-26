@@ -6,7 +6,7 @@ import { decodeWav, encodeWav, WavError, type PcmAudio } from "@/core/musicspec/
 import { applyReviewedPatch, audioProfileBase, AUDIO_DRAFT_MODEL, reviewPatch } from "@/core/musicspec/intake";
 import { lintStyleProfile } from "@/core/musicspec/lint";
 import { blobInTab, deleteWithLocalAudio, inTurnForLocalAudio, keepAudioFor, removeLocalAudio, storeInOpfs } from "@/lib/audio/browser";
-import { importAudio, sha256Hex, type ImportDeps } from "@/lib/audio/import";
+import { IMPORT_MAX_BYTES, importAudio, ImportTooLargeError, sha256Hex, type ImportDeps } from "@/lib/audio/import";
 import { deleteFile, hasFileRecord, LibraryError, saveImport, saveImportAndKeepAudio, type ImportRecord } from "@/lib/library/repository";
 import type { Database } from "@/lib/library/schema";
 
@@ -185,6 +185,22 @@ describe("import order", () => {
 });
 
 describe("a superseded import", () => {
+  it("refuses a file over the size limit without reading it, and reads one at the limit", async () => {
+    const sized = (size: number) => {
+      const f = new File([wav], "big.wav", { type: "audio/wav" });
+      Object.defineProperty(f, "size", { value: size });
+      return f;
+    };
+    const over = sized(IMPORT_MAX_BYTES + 1);
+    const readOver = vi.spyOn(over, "arrayBuffer");
+    await expect(importAudio(over, nodeDeps())).rejects.toBeInstanceOf(ImportTooLargeError);
+    expect(readOver).not.toHaveBeenCalled();
+    const at = sized(IMPORT_MAX_BYTES);
+    const readAt = vi.spyOn(at, "arrayBuffer");
+    await importAudio(at, nodeDeps());
+    expect(readAt).toHaveBeenCalledTimes(1);
+  });
+
   it("never reads the file when a newer choice aborted it before it started", async () => {
     const controller = new AbortController();
     controller.abort();

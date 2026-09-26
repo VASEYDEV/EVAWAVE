@@ -12,7 +12,7 @@ import type { StyleProfile } from "@/core/musicspec/ir/types";
 import { lintStyleProfile, lowConfidenceOps } from "@/core/musicspec/lint";
 import { catalog } from "@/data/taxonomy";
 import { browserImportDeps, inTurnForLocalAudio, keepAudioFor } from "@/lib/audio/browser";
-import { importAudio, type ImportResult } from "@/lib/audio/import";
+import { importAudio, ImportTooLargeError, type ImportResult } from "@/lib/audio/import";
 import { createLibraryClient } from "@/lib/library/client";
 import { saveImportAndKeepAudio } from "@/lib/library/repository";
 import { PROFILE_NAME_MAX, profileName, recordFilename, recordMime } from "@/lib/library/schema";
@@ -80,7 +80,11 @@ export function AudioImport() {
       setStatus(`Analysed ${file.name} on this device. Review the proposed fields below; nothing is kept until you save or download a profile.`);
     } catch (error) {
       if (controller.signal.aborted) return;
-      setStatus(`Could not analyse ${file.name}: ${error instanceof Error ? error.message : "unknown error"}. Try a WAV, MP3, AAC or FLAC file.`);
+      setStatus(
+        error instanceof ImportTooLargeError
+          ? `Could not analyse ${file.name}: ${error.message}`
+          : `Could not analyse ${file.name}: ${error instanceof Error ? error.message : "unknown error"}. Try a WAV, MP3, AAC or FLAC file.`,
+      );
     }
   };
 

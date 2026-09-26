@@ -11,6 +11,22 @@ import type { PcmAudio } from "@/core/musicspec/analysis/wav";
 import { draftFromAudio } from "@/core/musicspec/intake";
 import type { AudioFeatures, IRPatch } from "@/core/musicspec/ir/types";
 
+/**
+ * The largest file an import reads: 100 MiB, about 9.9 minutes of 16-bit 44.1 kHz stereo WAV
+ * or 6 minutes at 24-bit 48 kHz, and any compressed track of normal length. Web Audio decodes
+ * the whole file at once, so a bigger one could exhaust a phone tab's memory before it could
+ * be cancelled. A streaming decoder (WebCodecs) would lift this.
+ */
+export const IMPORT_MAX_BYTES = 100 * 1024 * 1024;
+
+/** The file is over IMPORT_MAX_BYTES; nothing was read. */
+export class ImportTooLargeError extends Error {
+  constructor(bytes: number) {
+    super(`This file is ${(bytes / 1024 / 1024).toFixed(0)} MB; imports take files up to ${IMPORT_MAX_BYTES / 1024 / 1024} MB for now.`);
+    this.name = "ImportTooLargeError";
+  }
+}
+
 export interface ImportDeps {
   /** Decodes the file's bytes to PCM, keeping the channels (Web Audio in the browser). */
   decode(bytes: ArrayBuffer): Promise<PcmAudio>;
@@ -50,6 +66,7 @@ export interface ImportResult {
 export async function importAudio(file: File, deps: ImportDeps, signal?: AbortSignal): Promise<ImportResult> {
   // An import superseded before it starts never reads the file: it can be large.
   signal?.throwIfAborted();
+  if (file.size > IMPORT_MAX_BYTES) throw new ImportTooLargeError(file.size);
   const bytes = await file.arrayBuffer();
   signal?.throwIfAborted();
   const sha256 = await deps.digest(bytes);
