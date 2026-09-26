@@ -14,6 +14,7 @@ import { compile } from "@/core/musicspec/serialize";
 import { DrumGrammarModule, EngineFormModule, InstrumentsModule, KeyModeModule, MoodModule, OutputModule, RegionalBundleModule, TechniqueModule, TexturesModule } from "./modules";
 import { BudgetMeters, CoveragePanel, ExportPane, HistoryPanel, LintPanel } from "./panels";
 import { SectionsModule, TransitionsModule } from "./sections";
+import { SongPanel } from "./SongPanel";
 import { ComposerProvider, useComposer } from "./state";
 
 function isEditable(target: EventTarget | null): boolean {
@@ -53,7 +54,8 @@ function Workspace() {
         <MoodModule />
         <OutputModule />
       </div>
-      <aside className="panels" aria-label="Compile, lint and history">
+      <aside className="panels" aria-label="Song, compile, lint and history">
+        <SongPanel />
         <HistoryPanel />
         {result.ok ? <BudgetMeters payload={result.payload} profile={profile} /> : null}
         <LintPanel results={results} />
