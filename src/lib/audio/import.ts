@@ -1,7 +1,7 @@
 /**
  * Audio import to a draft StyleProfile patch (docs/SPEC.md §1.7). Everything runs on the
- * device: the file is hashed, kept in local storage, decoded and analysed here, and only
- * metadata and features ever leave (A6). The steps that touch the platform are injected, so
+ * device: the file is hashed, decoded and analysed here, and kept in local storage only once
+ * that succeeds. Only metadata and features ever leave (A6). The steps that touch the platform are injected, so
  * tests can run the same pipeline and prove no request carries audio.
  */
 import { analyseAudio } from "@/core/musicspec/analysis/features";
@@ -41,9 +41,11 @@ export interface ImportResult {
 export async function importAudio(file: File, deps: ImportDeps): Promise<ImportResult> {
   const bytes = await file.arrayBuffer();
   const sha256 = await deps.digest(bytes);
-  const storedIn = await deps.store(sha256, file);
   const pcm = await deps.decode(bytes);
-  const features = analyseAudio(pcm.samples, pcm.sampleRate);
+  const features = analyseAudio(pcm.samples, pcm.sampleRate, pcm.channelData);
+  // Kept only once it decoded and analysed, so a corrupt or unsupported file leaves nothing
+  // behind in the device's storage.
+  const storedIn = await deps.store(sha256, file);
   const analysedOn = deps.now();
   const patch = draftFromAudio(features, { createdAt: analysedOn, sourceRef: sha256 }, deps.lineageNames ?? []);
   return {

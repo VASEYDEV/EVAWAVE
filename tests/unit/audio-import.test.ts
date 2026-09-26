@@ -1,7 +1,7 @@
 import { createClient } from "@supabase/supabase-js";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
-import { decodeWav, encodeWav } from "@/core/musicspec/analysis/wav";
+import { decodeWav, encodeWav, WavError } from "@/core/musicspec/analysis/wav";
 import { applyReviewedPatch, audioProfileBase, AUDIO_DRAFT_MODEL, reviewPatch } from "@/core/musicspec/intake";
 import { lintStyleProfile } from "@/core/musicspec/lint";
 import { blobInTab, storeInOpfs } from "@/lib/audio/browser";
@@ -118,6 +118,20 @@ describe("audio import (§1.7)", () => {
     expect(carriesAudio(JSON.stringify({ data: Buffer.from(wavBytes.subarray(1000)).toString("base64") }))).toBe(true);
     expect(carriesAudio(Buffer.from(wavBytes.subarray(2000)).toString("hex"))).toBe(true);
     expect(carriesAudio(JSON.stringify({ features: { bpm: 140 } }))).toBe(false);
+  });
+});
+
+describe("import order", () => {
+  it("stores nothing when the file cannot be decoded, so no orphan is left on the device", async () => {
+    const store = new Map<string, Blob>();
+    const deps: ImportDeps = {
+      ...nodeDeps(store),
+      decode: async () => {
+        throw new WavError("not a RIFF/WAVE file");
+      },
+    };
+    await expect(importAudio(new File([new Uint8Array([1, 2, 3])], "broken.wav"), deps)).rejects.toThrow(WavError);
+    expect(store.size).toBe(0);
   });
 });
 
