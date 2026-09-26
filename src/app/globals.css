@@ -363,3 +363,73 @@ meter {
 .grid td.hit {
   color: var(--accent);
 }
+
+.app-header nav ul {
+  list-style: none;
+  display: flex;
+  gap: 1rem;
+  margin: 0.5rem 0 0;
+  padding: 0;
+}
+
+.app-header nav a {
+  display: inline-block;
+  min-height: 44px;
+  line-height: 44px;
+}
+
+.page {
+  display: grid;
+  gap: var(--gap);
+  max-width: 60rem;
+}
+
+.page h2 {
+  margin: 0;
+}
+
+.page-head {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--gap);
+}
+
+.stack {
+  display: grid;
+  gap: var(--gap);
+  max-width: 28rem;
+}
+
+.library {
+  display: grid;
+  gap: var(--gap);
+}
+
+.library-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: var(--gap);
+}
+
+.library-list > li {
+  border-top: 1px solid var(--border);
+  padding-top: 0.75rem;
+  display: grid;
+  gap: 0.5rem;
+}
+
+.library-list h4 {
+  margin: 0;
+}
+
+.swatch {
+  display: inline-block;
+  width: 0.875rem;
+  height: 0.875rem;
+  border-radius: 50%;
+  border: 1px solid var(--border);
+}
