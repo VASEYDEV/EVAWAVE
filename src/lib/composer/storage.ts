@@ -104,6 +104,24 @@ export function hasUnsavedWork(saved: SavedComposer | null): boolean {
   return saved.song ? hash !== saved.song.savedHash : hash !== specHash(defaultMusicSpec());
 }
 
+/** Which copy of which song an action started from: the song, its base variant and its revision. */
+export type AttachmentIdentity = Pick<SongAttachment, "songId" | "baseVariantId" | "revision">;
+
+export function identityOf(song: SongAttachment | undefined): AttachmentIdentity | null {
+  return song ? { songId: song.songId, baseVariantId: song.baseVariantId, revision: song.revision } : null;
+}
+
+/**
+ * True when the working copy is still the one an action started from: attached to the same
+ * song, base variant and revision, or still unattached. A save or freeze that finishes after
+ * another tab opened a different song (or a different variant of this one) must not attach
+ * its result to that copy, or the next save would write the wrong spec over its song.
+ */
+export function stillCurrent(current: SongAttachment | undefined, from: AttachmentIdentity | null): boolean {
+  if (!from) return !current;
+  return !!current && current.songId === from.songId && current.baseVariantId === from.baseVariantId && current.revision === from.revision;
+}
+
 /** The working copy for `spec` opened from a song: a fresh undo history and its attachment. */
 export function openedCopy(spec: MusicSpec, song: SongAttachment): SavedComposer {
   return { history: emptyHistory(), spec, song };

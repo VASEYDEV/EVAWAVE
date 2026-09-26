@@ -68,6 +68,23 @@ Second round (Codex, on 498c5ad):
   Supabase: an opened song's override reaches the stored attachment and the save body.
   Mutations: linting without overrides fails 2 tests; saving `[]` fails 1.
 
+Third round (Codex, on d1eaea8), three races, each reproduced against the scratch fake
+Supabase on d1eaea8 and gone on the fix:
+
+- **Open over edits made mid-load.** The unsaved-work check ran before the song loaded, so
+  edits another tab made during the load were replaced without asking. `OpenInComposer`
+  now checks again just before writing. Unfixed: it navigated away; fixed: it asks.
+- **A song page after the account changes.** The page kept the previous owner's history
+  and its Open buttons (which copy the cached spec without a request). It now follows the
+  session (sign-in changes, and a session check on return to the tab) and shows data only
+  for the account it was loaded for. Unfixed: user B and a signed-out viewer still saw A's
+  song and three Open buttons; fixed: nothing, and a sign-in prompt when signed out.
+- **A late save onto another copy.** A save or freeze that finished after another tab had
+  opened a different variant re-attached its old attachment to that copy. `attach` now
+  applies only if the copy is still attached to the same song, base variant and revision
+  (`stillCurrent`). Unfixed: the v1.0 copy was re-labelled "from v1.1"; fixed: it stays
+  "from v1.0".
+
 ## Evidence
 
 - Core: `tests/unit/variants.test.ts` (16), including the Jinn v1.1 → v1.2 diff with

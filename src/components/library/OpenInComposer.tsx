@@ -29,6 +29,13 @@ export function OpenInComposer({ label, open, onError }: { label: string; open: 
     setBusy(true);
     try {
       const { spec, song } = await open();
+      // The load took a round trip, and another tab may have edited meanwhile: ask again
+      // rather than replace work the first check never saw.
+      if (!confirming && hasUnsavedWork(readComposer())) {
+        setConfirming(true);
+        setBusy(false);
+        return;
+      }
       writeComposer(openedCopy(spec, song));
       router.push("/");
     } catch (error) {

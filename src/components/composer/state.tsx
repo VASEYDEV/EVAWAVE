@@ -14,7 +14,7 @@ import { defaultMusicSpec } from "@/core/musicspec/ir/defaults";
 import type { Catalog, MusicSpec, PatchOp } from "@/core/musicspec/ir/types";
 import { PatchError } from "@/core/musicspec/patch";
 import { catalog } from "@/data/taxonomy";
-import { COMPOSER_KEY, parseComposer, readComposer, writeComposer, type SavedComposer, type SongAttachment } from "@/lib/composer/storage";
+import { COMPOSER_KEY, parseComposer, readComposer, stillCurrent, writeComposer, type AttachmentIdentity, type SavedComposer, type SongAttachment } from "@/lib/composer/storage";
 
 type Action =
   | { type: "edit"; ops: PatchOp[]; label: string; coalesce?: string }
@@ -22,7 +22,7 @@ type Action =
   | { type: "redo"; childId?: number }
   | { type: "jump"; nodeId: number }
   | { type: "load"; saved: SavedComposer | null }
-  | { type: "attach"; song: SongAttachment | undefined };
+  | { type: "attach"; song: SongAttachment | undefined; from: AttachmentIdentity | null };
 
 /**
  * The working copy, and whether the saved one has been read yet. Nothing is written until it
@@ -56,6 +56,8 @@ function copyReducer(state: SavedComposer, action: Exclude<Action, { type: "load
     case "jump":
       return keepSong(state, jumpTo(state.history, state.spec, action.nodeId));
     case "attach":
+      // Only onto the copy the save or freeze started from (see `stillCurrent`).
+      if (!stillCurrent(state.song, action.from)) return state;
       return action.song ? { history: state.history, spec: state.spec, song: action.song } : { history: state.history, spec: state.spec };
   }
 }
@@ -66,8 +68,12 @@ export interface ComposerApi {
   catalog: Catalog;
   /** The library song this working copy belongs to, if any. */
   song: SongAttachment | undefined;
-  /** Attaches the working copy to a song (after a save or freeze), or detaches it. */
-  attach(song: SongAttachment | undefined): void;
+  /**
+   * Attaches the working copy to a song after a save or freeze that started from the copy
+   * `from` identifies. Ignored when the copy has moved on since (another tab opened another
+   * song or variant), so a late result never lands on the wrong copy.
+   */
+  attach(song: SongAttachment | undefined, from: AttachmentIdentity | null): void;
   /** Commits `ops` as one undo step; a `coalesce` key folds consecutive typing into it. */
   edit(ops: PatchOp[], label: string, coalesce?: string): void;
   undo(): void;
@@ -125,7 +131,7 @@ export function ComposerProvider({ children }: { children: ReactNode }) {
       history: state.copy.history,
       catalog,
       song: state.copy.song,
-      attach: (song: SongAttachment | undefined) => dispatch({ type: "attach", song }),
+      attach: (song: SongAttachment | undefined, from: AttachmentIdentity | null) => dispatch({ type: "attach", song, from }),
       edit,
       undo: () => dispatch({ type: "undo" }),
       redo: (childId?: number) => dispatch({ type: "redo", ...(childId === undefined ? {} : { childId }) }),

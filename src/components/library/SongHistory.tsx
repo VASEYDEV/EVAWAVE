@@ -18,16 +18,48 @@ import { TakeLog } from "./TakeLog";
 
 export function SongHistory({ songId }: { songId: string }) {
   const client = useMemo(() => createLibraryClient(), []);
-  const [data, setData] = useState<(StoredSong & { variants: Variant[]; takes: Take[] }) | null>(null);
+  // The song as loaded, and for whom: it is shown only while that account is signed in.
+  const [loaded, setLoaded] = useState<{ viewer: string; song: StoredSong & { variants: Variant[]; takes: Take[] } } | null>(null);
   const [status, setStatus] = useState("");
   // Bumped after a take is logged or deleted; the effect below reloads when it changes.
   const [version, setVersion] = useState(0);
+  // The signed-in account: undefined while checking, null when signed out.
+  const [viewer, setViewer] = useState<string | null | undefined>(undefined);
 
+  // Follow the session: sign-in changes in this tab, and on return to the tab (a sign-out or
+  // an account switch elsewhere changes the cookies without telling this page).
   useEffect(() => {
     let live = true;
+    const check = () =>
+      client.auth.getSession().then(
+        ({ data }) => {
+          if (live) setViewer(data.session?.user.id ?? null);
+        },
+        () => {
+          if (live) setViewer(null);
+        },
+      );
+    void check();
+    const { data } = client.auth.onAuthStateChange((_event, session) => setViewer(session?.user.id ?? null));
+    const onReturn = () => {
+      if (document.visibilityState === "visible") void check();
+    };
+    document.addEventListener("visibilitychange", onReturn);
+    window.addEventListener("focus", onReturn);
+    return () => {
+      live = false;
+      data.subscription.unsubscribe();
+      document.removeEventListener("visibilitychange", onReturn);
+      window.removeEventListener("focus", onReturn);
+    };
+  }, [client]);
+
+  useEffect(() => {
+    if (!viewer) return;
+    let live = true;
     loadSong(client, songId).then(
-      (loaded) => {
-        if (live) setData(loaded);
+      (song) => {
+        if (live) setLoaded({ viewer, song });
       },
       (error: unknown) => {
         if (live) setStatus(error instanceof Error ? error.message : "Could not load the song.");
@@ -36,15 +68,17 @@ export function SongHistory({ songId }: { songId: string }) {
     return () => {
       live = false;
     };
-  }, [client, songId, version]);
+  }, [client, songId, version, viewer]);
 
+  // Another account's (or a signed-out) view never shows what was loaded for someone else.
+  const data = loaded && loaded.viewer === viewer ? loaded.song : null;
   const labels = new Map((data?.variants ?? []).map((v) => [v.id, v.label]));
   const base = data?.song.baseVariantId ? (data.variants.find((v) => v.id === data.song.baseVariantId) ?? null) : null;
 
   return (
     <div className="library">
       <p role="status" aria-live="polite">
-        {data ? status : status || "Loading the song…"}
+        {viewer === null ? "You are signed out. Sign in again to see this song." : data ? status : status || "Loading the song…"}
       </p>
       {data ? (
         <>

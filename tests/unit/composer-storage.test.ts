@@ -3,7 +3,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { commit, emptyHistory } from "@/core/musicspec/history";
 import { defaultMusicSpec } from "@/core/musicspec/ir/defaults";
 import { specHash } from "@/core/musicspec/variants";
-import { COMPOSER_KEY, hasUnsavedWork, openedCopy, parseComposer, writeComposer, type SongAttachment } from "@/lib/composer/storage";
+import { COMPOSER_KEY, hasUnsavedWork, identityOf, openedCopy, parseComposer, stillCurrent, writeComposer, type SongAttachment } from "@/lib/composer/storage";
 
 /** The composer's saved working copy and its song attachment (src/lib/composer/storage.ts). */
 const edited = () =>
@@ -95,3 +95,23 @@ describe("openedCopy", () => {
     expect(opened.song).toEqual(attachment());
   });
 });
+
+describe("stillCurrent", () => {
+  it("lets a save or freeze attach only to the copy it started from", () => {
+    const from = identityOf(attachment({ baseVariantId: "v-1", revision: 3 }));
+    // The same copy, even after local edits or a newer title: attach.
+    expect(stillCurrent(attachment({ baseVariantId: "v-1", revision: 3, title: "Renamed", savedHash: "x" }), from)).toBe(true);
+    // Another tab opened another song, another variant of this one, or a newer save: do not.
+    expect(stillCurrent(attachment({ songId: "song-2", baseVariantId: "v-1", revision: 3 }), from)).toBe(false);
+    expect(stillCurrent(attachment({ baseVariantId: "v-0", revision: 3 }), from)).toBe(false);
+    expect(stillCurrent(attachment({ baseVariantId: "v-1", revision: 4 }), from)).toBe(false);
+    expect(stillCurrent(undefined, from)).toBe(false);
+  });
+
+  it("lets a first save attach only while the copy is still unattached", () => {
+    expect(identityOf(undefined)).toBeNull();
+    expect(stillCurrent(undefined, null)).toBe(true);
+    expect(stillCurrent(attachment(), null)).toBe(false);
+  });
+});
+
