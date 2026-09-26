@@ -1555,7 +1555,8 @@ Delivered:
     is the account whose turn the save holds. Filenames are cut to the library's 255
     characters, counted as code points and keeping the extension.
     Deleting a file record in `/library` removes its local copy first, keeping the record
-    if that fails, and restores the copy if deleting the record then fails. Deletes of the
+    if that fails, and restores the copy if deleting the record then fails, saying so if
+    it can only be put back in this tab. Deletes of the
     same file never overlap: a second in the same tab joins the first, and tabs take turns
     on a Web Lock. Local copies
     are kept per account, under `audio/<owner>/<sha256>`, so two accounts on one browser

@@ -289,9 +289,18 @@ S5 per SPEC §3. The methods are listed in SPEC §3 S5 "Delivered".
     account whose turn the save holds. Otherwise the status says the audio was not kept.
     Tests: the RLS suite checks that the returned owner is the caller, and a unit test
     checks that a mismatched owner stores nothing. Making it store anyway fails that test.
-  - **Listed, not fixed (CLAUDE.md §1.1):** `profileName` (S4's limit, reused here)
-    slices UTF-16 units, so a name with an emoji straddling character 200 could end in a
-    lone surrogate. Counting code points, as `recordFilename` does, is the follow-up.
+  - `profileName` sliced UTF-16 units, so an emoji straddling character 200 could end
+    in a lone surrogate. Listed here, then fixed in the twenty-fourth review.
+- **Twenty-fourth review.** Each fix ships with a test that fails on the old code.
+  - **A restore that only reached the tab.** When a record delete failed and OPFS then
+    refused to take the copy back, `storeInOpfs` fell back to tab memory. The delete
+    reported only the database error, though closing the tab would now lose the audio.
+    If the copy came from OPFS and can only go back to the tab, the rejection now says
+    the audio is held in this tab only, with the database error as its cause. A copy
+    that was only ever in the tab goes back there with the plain error. Tests cover
+    both; dropping the from-OPFS condition fails the second.
+  - **`profileName` counts code points**, as Postgres does, like `recordFilename`. A test
+    with an emoji straddling the limit keeps it whole and the name well formed.
 
 ## Decisions
 
