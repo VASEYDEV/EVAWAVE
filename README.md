@@ -20,8 +20,9 @@
 ## Status
 
 **Pre-alpha. The spec is [`docs/SPEC.md`](docs/SPEC.md) (ADR 0004), and its build plan
-S1–S5 has landed.** The composer and audio import run in the browser today; the library
-needs a Supabase project, which is not configured yet, and nothing is deployed. What exists:
+S1–S6 has landed.** The composer and audio import run in the browser today; the library
+and songs need a Supabase project, which is not configured yet, and nothing is deployed.
+What exists:
 
 - A Next.js 16 app shell that builds, with Supabase Auth session refresh in `src/proxy.ts`
   (the proxy passes requests through until a Supabase project is configured).
@@ -45,12 +46,18 @@ needs a Supabase project, which is not configured yet, and nothing is deployed. 
   - non-destructive undo and redo, where an edit after an undo keeps the old branch
     reachable.
 
-  The spec persists in this browser, and the library can save it as a style profile.
+  The spec persists in this browser, and the library can save it as a style profile or
+  keep it as a song.
 - The library, from S4, at `/library`: style profiles saved from the composer, file
   metadata, tags, and genre and tag links. Sign-in is by Supabase Auth email link. Row
   level security keeps each user to their own rows, and a test proves it against the real
   migrations. It needs a Supabase project: see
   [`docs/runbooks/supabase.md`](docs/runbooks/supabase.md).
+- Songs and variants, from S6. The composer's Song panel keeps the working copy as a song
+  and freezes it as immutable variants (v1.0, v1.1, …), each with its field diff from its
+  parent and a coverage report per engine. `/songs/<id>` shows the history, and any
+  variant opens in the composer to fork from. A save from a stale tab is refused, never
+  applied over newer work. Needs Supabase, like the library.
 - Audio import, from S5, at `/import`. A reference track is analysed on this device, in a
   background worker so the page stays responsive:
   tempo, meter, key, BS.1770 loudness, energy and spectrum. EVAWAVE proposes a style
@@ -59,7 +66,8 @@ needs a Supabase project, which is not configured yet, and nothing is deployed. 
   carries it.
 - Tap tempo (the mean of the last four taps, with outliers dropped) and a Web Audio
   metronome with half-time accents and subdivisions, in the composer's first module.
-- A hue and a provisional monoline icon for every module (`assets/icons/`).
+- A provisional monoline icon for every module, drawn in the brand's Turquoise
+  (`assets/icons/`).
 - An instrument bank of 336 records: the 24 curated Jinn records plus 312 generated
   deterministically from the seed (General MIDI programs and percussion, drum machines,
   world sets).

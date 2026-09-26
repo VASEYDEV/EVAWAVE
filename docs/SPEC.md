@@ -24,8 +24,8 @@ Contents: §1 product scope and confirmed decisions · §2 MusicSpec IR v1 · §
 ### 1.1 Positioning
 
 - **EVAWAVE** stands for Enabling Variants & Automation; "wave" for sound, "eva" for
-  forever. The canonical string is `EVAWAVE`, one word. The lockup (`EVAWAVE` vs
-  `EVA/WAVE`) is open for the brand pass.
+  forever. The canonical string is `EVAWAVE`, one word. The lockup is `EVAWAVE` in Bebas
+  Neue with a `VASEY/AI` kicker (ADR 0005).
 - It is a **VASEY/AI** product. Its output serves **VASEY.AUDIO**. The two brands never
   appear conflated in copy, naming or architecture.
 - **EVAWAVE does not generate audio.** It composes, hones and versions musical intent. It
@@ -49,10 +49,10 @@ Carried from scope v0.2 §1. **Confirmed** means Sean confirmed it. **Adopted** 
 | A4 | v1 intake: the à la carte composer plus audio import and analysis into a StyleProfile ("DSP listens, Claude writes"). Raw audio stays on the device. Text intake and the voice-memo review UI are not scheduled in S1–S5 | audio import adopted (S5) |
 | A5 | Target switching is a projection, not a mutation. It is lossless at the IR by construction, and every per-target payload ships with a coverage report. Manual payload edits are target-scoped overrides | adopted (S2) |
 | A6 | Reference audio never leaves the device in v1. Extracted features and the resulting StyleProfile persist | adopted (S4, S5) |
-| A7 | Library entities per §1.6. Supabase with RLS for entities, OPFS/IndexedDB for local audio | adopted in part (S4 scope below) |
+| A7 | Library entities per §1.6. Supabase with RLS for entities, OPFS/IndexedDB for local audio | adopted in part (S4, S6) |
 | A8 | Taxonomy is schema first, from a curated launch seed. It grows through Claude-drafted, Sean-approved batches. No user-generated taxonomy in v1 | adopted |
 | A9 | Metronome and tap tempo per §1.8 | **accepted** by Sean; adopted (S5) |
-| A10 | One hue and one monoline icon per composer module per §1.9 | **accepted** by Sean; adopted (S5) |
+| A10 | One monoline icon per composer module per §1.9. The per-module hues it also named were retired for the CORE palette by ADR 0005 | **accepted** by Sean; adopted (S5); hues retired 2026-09-26 |
 | A11 | Every v1 target is a paste or file surface, never API dispatch | adopted |
 | A12 | Udio is halted and greyed out by decision. No engine-wide litigation gate and no risk flags in v1. Re-adding Udio is an explicit decision by Sean, not a threshold | **confirmed** 2026-09-16 |
 | A13 | Instrument bank seed floor: GM Level 1, the GM percussion map and GM2 kits as the baseline, then orchestral, band, contemporary, synth archetypes, kits, drum machines, genre kits and world sets, including everything used in Jinn v1.0–v1.2 | **confirmed** |
@@ -121,7 +121,8 @@ engine). Udio: none.
 | File | Metadata for a user file: a local reference asset (audio or image). The blob stays on the device (A6) | Supabase metadata (S4) + OPFS blob (S5) |
 | Genre | Curated definition, criteria, profiling instruction, drift risks, engine notes | Supabase, curated, read-only for users (S4) |
 | Tag | Free label with optional colour. Genre tags link genres to profiles and files | Supabase (S4) |
-| Song, Variant, Take | Working spec, immutable versions with diffs and overrides, render log | Types in §2; persistence not scheduled in S1–S5 |
+| Song, Variant | The working spec; immutable versions with field diffs, overrides and coverage | Supabase (S6) |
+| Take | Render log against a Variant | Types in §2; persistence planned in S7 |
 | Instrument, Technique, Rhythm, Mode, RegionalBundle, DrumPattern, SynthRole | Taxonomy banks | Curated JSON in `src/data/taxonomy/` |
 
 ### 1.7 Audio import to StyleProfile
@@ -188,9 +189,9 @@ Audio generation; API dispatch to engines; lyric writing; uploading reference au
 anywhere; a Udio serializer; user-generated taxonomy; voice-memo ASR review and
 image-to-mood intake (v1.1).
 
-Not scheduled in S1–S5, still in scope for later: text intake; Song, Variant and Take
-persistence with the take log; the Flow Producer script for Variant diffs; the
-end-to-end Jinn rebuild through the UI with an A/B Suno render.
+Not scheduled yet, still in scope: text intake; the Flow Producer script for Variant
+diffs; the end-to-end Jinn rebuild through the UI with an A/B Suno render. Song and
+Variant persistence landed in S6; the take log is planned as S7.
 
 ### 1.11 Open items
 
@@ -1132,6 +1133,20 @@ Every container has a default, so an empty spec is valid.
   primitive as `expressed`, `approximated` or `dropped` (the §2.6 table). A dimension the
   profile marks `none` drops every item in it. Blueprint-only content (`notes`,
   `harmony`) and `references` are never items. The score is expressed / total.
+- **Songs and variants** (`variants.ts`, S6). A song is the working copy; a variant is an
+  immutable snapshot of it with its field diff from its parent and a coverage report per
+  live engine. `diffSpecs(parent, child)` compares objects by key and arrays by index:
+  one entry per changed leaf, and one entry at the root of any subtree that was added,
+  removed or changed type (an added path has no `before`, a removed path no `after`).
+  Pointers run in natural order (`/D2` before `/D10`, element 2 before element 10), and
+  applying a diff to its parent gives the child exactly. A freeze saves the working copy
+  and snapshots it in one transaction, and only at the revision the copy was read at, so
+  a stale tab cannot overwrite newer work. The new variant's parent is the variant the
+  copy descends from (`Song.baseVariantId`): opening an earlier variant and freezing
+  forks from it. Labels run `v1.0`, `v1.1`, … in freeze order per song. A freeze is
+  refused while LN-1 blocks, since a frozen variant cannot be edited. A song's title is
+  its `D10.title` ("Untitled" when empty); its active target is read from `D10`, and
+  `styleProfileIds` and `tags` are not stored yet.
 
 ### 2.5 Bar math
 
@@ -1638,3 +1653,54 @@ Delivered:
   - E2e on the phone viewport covers the WAV import, tap tempo with a controlled clock,
     and hue and icon on every module. There is also a no-sideways-scroll check on every
     page.
+
+### S6: Song and Variant persistence
+
+- Songs (the working copy) and immutable Variants in Supabase with RLS per §1.6, with the
+  §2.4 semantics. A freeze saves and snapshots in one transaction at the expected revision.
+- The composer's Song panel: save as a new song, save, freeze. `/library` lists songs;
+  `/songs/[id]` shows each variant's parent, coverage and field diff, and opens any variant
+  in the composer.
+
+Acceptance (the archived Build Brief's library session): user B cannot read or write user
+A's songs or variants, and forking Jinn v1.1 into v1.2 shows the BPM 142 → 140 diff.
+
+Delivered:
+
+- **Core, `src/core/musicspec/variants.ts`.** `diffSpecs`, `diffToOps` (replays a diff
+  through `applyOps`), `specHash`, `nextVariantLabel`, `variantCoverage` and
+  `freezeBlockers`. IR: `FieldDiff.before` and `after` are optional; `Song` gains
+  `baseVariantId` (§2.9).
+- **`supabase/migrations/20260926000400_songs.sql`.** `songs` and `variants`.
+  - Composite foreign keys tie a variant to a song of the same owner, and a parent or
+    base variant to the same song.
+  - RLS is owner-only. Grants are per column, so owner, brand, revision, sequence and
+    timestamps are never writable, and variants have no UPDATE or DELETE at all. A song's
+    delete removes its variants.
+  - Triggers bump a song's revision on every update and number its variants.
+  - `public.freeze_variant` (security invoker, `authenticated` only) locks the song at the
+    expected revision, inserts the variant and saves the working copy as its base.
+- **App.** `src/lib/library/songs.ts` (saves filter on the revision; zero rows is an
+  error). The working copy in the browser carries its song attachment in the same
+  `setItem` (`src/lib/composer/storage.ts`), tabs follow each other's writes, and nothing
+  is written before the saved copy is read. The composer's Song panel, the `/library`
+  Songs section (delete asks twice) and `/songs/[id]`. Opening over unsaved work asks
+  first.
+- **Tests.** `tests/unit/variants.test.ts` (the Jinn 142 → 140 acceptance, exact replay
+  over seeded random edits), `tests/integration/songs-rls.test.ts` (B against A,
+  immutability, stale saves and freezes, labels to v1.10, parents and bases from other
+  songs, the Jinn fork stored with its parent), `songs-repository.test.ts`,
+  `composer-storage.test.ts`, and `tests/e2e/songs.spec.ts` for the unconfigured states.
+- Not stored yet: a song's style-profile and tag links (read as empty lists). Overrides
+  are stored, but nothing edits them until §1.4 item 3 has a UI.
+
+### S7: The take log
+
+- `takes` per `Take` in §2.2: owner-only under RLS, each on a variant of the same owner,
+  removed with its song; no UPDATE (a mistaken take is deleted and logged again).
+- On `/songs/[id]`, a take form per variant (engine, engine version, a render reference
+  that is never audio, verdict, drift kinds, words blamed, notes) and the variant's takes.
+
+Acceptance: user B cannot read or write user A's takes; a take can only be logged on the
+caller's own variant; a render reference cannot carry a `data:` URL.
+

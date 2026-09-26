@@ -9,6 +9,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- S6, songs and variants (SPEC §3, ADR 0006):
+  - `src/core/musicspec/variants.ts`: the field diff between specs (objects by key, arrays by index, an added, removed or retyped subtree at its root, natural pointer order), its exact replay, a key-order-free spec hash, variant labels, coverage per live engine, and the LN-1 check that refuses a freeze. IR: `FieldDiff.before` and `after` are optional; `Song` gains `baseVariantId`.
+  - Migration `20260926000400_songs.sql`: `songs` and immutable `variants` under owner-only RLS, per-column grants, composite keys that keep a variant in its owner's song and a parent in the same song, a revision on every song, and `public.freeze_variant`, which saves and snapshots in one transaction only at the revision the copy was read at.
+  - The composer's Song panel (save as a new song, save, freeze as the next variant), a Songs section in `/library`, and `/songs/[id]` with each variant's parent, coverage and field diff. Any variant opens in the composer, and the next freeze forks from it. Opening over unsaved work, and deleting a song, ask twice.
+  - Tests: the Jinn v1.1 → v1.2 fork shows BPM 142 → 140 (unit and RLS), songs RLS (B against A, immutability, stale revisions, labels past v1.9), the songs repository, composer storage, and the unconfigured song screens in e2e.
+
 - S5, audio import, tempo tools and iconography (SPEC §3):
   - On-device analysis (`src/core/musicspec/analysis/`) in bounded memory: tempo (a sub-frame fit only at an autocorrelation peak, so a beatless swell cannot stall it; no tempo without moving onsets and a nearby autocorrelation peak, and confidence capped by that peak's strength), meter, key, BS.1770 loudness and range (channels summed with their weights), energy, sections and spectral descriptors, with a WAV decoder and encoder.
   - `intake.ts`: the features → `IRPatch` draft, per-field review, and apply-only-accepted with a PT-2 guard.
@@ -96,6 +102,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- The composer's working copy in the browser now carries its song, written in the same `setItem`, and open composer tabs follow each other's changes. A tab no longer writes a blank copy before it has read the saved one.
 - The front-end is restyled to the Vasey Multimedia Brand System v2.0 (ADR 0005): CORE palette tokens (`src/app/styles/tokens.css`), Deep Turquoise field with Charcoal surfaces and Silver text, the three self-hosted typefaces (Bebas Neue, Reddit Sans, JetBrains Mono; OFL, `next/font/local`), the guide's space, radii and motion, a `VASEY/AI` kicker whose slash is the page's one BEAM, and the 25° beam divider. The per-module hue table is retired: every module icon is Turquoise. Semantics read from text and weight, not colour. Tests pin the palette against the guide's contrast matrix, the fonts and their licences, and the single BEAM per page.
 - `rolldown` 1.2.11 becomes a direct devDependency (it was already in the tree through Vite) to bundle the audio analysis worker, which Turbopack in Next 16.3.6 copies as a raw asset instead of bundling.
 - The verification gate adds an `e2e` step after `build`. CI installs Playwright's Chromium first.
