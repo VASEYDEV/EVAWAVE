@@ -41,10 +41,17 @@ function mean(values: readonly number[]): number {
   return values.reduce((a, b) => a + b, 0) / values.length;
 }
 
+/** The latest tap, kept or discarded: the 2 s reset runs from it. */
+export function lastTapAt(state: TapState): number | undefined {
+  const kept = state.taps[state.taps.length - 1];
+  return state.discarded && state.rejectedAt !== undefined && kept !== undefined ? Math.max(kept, state.rejectedAt) : kept;
+}
+
 /** Records a tap at `timeMs` and returns the new state. */
 export function tap(state: TapState, timeMs: number): TapState {
   const last = state.taps[state.taps.length - 1];
-  if (last === undefined || timeMs - last > TAP_RESET_MS || timeMs <= last) return { taps: [timeMs], discarded: false };
+  const latest = lastTapAt(state);
+  if (last === undefined || latest === undefined || timeMs - latest > TAP_RESET_MS || timeMs <= last) return { taps: [timeMs], discarded: false };
   const current = intervals(state.taps);
   const interval = timeMs - last;
   if (current.length > 0) {
@@ -83,8 +90,8 @@ export function reading(state: TapState): TapReading {
 
 /** True when the sequence has timed out at `nowMs` (the display should clear). */
 export function tapsExpired(state: TapState, nowMs: number): boolean {
-  const last = state.taps[state.taps.length - 1];
-  return last !== undefined && nowMs - last > TAP_RESET_MS;
+  const latest = lastTapAt(state);
+  return latest !== undefined && nowMs - latest > TAP_RESET_MS;
 }
 
 // ─── Metronome scheduling ─────────────────────────────────────────────────────────────

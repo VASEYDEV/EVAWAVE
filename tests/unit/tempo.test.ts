@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { emptyTaps, reading, scheduleClicks, startCursor, tap, tapsExpired, TAP_RESET_MS, type TapState } from "@/core/musicspec/tempo";
+import { emptyTaps, lastTapAt, reading, scheduleClicks, startCursor, tap, tapsExpired, TAP_RESET_MS, type TapState } from "@/core/musicspec/tempo";
 
 const tapAll = (times: number[], start: TapState = emptyTaps()) => times.reduce(tap, start);
 
@@ -60,6 +60,17 @@ describe("tap tempo (§1.8)", () => {
   it("accepts a tap just inside the 25% band", () => {
     const state = tap(tapAll([0, 400]), 400 + 499);
     expect(state.discarded).toBe(false);
+  });
+
+  it("times the 2 s reset from the latest tap, even a discarded one", () => {
+    // A discarded tap 1.9 s after the last kept one: the person is still tapping.
+    const state = tap(tapAll([0, 500, 1000, 1500]), 3400);
+    expect(state.discarded).toBe(true);
+    expect(lastTapAt(state)).toBe(3400);
+    expect(tapsExpired(state, 3600)).toBe(false);
+    expect(tapsExpired(state, 3400 + TAP_RESET_MS + 1)).toBe(true);
+    // The next tap is a second outlier, not a timeout: it starts a new sequence either way.
+    expect(tap(state, 3900)).toEqual({ taps: [3900], discarded: false });
   });
 
   it("resets after a 2 s gap", () => {

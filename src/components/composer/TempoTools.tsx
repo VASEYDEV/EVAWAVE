@@ -7,7 +7,7 @@
 import { useEffect, useId, useRef, useState } from "react";
 
 import { beatsPerBar } from "@/core/musicspec/barmath";
-import { emptyTaps, reading, tap, TAP_RESET_MS, type MetronomeSettings } from "@/core/musicspec/tempo";
+import { emptyTaps, lastTapAt, reading, tap, TAP_RESET_MS, type MetronomeSettings } from "@/core/musicspec/tempo";
 import { Metronome } from "@/lib/audio/metronome";
 
 import { op, useComposer } from "./state";
@@ -31,9 +31,9 @@ export function TempoTools() {
   const bpm = reading(taps).bpm;
   const settings: MetronomeSettings = { bpm: spec.D6.tempo.bpm, beatsPerBar: beatsPerBar(spec.D6.meterLock.signature), halfTimeAccent: halfTime, subdivision };
 
-  // Clear the reading once the sequence times out (§1.8: 2 s without a tap resets).
+  // Clear the reading once the sequence times out (§1.8: 2 s without a tap, kept or discarded, resets).
   useEffect(() => {
-    const last = taps.taps[taps.taps.length - 1];
+    const last = lastTapAt(taps);
     if (last === undefined) return;
     const timer = setTimeout(() => setTaps(emptyTaps()), Math.max(0, last + TAP_RESET_MS - performance.now()) + 1);
     return () => clearTimeout(timer);
