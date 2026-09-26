@@ -5,9 +5,9 @@ import { analyseAudio } from "@/core/musicspec/analysis/features";
 import { decodeWav, encodeWav, WavError, type PcmAudio } from "@/core/musicspec/analysis/wav";
 import { applyReviewedPatch, audioProfileBase, AUDIO_DRAFT_MODEL, reviewPatch } from "@/core/musicspec/intake";
 import { lintStyleProfile } from "@/core/musicspec/lint";
-import { blobInTab, deleteWithLocalAudio, inTurnForLocalAudio, keepAudioFor, reconcileLocalAudio, removeLocalAudio, storeInOpfs } from "@/lib/audio/browser";
+import { blobInTab, deleteWithLocalAudio, inTurnForLocalAudio, keepAudioFor, removeLocalAudio, storeInOpfs } from "@/lib/audio/browser";
 import { importAudio, sha256Hex, type ImportDeps } from "@/lib/audio/import";
-import { deleteFile, LibraryError, saveImport, saveImportAndKeepAudio, type ImportRecord } from "@/lib/library/repository";
+import { deleteFile, hasFileRecord, LibraryError, saveImport, saveImportAndKeepAudio, type ImportRecord } from "@/lib/library/repository";
 import type { Database } from "@/lib/library/schema";
 
 import { clickTrack, mix, triad } from "../support/signals";
@@ -522,6 +522,9 @@ describe("local audio on the device", () => {
 
   it("removes local copies whose record is gone, checking each against the library first", async () => {
     const files = fakeOpfs({ locks: true });
+    // A fresh module, so no fallback copy left by another test joins the candidates.
+    vi.resetModules();
+    const { reconcileLocalAudio, storeInOpfs } = await import("@/lib/audio/browser");
     for (const key of [a("kept-sha"), a("orphan-sha"), a("late-sha"), b("other-sha")]) await storeInOpfs(key, new Blob([wav]));
     // "late-sha" is missing from the loaded list (a truncated list, or a save since), but the library has it.
     const hasRecord = vi.fn(async (sha256: string) => sha256 === "late-sha");
@@ -530,6 +533,32 @@ describe("local audio on the device", () => {
     expect(hasRecord.mock.calls.map(([sha256]) => sha256).sort()).toEqual(["late-sha", "orphan-sha"]);
     // An account with nothing stored here has nothing to reconcile.
     expect(await reconcileLocalAudio("00000000-0000-4000-8000-00000000000c", new Set(), hasRecord)).toEqual([]);
+  });
+
+  it("reconciles this tab's fallback copies too, where OPFS is missing", async () => {
+    // Node has no navigator.storage, like a browser without OPFS. A fresh module, so no
+    // fallback copy left by another test joins the candidates.
+    vi.resetModules();
+    const { blobInTab, reconcileLocalAudio, storeInOpfs } = await import("@/lib/audio/browser");
+    expect(await storeInOpfs(a("mem-kept-sha"), new Blob([wav]))).toBe("memory");
+    expect(await storeInOpfs(a("mem-orphan-sha"), new Blob([wav]))).toBe("memory");
+    expect(await storeInOpfs(b("mem-other-sha"), new Blob([wav]))).toBe("memory");
+    expect(await reconcileLocalAudio(OWNER_A, new Set(["mem-kept-sha"]), async () => false)).toEqual(["mem-orphan-sha"]);
+    expect(blobInTab(a("mem-orphan-sha"))).toBeUndefined();
+    expect(blobInTab(a("mem-kept-sha"))).toBeDefined();
+    expect(blobInTab(b("mem-other-sha"))).toBeDefined();
+  });
+
+  it("counts a record as gone only when the check ran as the account whose copy it is", async () => {
+    const answering = (row: { present: boolean; owner: string }) =>
+      createClient<Database>("https://project.supabase.test", "anon-key-for-tests", {
+        global: { fetch: (async () => new Response(JSON.stringify(row), { status: 200, headers: { "content-type": "application/json" } })) as typeof fetch },
+        auth: { persistSession: false },
+      });
+    expect(await hasFileRecord(answering({ present: false, owner: OWNER_A }), OWNER_A, "x")).toBe(false);
+    expect(await hasFileRecord(answering({ present: true, owner: OWNER_A }), OWNER_A, "x")).toBe(true);
+    // Another tab switched accounts mid-check: B's "no record" says nothing about A's.
+    expect(await hasFileRecord(answering({ present: false, owner: OWNER_B }), OWNER_A, "x")).toBe(true);
   });
 
   it("drops the in-tab copy once OPFS takes the file", async () => {

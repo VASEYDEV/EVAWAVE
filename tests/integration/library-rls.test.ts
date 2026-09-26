@@ -258,6 +258,22 @@ describe("library access for other roles and tables", () => {
     });
   });
 
+  describe("file_record (the /library reconciliation check)", () => {
+    const call = "select * from public.file_record($1)";
+
+    it("answers for the caller and says who the caller is", async () => {
+      await as(A, () => rows("insert into public.files (kind, filename, mime, bytes, sha256) values ('audio', 'r.wav', 'audio/wav', 1, $1)", [SHA("6")]));
+      expect(await as(A, () => rows(call, [SHA("6")]))).toEqual([{ present: true, owner: A }]);
+      // Another account cannot see A's record, and the answer says it came from B.
+      expect(await as(B, () => rows(call, [SHA("6")]))).toEqual([{ present: false, owner: B }]);
+      expect(await as(A, () => rows(call, [SHA("7")]))).toEqual([{ present: false, owner: A }]);
+    });
+
+    it("is not callable signed out", async () => {
+      await expect(as(null, () => rows(call, [SHA("6")]))).rejects.toThrow(/permission denied/);
+    });
+  });
+
   it("stamps updated_at when an owner edits a profile", async () => {
     const [before] = await truth("style_profiles", "id = $1", [ids.profile]);
     await as(A, () => rows("update public.style_profiles set name = 'A profile, renamed' where id = $1", [ids.profile]));

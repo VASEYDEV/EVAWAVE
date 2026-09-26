@@ -75,7 +75,7 @@ export function Library() {
         const known = new Set(loaded.files.map((f) => f.asset.sha256));
         void client.auth
           .getSession()
-          .then(({ data: { session } }) => (session ? reconcileLocalAudio(session.user.id, known, (sha256) => hasFileRecord(client, sha256)) : undefined))
+          .then(({ data: { session } }) => (session ? reconcileLocalAudio(session.user.id, known, (sha256) => hasFileRecord(client, session.user.id, sha256)) : undefined))
           .catch(() => undefined);
       },
       (error: unknown) => {

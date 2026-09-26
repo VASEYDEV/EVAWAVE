@@ -247,6 +247,25 @@ async function deleteOnce(key: LocalAudioKey, deleteRecord: () => Promise<void>)
  * a record. Resolves to the hashes removed.
  */
 export async function reconcileLocalAudio(ownerId: string, known: ReadonlySet<string>, hasRecord: (sha256: string) => Promise<boolean>): Promise<string[]> {
+  // This tab's fallback copies count too: a delete on another device cannot reach them.
+  const prefix = `${ownerId}/`;
+  const names = new Set([...tabMemory.keys()].filter((id) => id.startsWith(prefix)).map((id) => id.slice(prefix.length)));
+  for (const name of await opfsNames(ownerId)) names.add(name);
+  const removed: string[] = [];
+  for (const sha256 of [...names].filter((name) => !known.has(name))) {
+    const key = { ownerId, sha256 };
+    const gone = await inTurnForLocalAudio(key, async () => {
+      if (await hasRecord(sha256)) return false;
+      await removeLocalAudio(key);
+      return true;
+    });
+    if (gone) removed.push(sha256);
+  }
+  return removed;
+}
+
+/** The names of this account's copies in OPFS; none where OPFS or the directory is missing. */
+async function opfsNames(ownerId: string): Promise<string[]> {
   if (typeof navigator === "undefined" || typeof navigator.storage?.getDirectory !== "function") return [];
   let dir: FileSystemDirectoryHandle;
   try {
@@ -258,17 +277,7 @@ export async function reconcileLocalAudio(ownerId: string, known: ReadonlySet<st
   // Async iteration of a directory is in lib.dom.asynciterable, which this project does not load.
   const names: string[] = [];
   for await (const name of (dir as unknown as { keys(): AsyncIterable<string> }).keys()) names.push(name);
-  const removed: string[] = [];
-  for (const sha256 of names.filter((name) => !known.has(name))) {
-    const key = { ownerId, sha256 };
-    const gone = await inTurnForLocalAudio(key, async () => {
-      if (await hasRecord(sha256)) return false;
-      await removeLocalAudio(key);
-      return true;
-    });
-    if (gone) removed.push(sha256);
-  }
-  return removed;
+  return names;
 }
 
 /** The blob the memory fallback holds for this account's file, if this tab kept one. */

@@ -99,9 +99,15 @@ export async function deleteTag(client: LibraryClient, id: string): Promise<void
   check(await client.from("tags").delete().eq("id", id).select("id"), "delete tag");
 }
 
-/** True when the signed-in account has a file record for `sha256` (RLS scopes the query). */
-export async function hasFileRecord(client: LibraryClient, sha256: string): Promise<boolean> {
-  return check(await client.from("files").select("id").eq("sha256", sha256).limit(1), "check file record").length > 0;
+/**
+ * True unless `ownerId` definitely has no file record for `sha256`. The check runs through
+ * `public.file_record`, which answers under RLS for whoever the call runs as and says who that
+ * was: when another tab has switched accounts, it is not `ownerId`, the answer says nothing
+ * about `ownerId`'s records, and this returns true so the caller keeps the copy.
+ */
+export async function hasFileRecord(client: LibraryClient, ownerId: string, sha256: string): Promise<boolean> {
+  const { present, owner } = check(await client.rpc("file_record", { sha256 }).single(), "check file record");
+  return present || owner !== ownerId;
 }
 
 /**

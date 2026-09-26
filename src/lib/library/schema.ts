@@ -181,6 +181,7 @@ export type Database = {
     Views: { [_ in never]: never };
     Functions: {
       save_import: { Args: SaveImportArgs; Returns: { file_id: string; profile_id: string; owner: string }[] };
+      file_record: { Args: { sha256: string }; Returns: { present: boolean; owner: string }[] };
     };
     Enums: { [_ in never]: never };
     CompositeTypes: { [_ in never]: never };
