@@ -100,10 +100,21 @@ export interface Click {
 }
 
 export interface MetronomeCursor {
+  /** Audio time of the next click. */
   nextTime: number;
+  /** Audio time of the beat the next click belongs to; subdivisions count from it. */
+  beatTime: number;
   beat: number;
   step: number;
 }
+
+/** A cursor whose first click, a downbeat, falls at `time`. */
+export function startCursor(time: number): MetronomeCursor {
+  return { nextTime: time, beatTime: time, beat: 0, step: 0 };
+}
+
+/** Rounding slack when mapping a time back onto the step grid. */
+const GRID_EPSILON = 1e-9;
 
 /**
  * The clicks due before `until` (audio time), starting at the cursor, and the cursor after
@@ -111,25 +122,35 @@ export interface MetronomeCursor {
  */
 export function scheduleClicks(cursor: MetronomeCursor, until: number, settings: MetronomeSettings): { clicks: Click[]; cursor: MetronomeCursor } {
   if (!(settings.bpm > 0)) throw new RangeError(`bpm must be positive, got ${settings.bpm}`);
-  const stepSec = 60 / settings.bpm / settings.subdivision;
+  const beatSec = 60 / settings.bpm;
+  const stepSec = beatSec / settings.subdivision;
   const clicks: Click[] = [];
-  let { nextTime, beat, step } = cursor;
-  // Settings can change between ticks while the metronome runs. A cursor left past the new
-  // subdivision or meter moves to the next beat, or the step counter would never wrap.
-  if (step >= settings.subdivision) {
-    step = 0;
+  let { beatTime, beat } = cursor;
+  // Settings can change between ticks while the metronome runs. Re-derive the next click from
+  // its beat: the first step of the current grid at or after the old next click, or the next
+  // beat's downbeat past the last step, so a new subdivision keeps the beat grid in phase.
+  while (beatTime + beatSec <= cursor.nextTime + GRID_EPSILON) {
+    beatTime += beatSec;
     beat += 1;
   }
+  let step = Math.max(0, Math.ceil((cursor.nextTime - beatTime) / stepSec - GRID_EPSILON));
+  if (step >= settings.subdivision) {
+    beatTime += beatSec;
+    beat += 1;
+    step = 0;
+  }
   beat %= settings.beatsPerBar;
+  let nextTime = beatTime + step * stepSec;
   while (nextTime < until) {
     const accentBeat = beat === 0 || (settings.halfTimeAccent && beat === 2 && settings.beatsPerBar === 4);
     clicks.push({ time: nextTime, beat, step, accent: step !== 0 ? "sub" : accentBeat ? "bar" : "beat" });
-    nextTime += stepSec;
     step += 1;
     if (step === settings.subdivision) {
       step = 0;
       beat = (beat + 1) % settings.beatsPerBar;
+      beatTime += beatSec;
     }
+    nextTime = beatTime + step * stepSec;
   }
-  return { clicks, cursor: { nextTime, beat, step } };
+  return { clicks, cursor: { nextTime, beatTime, beat, step } };
 }

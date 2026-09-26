@@ -3,7 +3,7 @@
  * pure `scheduleClicks` for the clicks due in the next 100 ms and schedules them on the
  * audio clock, so timing stays sample-accurate even when the main thread is busy.
  */
-import { METRONOME_LOOKAHEAD_SEC, METRONOME_TICK_MS, scheduleClicks, type Click, type MetronomeCursor, type MetronomeSettings } from "@/core/musicspec/tempo";
+import { METRONOME_LOOKAHEAD_SEC, METRONOME_TICK_MS, scheduleClicks, startCursor, type Click, type MetronomeCursor, type MetronomeSettings } from "@/core/musicspec/tempo";
 
 const PITCH: Record<Click["accent"], number> = { bar: 1600, beat: 1000, sub: 700 };
 const LEVEL: Record<Click["accent"], number> = { bar: 1, beat: 0.6, sub: 0.3 };
@@ -12,7 +12,7 @@ export class Metronome {
   private context: AudioContext | null = null;
   private timer: ReturnType<typeof setInterval> | null = null;
   private starting: Promise<void> | null = null;
-  private cursor: MetronomeCursor = { nextTime: 0, beat: 0, step: 0 };
+  private cursor: MetronomeCursor = startCursor(0);
 
   constructor(
     private settings: MetronomeSettings,
@@ -53,7 +53,7 @@ export class Metronome {
     }
     // Stopped while resuming: stop() already closed this context.
     if (this.context !== context) return;
-    this.cursor = { nextTime: context.currentTime + 0.05, beat: 0, step: 0 };
+    this.cursor = startCursor(context.currentTime + 0.05);
     this.timer = setInterval(() => this.tick(), METRONOME_TICK_MS);
     this.tick();
   }

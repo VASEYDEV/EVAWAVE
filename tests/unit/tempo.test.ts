@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { emptyTaps, reading, scheduleClicks, tap, tapsExpired, TAP_RESET_MS, type TapState } from "@/core/musicspec/tempo";
+import { emptyTaps, reading, scheduleClicks, startCursor, tap, tapsExpired, TAP_RESET_MS, type TapState } from "@/core/musicspec/tempo";
 
 const tapAll = (times: number[], start: TapState = emptyTaps()) => times.reduce(tap, start);
 
@@ -70,7 +70,7 @@ describe("metronome scheduling", () => {
   const settings = { bpm: 120, beatsPerBar: 4, halfTimeAccent: false, subdivision: 1 as const };
 
   it("schedules the clicks due inside the lookahead window, accenting beat 1", () => {
-    const { clicks, cursor } = scheduleClicks({ nextTime: 0, beat: 0, step: 0 }, 2.1, settings);
+    const { clicks, cursor } = scheduleClicks(startCursor(0), 2.1, settings);
     expect(clicks.map((c) => [c.time, c.beat, c.accent])).toEqual([
       [0, 0, "bar"],
       [0.5, 1, "beat"],
@@ -78,16 +78,16 @@ describe("metronome scheduling", () => {
       [1.5, 3, "beat"],
       [2, 0, "bar"],
     ]);
-    expect(cursor).toEqual({ nextTime: 2.5, beat: 1, step: 0 });
+    expect(cursor).toEqual({ nextTime: 2.5, beatTime: 2.5, beat: 1, step: 0 });
   });
 
   it("accents 1 and 3 in half-time mode", () => {
-    const { clicks } = scheduleClicks({ nextTime: 0, beat: 0, step: 0 }, 2, { ...settings, halfTimeAccent: true });
+    const { clicks } = scheduleClicks(startCursor(0), 2, { ...settings, halfTimeAccent: true });
     expect(clicks.map((c) => c.accent)).toEqual(["bar", "beat", "bar", "beat"]);
   });
 
   it("adds subdivision clicks between beats", () => {
-    const { clicks } = scheduleClicks({ nextTime: 0, beat: 0, step: 0 }, 0.5, { ...settings, subdivision: 4 });
+    const { clicks } = scheduleClicks(startCursor(0), 0.5, { ...settings, subdivision: 4 });
     expect(clicks.map((c) => [c.time, c.step, c.accent])).toEqual([
       [0, 0, "bar"],
       [0.125, 1, "sub"],
@@ -97,26 +97,38 @@ describe("metronome scheduling", () => {
   });
 
   it("continues seamlessly across ticks", () => {
-    const a = scheduleClicks({ nextTime: 0, beat: 0, step: 0 }, 1, settings);
+    const a = scheduleClicks(startCursor(0), 1, settings);
     const b = scheduleClicks(a.cursor, 2.1, settings);
     expect([...a.clicks, ...b.clicks].map((c) => c.time)).toEqual([0, 0.5, 1, 1.5, 2]);
   });
 
   it("keeps beats advancing when the subdivision changes mid-beat", () => {
-    const sixteenths = scheduleClicks({ nextTime: 0, beat: 0, step: 0 }, 0.3, { ...settings, subdivision: 4 });
+    const sixteenths = scheduleClicks(startCursor(0), 0.3, { ...settings, subdivision: 4 });
     expect(sixteenths.cursor.step).toBe(3);
+    // 16ths at 120 BPM were scheduled through 0.25 s; the next beat is still at 0.5 s.
     const { clicks } = scheduleClicks(sixteenths.cursor, 1.6, { ...settings, subdivision: 2 });
-    expect(clicks.map((c) => [c.beat, c.step, c.accent])).toEqual([
-      [1, 0, "beat"],
-      [1, 1, "sub"],
-      [2, 0, "beat"],
-      [2, 1, "sub"],
-      [3, 0, "beat"],
+    expect(clicks.map((c) => [c.time, c.beat, c.step, c.accent])).toEqual([
+      [0.5, 1, 0, "beat"],
+      [0.75, 1, 1, "sub"],
+      [1, 2, 0, "beat"],
+      [1.25, 2, 1, "sub"],
+      [1.5, 3, 0, "beat"],
+    ]);
+  });
+
+  it("lands on the finer grid of the same beat when the subdivision increases mid-beat", () => {
+    // 8ths at 60 BPM, scheduled through 0.3 s: the next 8th was due at 0.5 s.
+    const eighths = scheduleClicks(startCursor(0), 0.3, { ...settings, bpm: 60, subdivision: 2 });
+    const { clicks } = scheduleClicks(eighths.cursor, 1.1, { ...settings, bpm: 60, subdivision: 4 });
+    expect(clicks.map((c) => [c.time, c.beat, c.step])).toEqual([
+      [0.5, 0, 2],
+      [0.75, 0, 3],
+      [1, 1, 0],
     ]);
   });
 
   it("wraps the beat when the meter shrinks mid-bar", () => {
-    const { clicks } = scheduleClicks({ nextTime: 0, beat: 3, step: 0 }, 0.6, { ...settings, beatsPerBar: 3 });
+    const { clicks } = scheduleClicks({ ...startCursor(0), beat: 3 }, 0.6, { ...settings, beatsPerBar: 3 });
     expect(clicks.map((c) => [c.beat, c.accent])).toEqual([
       [0, "bar"],
       [1, "beat"],
