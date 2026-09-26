@@ -139,3 +139,10 @@ S5 per SPEC §3. The methods are listed in SPEC §3 S5 "Delivered".
 - **Worker analysis.** Analysis runs on the main thread after the status paints. A
   3-minute 44.1 kHz signal took 2.3 s in Node on this build container's CPU, and phones
   will be slower. Moving it to a Web Worker is the upgrade (SPEC §1.11).
+- **Seventh review: the blob of an unsaved profile.** After Create, choosing another file
+  discarded the in-memory profile but not its stored blob. Every orphan finding had one
+  root: the blob was stored before anything durable referred to it. It is now stored
+  only after a library save succeeds, or with a downloaded profile, which carries the
+  sha256. Create is synchronous again, so the fifth review's Create lock guarded nothing
+  and is gone. The e2e checks OPFS: nothing after import, nothing after Create, and the
+  blob with the download. Storing at Create fails the check.

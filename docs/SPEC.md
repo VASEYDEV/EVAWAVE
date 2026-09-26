@@ -1532,11 +1532,10 @@ Delivered:
   (`lowConfidenceOps`, `protectedOps`). PV-1 is `lintStyleProfile`.
 - **App:**
   - `/import`: file picker or drop, hashing, and Web Audio decoding. Import stores
-    nothing. The file goes to OPFS (or an in-tab fallback) when the person creates a
-    profile from it, so abandoned, failed or superseded imports leave nothing behind. A
-    newer file choice aborts the analysis in flight; while a profile is being created, no
-    new file can be chosen. The profile's id is made on the device, so saving it twice
-    writes one library row. It shows the measured features, then a per-field review with
+    nothing. The file goes to OPFS (or an in-tab fallback) only when a durable reference
+    to it exists: after a library save succeeds, or with a downloaded profile. So no
+    stored blob is ever unreachable. A newer file choice aborts the analysis in flight.
+    The profile's id is made on the device, so saving it twice writes one library row. It shows the measured features, then a per-field review with
     low-confidence suggestions left unticked. The resulting profile carries the PV-1
     badge, can be saved to the library (file metadata and the profile only, through
     `saveImport`) or downloaded.
