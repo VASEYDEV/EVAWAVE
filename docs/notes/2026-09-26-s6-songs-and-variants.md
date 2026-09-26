@@ -42,6 +42,20 @@ agent, and split in two: S6 songs and variants here, S7 the take log next.
   hues, the icon script's comment said "module hue", and two Supabase comments pointed at
   the archived "S7".
 
+## Review of #14 (Codex, on 6b7fbee)
+
+- **P2: direct variant inserts.** `authenticated` could insert variants directly, skipping
+  the revision check and the song lock, and a variant can never be removed. Fixed: no
+  INSERT grant or policy on `variants`; `freeze_variant` is security definer and checks
+  that the song is the caller's at the expected revision. Tests: the owner's direct insert
+  is refused; mutations (grant the insert back; drop the definer's owner filter) fail.
+- **P1: the shared registry.** AGENTS.md says a new user-scoped table joins
+  `USER_SCOPED_TABLES`, and `library-rls.test.ts` covers it. `songs`, `variants` and
+  `takes` now do, with per-table expectations where a grant is absent rather than a
+  policy refusing; the parallel `SONG_TABLES` is gone.
+- **P2: root diffs.** `diffToOps` refuses a diff at the empty pointer instead of emitting
+  an op `applyOps` rejects; two specs never produce one.
+
 ## Evidence
 
 - Core: `tests/unit/variants.test.ts` (16), including the Jinn v1.1 → v1.2 diff with

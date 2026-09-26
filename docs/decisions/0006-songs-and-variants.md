@@ -22,12 +22,14 @@ v1.9, and `undefined` in a diff that JSON cannot carry.
    every update. A save updates only the revision it read; zero rows is an error that says
    to reload. A new song is an insert, never an upsert, so a stale tab cannot overwrite
    newer work or bring back a deleted song.
-2. **Variants are immutable in the database.** Users get no UPDATE or DELETE on
+2. **Variants are immutable in the database.** Users get no INSERT, UPDATE or DELETE on
    `variants`; a variant leaves only with its song. Grants are per column, so owner,
    brand, revision, sequence and timestamps are never client-writable.
-3. **Freeze is one transaction.** `public.freeze_variant` (security invoker) locks the
+3. **Freeze is one transaction, and the only way in.** `public.freeze_variant` locks the
    song at the expected revision, inserts the variant and saves the working copy with the
-   variant as its base. The client computes the diff and coverage with the pure core; the
+   variant as its base. Because users may not insert variants directly (a direct insert
+   would skip the revision check and the lock, and could never be undone), the function is
+   security definer and checks ownership itself, with an empty `search_path`. The client computes the diff and coverage with the pure core; the
    revision check guarantees they were taken against the state the database holds.
 4. **Structure, not only policy.** Composite foreign keys tie a variant to a song of the
    same owner, and a parent or base variant to the same song.

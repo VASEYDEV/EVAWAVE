@@ -10,7 +10,7 @@
 import { ENGINE_PROFILES } from "./engines";
 import type { Catalog, CoverageReport, EngineId, FieldDiff, LintResult, MusicSpec, PatchOp } from "./ir/types";
 import { lint } from "./lint";
-import { formatPointer } from "./patch";
+import { formatPointer, PatchError } from "./patch";
 import { SERIALIZERS, compile } from "./serialize";
 import { hash53 } from "./text";
 
@@ -83,7 +83,11 @@ export function diffSpecs(before: MusicSpec, after: MusicSpec): FieldDiff[] {
   return diffJson(before, after);
 }
 
-/** {@link diffSpecs} for any two JSON values. */
+/**
+ * {@link diffSpecs} for any two JSON values. When the two differ at the root itself (a
+ * scalar change, or an object against an array), the diff is one entry with the empty
+ * pointer, which {@link diffToOps} refuses.
+ */
 export function diffJson(before: unknown, after: unknown): FieldDiff[] {
   const out: FieldDiff[] = [];
   walk(normalise(before), normalise(after), [], out);
@@ -108,8 +112,16 @@ function comparePointers(a: string, b: string): number {
  * The patch ops that turn `before` into `after` for a diff from {@link diffJson}. Removals
  * go first, deepest and highest index first, so no removal shifts an index another op still
  * needs; sets follow in pointer order, so array elements are appended in sequence.
+ *
+ * A patch op cannot target the document root, so a diff that replaces the whole document
+ * (two values of different types, or two different scalars) is refused here rather than
+ * turned into an op that `applyOps` would reject. Two specs never produce one: both are
+ * objects, so their diff is always below the root.
  */
 export function diffToOps(diff: readonly FieldDiff[]): PatchOp[] {
+  if (diff.some((d) => d.path === "")) {
+    throw new PatchError("a diff that replaces the whole document cannot be replayed as patch ops; its `after` is the new document");
+  }
   const removals = diff.filter((d) => !("after" in d)).sort((a, b) => comparePointers(b.path, a.path));
   const sets = diff.filter((d) => "after" in d).sort((a, b) => comparePointers(a.path, b.path));
   return [

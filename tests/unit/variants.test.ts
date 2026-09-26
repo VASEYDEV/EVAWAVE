@@ -5,7 +5,7 @@ import { describe, expect, it } from "vitest";
 
 import { defaultMusicSpec } from "@/core/musicspec/ir/defaults";
 import type { Catalog, FieldDiff, MusicSpec } from "@/core/musicspec/ir/types";
-import { applyOps } from "@/core/musicspec/patch";
+import { applyOps, PatchError } from "@/core/musicspec/patch";
 import { diffJson, diffSpecs, diffToOps, freezeBlockers, naturalCompare, nextVariantLabel, normalise, specHash, variantCoverage } from "@/core/musicspec/variants";
 import { catalog } from "@/data/taxonomy";
 
@@ -58,6 +58,13 @@ describe("diffSpecs", () => {
     ]);
     expect(normalise(diff)).toEqual(diff);
     for (const entry of normalise(diff)) expect("before" in entry && "after" in entry).toBe(false);
+  });
+
+  it("reports a change at the root itself once, and refuses to turn it into patch ops", () => {
+    expect(diffJson(1, 2)).toEqual([{ path: "", before: 1, after: 2 }]);
+    expect(diffJson({ a: 1 }, [1])).toEqual([{ path: "", before: { a: 1 }, after: [1] }]);
+    expect(() => diffToOps(diffJson(1, 2))).toThrow(PatchError);
+    expect(() => diffToOps(diffJson({ a: 1 }, [1]))).toThrow("cannot be replayed as patch ops");
   });
 
   it("escapes ~ and / in keys, and replays them", () => {

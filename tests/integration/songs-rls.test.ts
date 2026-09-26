@@ -5,7 +5,7 @@ import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
 import type { MusicSpec } from "@/core/musicspec/ir/types";
 import { diffSpecs, nextVariantLabel } from "@/core/musicspec/variants";
-import { SONG_TABLES } from "@/lib/library/schema";
+import { USER_SCOPED_TABLES } from "@/lib/library/schema";
 
 import { openRlsDatabase, type RlsHarness } from "../support/rls";
 
@@ -20,6 +20,8 @@ const B = "00000000-0000-4000-8000-00000000000b";
 const fixture = (name: string) => JSON.parse(readFileSync(fileURLToPath(new URL(`../fixtures/${name}`, import.meta.url)), "utf8")) as MusicSpec;
 const v11 = fixture("jinn-v1.1.spec.json");
 const v12 = fixture("jinn-v1.2.spec.json");
+
+const SONG_TABLES = ["songs", "variants", "takes"] as const;
 
 let h: RlsHarness;
 /** Rows made in `beforeAll`: A's song with its first variant, and a second A song with one. */
@@ -62,8 +64,8 @@ afterAll(async () => {
 });
 
 describe("songs and variants: user B against user A's rows", () => {
-  it("covers the song tables (S7's takes have their own suite, takes-rls.test.ts)", () => {
-    expect([...SONG_TABLES].sort()).toEqual(["songs", "takes", "variants"]);
+  it("registers the song tables as user-scoped, so the shared library suite covers them too", () => {
+    expect(USER_SCOPED_TABLES).toEqual(expect.arrayContaining([...SONG_TABLES]));
   });
 
   it("A reads its song and variant (positive control)", async () => {
@@ -92,7 +94,7 @@ describe("songs and variants: user B against user A's rows", () => {
   it("B cannot add a variant to A's song, directly or by freezing it", async () => {
     await expect(
       h.as(B, () => h.rows("insert into public.variants (song_id, spec_snapshot) values ($1, $2::jsonb)", [ids.song, JSON.stringify(v11)])),
-    ).rejects.toThrow(/row-level security|foreign key/);
+    ).rejects.toThrow(/permission denied/);
     const rev = await revision(ids.song);
     await expect(freeze(B, ids.song, { rev })).rejects.toThrow(/changed elsewhere or is not yours/);
     expect(await revision(ids.song)).toBe(rev);
@@ -119,6 +121,14 @@ describe("variants are immutable", () => {
   it("the owner cannot delete a variant", async () => {
     await expect(h.as(A, () => h.rows("delete from public.variants where id = $1", [ids.variant]))).rejects.toThrow(/permission denied/);
     expect(await h.truth("variants", "id = $1", [ids.variant])).toHaveLength(1);
+  });
+
+  it("the owner cannot insert a variant directly, only freeze one, so no variant skips the revision check", async () => {
+    const before = await h.truth("variants", "song_id = $1", [ids.song]);
+    await expect(
+      h.as(A, () => h.rows("insert into public.variants (song_id, parent_variant_id, spec_snapshot) values ($1, $2, $3::jsonb)", [ids.song, ids.variant, JSON.stringify(v12)])),
+    ).rejects.toThrow(/permission denied/);
+    expect(await h.truth("variants", "song_id = $1", [ids.song])).toEqual(before);
   });
 
   it("the owner cannot choose a variant's sequence or rewrite a song's owner, brand or revision", async () => {

@@ -3,7 +3,8 @@
 -- A song is the working copy of a MusicSpec. A variant is a frozen snapshot of it, with
 -- the field diff from its parent variant and a coverage report per live engine. Variants
 -- are immutable: users get no UPDATE or DELETE on them, and they leave only with their
--- song. Saving a song is optimistic: every update bumps `revision`, and the app updates
+-- song. They are created only by `freeze_variant`, never by a direct insert. Saving a song
+-- is optimistic: every update bumps `revision`, and the app updates
 -- only the revision it read, so a stale tab cannot overwrite newer work.
 --
 -- Ownership is structural as well as RLS: composite foreign keys tie a variant to a song
@@ -84,8 +85,8 @@ $$;
 create trigger songs_bump_revision before update on public.songs
   for each row execute function public.songs_bump_revision();
 
--- Runs as the caller, so it sees the caller's variants only; the song is the caller's
--- (the composite key), so that is all of the song's variants.
+-- One past the song's highest sequence number. It runs inside `freeze_variant`, which
+-- holds the song's row lock, so two freezes of one song cannot compute the same number.
 create function public.variants_assign_seq() returns trigger
   language plpgsql
   set search_path = ''
@@ -115,15 +116,12 @@ create policy "Owners delete their songs" on public.songs
 
 create policy "Owners read their variants" on public.variants
   for select to authenticated using (owner_id = (select auth.uid()));
-create policy "Owners freeze variants of their songs" on public.variants
-  for insert to authenticated with check (
-    owner_id = (select auth.uid())
-    and exists (select 1 from public.songs s where s.id = song_id and s.owner_id = (select auth.uid()))
-  );
+-- No insert policy and no insert grant: a variant is made only by `freeze_variant`.
 
 -- ─── Privileges: least privilege for API roles ────────────────────────────────────────
--- Columns are granted one by one: a user can never write an owner, the brand, the revision,
--- a variant's sequence or any timestamp. Variants get no UPDATE and no DELETE at all.
+-- Columns are granted one by one: a user can never write an owner, the brand, the revision
+-- or any timestamp. Variants get no INSERT, UPDATE or DELETE at all: a direct insert would
+-- skip the revision check and the song's lock, and could never be taken back.
 
 revoke all on public.songs, public.variants from anon, authenticated;
 
@@ -131,13 +129,16 @@ grant select, delete on public.songs to authenticated;
 grant insert (id, title, spec, overrides) on public.songs to authenticated;
 grant update (title, spec, overrides, base_variant_id) on public.songs to authenticated;
 grant select on public.variants to authenticated;
-grant insert (id, song_id, parent_variant_id, spec_snapshot, diff, overrides, coverage) on public.variants to authenticated;
 
 revoke execute on function public.songs_bump_revision() from public, anon, authenticated;
 revoke execute on function public.variants_assign_seq() from public, anon, authenticated;
 
 -- ─── Freeze: save the working copy and snapshot it, in one transaction ────────────────
 
+-- Security definer, because users may not insert variants themselves. It therefore checks
+-- ownership explicitly (RLS does not apply to its owner): the song must be the caller's, at
+-- the revision the caller read. The variant's owner is the caller, and the composite keys
+-- still hold the parent to the same song. `search_path` is empty and every name qualified.
 create function public.freeze_variant(
   p_song_id uuid,
   p_expected_revision integer,
@@ -150,27 +151,32 @@ create function public.freeze_variant(
 )
 returns table (variant_id uuid, variant_label text, song_revision integer, owner uuid)
 language plpgsql
-security invoker
+security definer
 set search_path = ''
 as $$
 declare
+  v_caller uuid := auth.uid();
   v_owner uuid;
   v_variant uuid;
   v_label text;
   v_revision integer;
 begin
-  -- Only the revision the caller read. The row lock also makes two freezes of one song
-  -- run one after the other, so their sequence numbers cannot collide.
+  if v_caller is null then
+    raise exception 'freeze: sign in first';
+  end if;
+  -- Only the caller's song, only at the revision the caller read. The row lock also makes
+  -- two freezes of one song run one after the other, so their sequence numbers cannot
+  -- collide.
   select s.owner_id into v_owner
     from public.songs s
-   where s.id = p_song_id and s.revision = p_expected_revision
+   where s.id = p_song_id and s.owner_id = v_caller and s.revision = p_expected_revision
      for update;
   if not found then
     raise exception 'freeze: the song changed elsewhere or is not yours; reload it';
   end if;
 
-  insert into public.variants (song_id, parent_variant_id, spec_snapshot, diff, overrides, coverage)
-  values (p_song_id, p_parent_variant_id, p_spec, p_diff, p_overrides, p_coverage)
+  insert into public.variants (owner_id, song_id, parent_variant_id, spec_snapshot, diff, overrides, coverage)
+  values (v_caller, p_song_id, p_parent_variant_id, p_spec, p_diff, p_overrides, p_coverage)
   returning variants.id, variants.label into v_variant, v_label;
 
   -- The working copy now equals the snapshot and descends from it.
@@ -184,7 +190,7 @@ end;
 $$;
 
 comment on function public.freeze_variant(uuid, integer, text, jsonb, jsonb, uuid, jsonb, jsonb) is
-  'Saves a song''s working copy and freezes it as the next variant in one transaction, under RLS, if the song is still at the expected revision.';
+  'The only way to create a variant: saves the caller''s song and freezes it as the next variant in one transaction, if the song is still at the expected revision.';
 
 revoke execute on function public.freeze_variant(uuid, integer, text, jsonb, jsonb, uuid, jsonb, jsonb) from public, anon;
 grant execute on function public.freeze_variant(uuid, integer, text, jsonb, jsonb, uuid, jsonb, jsonb) to authenticated;

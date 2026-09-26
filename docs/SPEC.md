@@ -1675,11 +1675,14 @@ Delivered:
   - Composite foreign keys tie a variant to a song of the same owner, and a parent or
     base variant to the same song.
   - RLS is owner-only. Grants are per column, so owner, brand, revision, sequence and
-    timestamps are never writable, and variants have no UPDATE or DELETE at all. A song's
-    delete removes its variants.
+    timestamps are never writable, and variants have no INSERT, UPDATE or DELETE at all. A
+    song's delete removes its variants.
   - Triggers bump a song's revision on every update and number its variants.
-  - `public.freeze_variant` (security invoker, `authenticated` only) locks the song at the
-    expected revision, inserts the variant and saves the working copy as its base.
+  - `public.freeze_variant` is the only way to create a variant (`authenticated` only).
+    It is security definer, so it checks ownership itself: it locks the caller's song at
+    the expected revision, inserts the variant as the caller's and saves the working copy
+    as its base. A direct insert would skip the revision check and the lock, and a
+    variant can never be taken back (review of #14).
 - **App.** `src/lib/library/songs.ts` (saves filter on the revision; zero rows is an
   error). The working copy in the browser carries its song attachment in the same
   `setItem` (`src/lib/composer/storage.ts`), tabs follow each other's writes, and nothing

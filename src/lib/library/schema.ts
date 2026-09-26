@@ -21,11 +21,12 @@ export const LIBRARY_COLUMNS = {
   takes: ["id", "owner_id", "variant_id", "engine", "engine_version", "render_ref", "verdict", "drifted", "words_blamed", "notes", "created_at"],
 } as const;
 
-/** Every S4 table whose rows belong to one user; RLS limits each to its owner. */
-export const USER_SCOPED_TABLES = ["style_profiles", "files", "tags", "style_profile_genres", "style_profile_tags", "file_genres", "file_tags"] as const;
-
-/** The song tables (S6 `20260926000400_songs.sql`, S7 `20260926000500_takes.sql`), owner-only under RLS. */
-export const SONG_TABLES = ["songs", "variants", "takes"] as const;
+/**
+ * Every table whose rows belong to one user; RLS limits each to its owner. A new
+ * user-scoped table joins this list, and tests/integration/library-rls.test.ts covers it
+ * (AGENTS.md).
+ */
+export const USER_SCOPED_TABLES = ["style_profiles", "files", "tags", "style_profile_genres", "style_profile_tags", "file_genres", "file_tags", "songs", "variants", "takes"] as const;
 
 export type StyleProfileRow = {
   id: string;

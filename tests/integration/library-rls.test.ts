@@ -60,6 +60,13 @@ beforeAll(async () => {
     await rows("insert into public.style_profile_tags (profile_id, tag_id) values ($1, $2)", [ids.profile, ids.tag]);
     await rows("insert into public.file_genres (file_id, genre_id) values ($1, 'drill')", [ids.file]);
     await rows("insert into public.file_tags (file_id, tag_id) values ($1, $2)", [ids.file, ids.tag]);
+    // Songs (S6) and takes (S7). A variant is made only by freezing a song.
+    const spec = JSON.stringify({ irVersion: 1, D10: { activeTarget: "suno" } });
+    ids.song = String((await rows("insert into public.songs (title, spec) values ('A song', $1::jsonb) returning id", [spec]))[0]?.id);
+    ids.variant = String(
+      (await rows("select variant_id from public.freeze_variant($1, 0, 'A song', $2::jsonb, '[]'::jsonb, null, '[]'::jsonb, '{}'::jsonb)", [ids.song, spec]))[0]?.variant_id,
+    );
+    ids.take = String((await rows("insert into public.takes (variant_id, engine, engine_version, verdict) values ($1, 'suno', 'v6', 'keep') returning id", [ids.variant]))[0]?.id);
   });
 });
 
@@ -67,8 +74,15 @@ afterAll(async () => {
   await db.close();
 });
 
-/** How to address, change and forge a row in each user-scoped table. */
-const TABLES: Record<(typeof USER_SCOPED_TABLES)[number], { key: () => [string, unknown[]]; update?: string; forge: () => [string, unknown[]] }> = {
+/**
+ * How to address, change and forge a row in each user-scoped table. `forgeError` is what a
+ * forged insert meets when the owner column (or the whole insert) is not granted at all,
+ * rather than refused by a policy; `deleteDenied` marks a table with no DELETE grant.
+ */
+const TABLES: Record<
+  (typeof USER_SCOPED_TABLES)[number],
+  { key: () => [string, unknown[]]; update?: string; forge: () => [string, unknown[]]; forgeError?: RegExp; deleteDenied?: boolean }
+> = {
   style_profiles: {
     key: () => ["id = $1", [ids.profile]],
     update: "name = 'stolen'",
@@ -99,6 +113,23 @@ const TABLES: Record<(typeof USER_SCOPED_TABLES)[number], { key: () => [string, 
   file_tags: {
     key: () => ["file_id = $1", [ids.file]],
     forge: () => ["insert into public.file_tags (owner_id, file_id, tag_id) values ($1, $2, $3)", [A, ids.file, ids.tag]],
+  },
+  songs: {
+    key: () => ["id = $1", [ids.song]],
+    update: "title = 'stolen'",
+    forge: () => ["insert into public.songs (owner_id, title, spec) values ($1, 'forged', '{\"irVersion\":1}')", [A]],
+    forgeError: /permission denied/,
+  },
+  variants: {
+    key: () => ["id = $1", [ids.variant]],
+    forge: () => ["insert into public.variants (owner_id, song_id, spec_snapshot) values ($1, $2, '{\"irVersion\":1}')", [A, ids.song]],
+    forgeError: /permission denied/,
+    deleteDenied: true,
+  },
+  takes: {
+    key: () => ["id = $1", [ids.take]],
+    forge: () => ["insert into public.takes (owner_id, variant_id, engine, engine_version, verdict) values ($1, $2, 'suno', 'v6', 'keep')", [A, ids.variant]],
+    forgeError: /permission denied/,
   },
 };
 
@@ -134,13 +165,15 @@ describe("library RLS: user B against user A's rows", () => {
 
     it("B cannot delete it", async () => {
       const [where, params] = t.key();
-      expect(await as(B, () => rows(`delete from public.${table} where ${where} returning *`, params))).toEqual([]);
+      const deleting = as(B, () => rows(`delete from public.${table} where ${where} returning *`, params));
+      if (t.deleteDenied) await expect(deleting).rejects.toThrow(/permission denied/);
+      else expect(await deleting).toEqual([]);
       expect(await truth(table, where, params)).toHaveLength(1);
     });
 
     it("B cannot insert a row owned by A", async () => {
       const [sql, params] = t.forge();
-      await expect(as(B, () => rows(sql, params))).rejects.toThrow(/row-level security/);
+      await expect(as(B, () => rows(sql, params))).rejects.toThrow(t.forgeError ?? /row-level security/);
     });
   });
 
