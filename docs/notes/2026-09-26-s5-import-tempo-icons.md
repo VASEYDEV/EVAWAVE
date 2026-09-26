@@ -349,6 +349,19 @@ S5 per SPEC §3. The methods are listed in SPEC §3 S5 "Delivered".
   4/4, so the "Half-time accents (1 and 3)" control did nothing more than beat 1 in 3/4
   or 6/8, against its label and SPEC §1.8. It now accents beat 3 wherever the meter has
   one; 2/4 has none. A test covers 3/4, 6/8 and 2/4 and fails on the old code.
+- **Twenty-ninth review.** Each fix ships with a test that fails under a mutation.
+  - **Copies orphaned by a delete on another device.** Deleting a record on device B
+    could not reach device A's copy, which then stayed unreachable. Each `/library` load
+    now runs `reconcileLocalAudio`. It lists `audio/<owner>/`, and checks any copy missing
+    from the loaded list against the library with `hasFileRecord`, holding that file's
+    turn. It removes the copy only when no record exists. So a truncated list (PostgREST
+    caps rows) or a save in another tab never costs a copy that has a record. A test
+    keeps a listed copy, removes an orphan, and keeps a copy whose record was not in the
+    list. It fails if the library check is dropped. The `Library.tsx` wiring has no
+    automated test: no component harness, and no live Supabase session in e2e.
+  - **Reading a file after the import was already superseded.** `importAudio` now checks
+    the signal before reading the file, as well as after. A test aborts first and checks
+    that the file is never read.
 
 ## Decisions
 

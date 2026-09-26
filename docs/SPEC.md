@@ -1557,7 +1557,8 @@ Delivered:
     characters, counted as code points and keeping the extension, and a MIME type over
     120 characters becomes `application/octet-stream`. When a record is deleted, or
     OPFS takes a file, other tabs are told (BroadcastChannel) to drop any in-memory copy
-    they hold.
+    they hold. Each `/library` load also removes this device's copies whose record was
+    deleted elsewhere. It checks each one against the library first, holding its turn.
     Deleting a file record in `/library` removes its local copy first, keeping the record
     if that fails, and restores the copy if deleting the record then fails, saying so if
     it can only be put back in this tab. Deletes of the
