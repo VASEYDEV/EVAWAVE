@@ -104,6 +104,15 @@ describe("loudness (ITU-R BS.1770)", () => {
 });
 
 describe("tempo and meter", () => {
+  it("keeps the tempo in 60–200 BPM, folding a slower pulse up an octave with the true tempo as half-time", () => {
+    for (const bpm of [58, 59]) {
+      const { bpm: tempo } = analyseAudio(clickTrack(bpm, 20, 44100), 44100);
+      expect(tempo.value).toBeGreaterThanOrEqual(60);
+      expect(tempo.value).toBeLessThanOrEqual(200);
+      expect(Math.abs(tempo.halfTimeCandidate - bpm)).toBeLessThan(1.5);
+    }
+  });
+
   it.each([90, 120, 140, 170])("finds %i BPM in a click track", (bpm) => {
     const features = analyseAudio(clickTrack(bpm, 20, 44100), 44100);
     expect(Math.abs(features.bpm.value - bpm)).toBeLessThan(1.5);

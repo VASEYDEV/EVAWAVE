@@ -219,12 +219,16 @@ function estimateTempo(env, frameRate) {
 	};
 	const y0 = autocorrelation(centred, bestLag - 1), y1 = autocorrelation(centred, bestLag), y2 = autocorrelation(centred, bestLag + 1);
 	const denom = y0 - 2 * y1 + y2;
-	const lag = denom < 0 ? bestLag + .5 * (y0 - y2) / denom : bestLag;
-	const value = 60 * frameRate / lag;
+	const peak = denom < 0 ? bestLag + .5 * (y0 - y2) / denom : bestLag;
+	let value = 60 * frameRate / peak;
+	while (value < 60) value *= 2;
+	while (value > 200) value /= 2;
+	const lag = 60 * frameRate / value;
 	const median = percentile(scores, 50);
+	const confidence = Math.max(0, Math.min(1, (bestScore - median) / (Math.abs(bestScore) + 1e-9)));
 	return {
 		value,
-		confidence: Math.max(0, Math.min(1, (bestScore - median) / (Math.abs(bestScore) + 1e-9))),
+		confidence,
 		halfTimeCandidate: value / 2,
 		doubleTimeCandidate: value * 2,
 		lag

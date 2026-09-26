@@ -123,6 +123,9 @@ function autocorrelationAt(env: Float64Array, lag: number): number {
 
 function estimateTempo(env: Float64Array, frameRate: number): AudioFeatures["bpm"] & { lag: number } {
   const centred = env.map((v) => v - meanOf(env));
+  // The integer lag grid is rounded outward, so it covers a little more than 60–200 BPM
+  // (about 58.7–215 at the analysis frame rate): a tempo at either edge still shows as a
+  // true peak rather than a pile-up at the grid's end. The value is folded into 60–200 below.
   const minLag = Math.max(1, Math.floor((60 * frameRate) / 200));
   const maxLag = Math.min(centred.length - 1, Math.ceil((60 * frameRate) / 60));
   const zero = autocorrelation(centred, 0) || 1;
@@ -142,8 +145,14 @@ function estimateTempo(env: Float64Array, frameRate: number): AudioFeatures["bpm
   // Parabolic interpolation around the peak for a sub-frame lag.
   const y0 = autocorrelation(centred, bestLag - 1), y1 = autocorrelation(centred, bestLag), y2 = autocorrelation(centred, bestLag + 1);
   const denom = y0 - 2 * y1 + y2;
-  const lag = denom < 0 ? bestLag + (0.5 * (y0 - y2)) / denom : bestLag;
-  const value = (60 * frameRate) / lag;
+  const peak = denom < 0 ? bestLag + (0.5 * (y0 - y2)) / denom : bestLag;
+  // Fold by octaves into 60–200 BPM: a 58 BPM pulse reads 116, with 58 as its half-time
+  // candidate, so the value always lies in the documented range and the true octave stays
+  // one choice away.
+  let value = (60 * frameRate) / peak;
+  while (value < 60) value *= 2;
+  while (value > 200) value /= 2;
+  const lag = (60 * frameRate) / value;
   const median = percentile(scores, 50);
   const confidence = Math.max(0, Math.min(1, (bestScore - median) / (Math.abs(bestScore) + 1e-9)));
   return { value, confidence, halfTimeCandidate: value / 2, doubleTimeCandidate: value * 2, lag };
