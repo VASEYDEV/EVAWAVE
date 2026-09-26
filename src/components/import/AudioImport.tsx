@@ -5,7 +5,7 @@
  * field, and build a StyleProfile with `provenance.kind = 'audio-analysis'`. Saving sends only
  * the file's metadata and the profile (A6).
  */
-import { useId, useMemo, useRef, useState, type DragEvent } from "react";
+import { useEffect, useId, useMemo, useRef, useState, type DragEvent } from "react";
 
 import { applyReviewedPatch, audioProfileBase, AUDIO_DRAFT_MODEL, reviewPatch } from "@/core/musicspec/intake";
 import type { StyleProfile } from "@/core/musicspec/ir/types";
@@ -51,6 +51,11 @@ export function AudioImport() {
   const [source, setSource] = useState<File | null>(null);
   // A newer file choice aborts the import in flight, so its analysis never lands.
   const inFlight = useRef<AbortController | null>(null);
+  // Leaving the page aborts it too, which terminates the analysis worker.
+  useEffect(() => {
+    const flight = inFlight;
+    return () => flight.current?.abort();
+  }, []);
 
   const lowConfidence = useMemo(() => new Set(result ? lowConfidenceOps(result.patch, "").map((r) => Number(r.path.split("/").pop())) : []), [result]);
 

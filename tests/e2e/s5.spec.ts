@@ -76,6 +76,34 @@ test("imports a WAV into a reviewed audio-analysis style profile, sending no aud
   expect(sent.filter((r) => r.riff || r.bytes > 10_000)).toEqual([]);
 });
 
+test("leaving the import page stops an analysis in flight", async ({ page }) => {
+  // A worker that never answers, so the analysis is still running when the page is left.
+  await page.route("**/workers/analysis.worker.js", (route) => route.fulfill({ contentType: "text/javascript", body: "self.onmessage = () => {};" }));
+  await page.addInitScript(() => {
+    const Native = window.Worker;
+    const log = { started: 0, terminated: 0 };
+    (window as unknown as { workerLog: typeof log }).workerLog = log;
+    window.Worker = class extends Native {
+      constructor(url: string | URL, options?: WorkerOptions) {
+        super(url, options);
+        log.started += 1;
+      }
+      override terminate() {
+        log.terminated += 1;
+        super.terminate();
+      }
+    };
+  });
+  const workerLog = () => page.evaluate(() => (window as unknown as { workerLog: { started: number; terminated: number } }).workerLog);
+  await page.goto("/import");
+  await page.getByLabel("Choose an audio file, or drop one here").setInputFiles({ name: "held.wav", mimeType: "audio/wav", buffer: Buffer.from(encodeWav(clickTrack(120, 4, 22050), 22050)) });
+  await expect.poll(async () => (await workerLog()).started).toBe(1);
+  expect((await workerLog()).terminated).toBe(0);
+  await page.getByRole("link", { name: "Composer" }).click();
+  await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
+  await expect.poll(async () => (await workerLog()).terminated).toBe(1);
+});
+
 test("tap tempo reads 140 BPM from taps 428 ms apart and assigns it", async ({ page }) => {
   await page.clock.install({ time: new Date("2026-09-26T12:00:00Z") });
   await page.goto("/");
