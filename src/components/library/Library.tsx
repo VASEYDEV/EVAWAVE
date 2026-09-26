@@ -4,10 +4,13 @@
  * The library page's client side (docs/SPEC.md §1.6, §3 S4). It reads and writes through the
  * signed-in user's session; row level security scopes every query to that user.
  */
+import Link from "next/link";
 import { useEffect, useId, useMemo, useState } from "react";
 
 import type { MusicSpec } from "@/core/musicspec/ir/types";
+import { catalog } from "@/data/taxonomy";
 import { deleteWithLocalAudio, reconcileLocalAudio } from "@/lib/audio/browser";
+import { readComposer } from "@/lib/composer/storage";
 import { createLibraryClient } from "@/lib/library/client";
 import {
   createStyleProfile,
@@ -22,18 +25,14 @@ import {
   type LibraryData,
 } from "@/lib/library/repository";
 import { clampProfileName } from "@/lib/library/schema";
+import { deleteSong, listSongs, loadSong, songAttachment, type SongSummary } from "@/lib/library/songs";
 
-const COMPOSER_KEY = "evawave:composer:v1";
+import { OpenInComposer } from "./OpenInComposer";
+import { useViewer } from "./useViewer";
 
 /** The composer's working spec from this browser, if there is one. */
 function composerSpec(): MusicSpec | null {
-  try {
-    const saved = window.localStorage.getItem(COMPOSER_KEY);
-    const parsed = saved ? (JSON.parse(saved) as { spec?: MusicSpec }) : null;
-    return parsed?.spec?.irVersion === 1 ? parsed.spec : null;
-  } catch {
-    return null;
-  }
+  return readComposer()?.spec ?? null;
 }
 
 function Links({ legend, options, selected, onToggle }: { legend: string; options: { id: string; label: string }[]; selected: readonly string[]; onToggle: (id: string, on: boolean) => void }) {
@@ -54,7 +53,12 @@ function Links({ legend, options, selected, onToggle }: { legend: string; option
 
 export function Library() {
   const client = useMemo(() => createLibraryClient(), []);
-  const [data, setData] = useState<LibraryData | null>(null);
+  const viewer = useViewer(client);
+  // What was loaded, and for whom: it is shown only while that account is signed in.
+  const [library, setLibrary] = useState<{ viewer: string; data: LibraryData } | null>(null);
+  const [songList, setSongList] = useState<{ viewer: string; songs: SongSummary[] } | null>(null);
+  // The song whose delete is waiting for its second, explicit press.
+  const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
   const [status, setStatus] = useState("");
   const [profileName, setProfileName] = useState("");
   const [tagLabel, setTagLabel] = useState("");
@@ -67,10 +71,11 @@ export function Library() {
   const [version, setVersion] = useState(0);
 
   useEffect(() => {
+    if (!viewer) return;
     let live = true;
     loadLibrary(client).then(
       (loaded) => {
-        if (live) setData(loaded);
+        if (live) setLibrary({ viewer, data: loaded });
         // Housekeeping: drop this device's copies whose record was deleted on another device.
         // A failure leaves them for the next visit.
         const known = new Set(loaded.files.map((f) => f.asset.sha256));
@@ -83,10 +88,23 @@ export function Library() {
         if (live) setStatus(error instanceof Error ? error.message : "Could not load the library.");
       },
     );
+    // Songs load on their own, so a failure there leaves the rest of the library usable.
+    listSongs(client).then(
+      (loaded) => {
+        if (live) setSongList({ viewer, songs: loaded });
+      },
+      (error: unknown) => {
+        if (live) setStatus(error instanceof Error ? error.message : "Could not load your songs.");
+      },
+    );
     return () => {
       live = false;
     };
-  }, [client, version]);
+  }, [client, version, viewer]);
+
+  // Another account's (or a signed-out) view never shows what was loaded for someone else.
+  const data = library && library.viewer === viewer ? library.data : null;
+  const songs = songList && songList.viewer === viewer ? songList.songs : null;
 
   const run = async (what: string, action: () => Promise<void>) => {
     setStatus(`${what}…`);
@@ -102,11 +120,71 @@ export function Library() {
   const genreOptions = (data?.genres ?? []).map((g) => ({ id: g.id, label: g.name }));
   const tagOptions = (data?.tags ?? []).map((t) => ({ id: t.id, label: t.label }));
 
+  if (viewer === null) {
+    return (
+      <div className="library">
+        <p role="status" aria-live="polite">
+          You are signed out. <Link href="/login?next=/library">Sign in</Link> again to see your library.
+        </p>
+      </div>
+    );
+  }
+
   return (
     <div className="library">
       <p role="status" aria-live="polite">
         {data ? status : status || "Loading your library…"}
       </p>
+
+      <section className="panel" aria-labelledby="songs-heading">
+        <h3 id="songs-heading">Songs</h3>
+        <p className="hint">Keep the composer&apos;s working copy as a song, and freeze its variants, from the composer&apos;s Song panel.</p>
+        {songs?.length ? (
+          <ul className="library-list">
+            {songs.map((s) => (
+              <li key={s.id}>
+                <h4>{s.title}</h4>
+                <p className="hint">
+                  updated {new Date(s.updatedAt).toLocaleString()} · {s.variantCount === 1 ? "1 variant" : `${s.variantCount} variants`}
+                </p>
+                <div className="row-actions">
+                  <OpenInComposer
+                    label={`Open ${s.title} in the composer`}
+                    open={async () => {
+                      const loaded = await loadSong(client, s.id, catalog);
+                      const base = loaded.variants.find((v) => v.id === loaded.song.baseVariantId) ?? null;
+                      return { spec: loaded.song.spec, song: songAttachment(loaded, loaded.variants, base) };
+                    }}
+                    onError={setStatus}
+                  />
+                  <Link href={`/songs/${s.id}`}>Variants of {s.title}</Link>
+                </div>
+                <div className="row-actions">
+                  {confirmDelete === s.id ? (
+                    <>
+                      <button type="button" className="danger" onClick={() => void run("Delete song", () => deleteSong(client, s.id, s.revision)).then(() => setConfirmDelete(null))}>
+                        {/* Everything the delete takes with it: the variants, and every take logged on them. */}
+                        {s.variantCount
+                          ? `Delete ${s.title}, its ${s.variantCount === 1 ? "variant" : `${s.variantCount} variants`} and every take logged on ${s.variantCount === 1 ? "it" : "them"}`
+                          : `Delete ${s.title}`}
+                      </button>
+                      <button type="button" onClick={() => setConfirmDelete(null)}>
+                        Keep {s.title}
+                      </button>
+                    </>
+                  ) : (
+                    <button type="button" className="danger" onClick={() => setConfirmDelete(s.id)}>
+                      Delete {s.title}
+                    </button>
+                  )}
+                </div>
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p>{songs ? "No songs yet." : "Loading your songs…"}</p>
+        )}
+      </section>
 
       <section className="panel" aria-labelledby="profiles-heading">
         <h3 id="profiles-heading">Style profiles</h3>

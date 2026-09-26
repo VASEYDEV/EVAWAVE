@@ -108,6 +108,14 @@ legend,
   font-variant-ligatures: none;
 }
 
+/* A variant's label is data (v1.10), set in the technical face. */
+.variant-label {
+  font-family: var(--mono);
+  letter-spacing: 0.03em;
+  font-variant-numeric: tabular-nums;
+  font-variant-ligatures: none;
+}
+
 code,
 .grid,
 textarea[readonly] {

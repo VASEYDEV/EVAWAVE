@@ -1,7 +1,7 @@
 import { expect, test } from "@playwright/test";
 
 /** Mobile-first (CLAUDE.md §4): no page scrolls sideways on the phone viewport. */
-for (const path of ["/", "/import", "/library", "/login"]) {
+for (const path of ["/", "/import", "/library", "/login", "/songs/11111111-1111-4111-8111-111111111111"]) {
   test(`${path} has no horizontal page scroll`, async ({ page }) => {
     await page.goto(path);
     for (const details of await page.locator("section[data-module] > details").all()) {

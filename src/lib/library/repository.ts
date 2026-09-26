@@ -34,7 +34,8 @@ export class LibraryError extends Error {
   override name = "LibraryError";
 }
 
-function check<T>(result: { data: T; error: { message: string } | null }, what: string): NonNullable<T> {
+/** The data of a supabase-js result, or a `LibraryError` naming `what` when it failed or came back empty. */
+export function check<T>(result: { data: T; error: { message: string } | null }, what: string): NonNullable<T> {
   if (result.error) throw new LibraryError(`${what}: ${result.error.message}`);
   if (result.data === null || result.data === undefined) throw new LibraryError(`${what}: no data`);
   return result.data;

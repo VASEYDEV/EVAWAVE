@@ -1,46 +1,64 @@
 "use client";
 
 /**
- * Composer state (docs/SPEC.md §1.5, §3 S3). The working spec changes only through
+ * Composer state (docs/SPEC.md §1.5, §3 S3, S6). The working spec changes only through
  * `PatchOp`s committed to the core history, so every input is undoable and an edit after an
- * undo keeps the old branch reachable. The spec and its history persist in localStorage
- * until the S4 library lands.
+ * undo keeps the old branch reachable. The spec, its history and the song it is attached to
+ * persist in this browser (`src/lib/composer/storage.ts`) and follow other tabs; songs and
+ * their variants persist in the library.
  */
 import { createContext, useCallback, useContext, useEffect, useMemo, useReducer, type ReactNode } from "react";
 
-import { commit, emptyHistory, jumpTo, redo, undo, type History, type Step } from "@/core/musicspec/history";
+import { commit, emptyHistory, jumpTo, redo, undo, type History } from "@/core/musicspec/history";
 import { defaultMusicSpec } from "@/core/musicspec/ir/defaults";
 import type { Catalog, MusicSpec, PatchOp } from "@/core/musicspec/ir/types";
 import { PatchError } from "@/core/musicspec/patch";
 import { catalog } from "@/data/taxonomy";
-
-const STORAGE_KEY = "evawave:composer:v1";
+import { COMPOSER_KEY, parseComposer, readComposer, stillCurrent, writeComposer, type AttachmentIdentity, type SavedComposer, type SongAttachment } from "@/lib/composer/storage";
 
 type Action =
   | { type: "edit"; ops: PatchOp[]; label: string; coalesce?: string }
   | { type: "undo" }
   | { type: "redo"; childId?: number }
   | { type: "jump"; nodeId: number }
-  | { type: "load"; step: Step<MusicSpec> };
+  | { type: "load"; saved: SavedComposer | null }
+  | { type: "attach"; song: SongAttachment | undefined; from: AttachmentIdentity | null };
 
-function reducer(state: Step<MusicSpec>, action: Action): Step<MusicSpec> {
+/**
+ * The working copy, and whether the saved one has been read yet. Nothing is written until it
+ * has, so a tab never stores (and broadcasts) a blank copy over the saved one; kept in the
+ * reducer so React's double effect run in development cannot see a stale flag.
+ */
+interface ComposerState {
+  copy: SavedComposer;
+  loaded: boolean;
+}
+
+/** The step functions return a spec and history; the attachment rides along unchanged. */
+function keepSong(state: SavedComposer, step: { history: History; spec: MusicSpec }): SavedComposer {
+  return state.song ? { ...step, song: state.song } : step;
+}
+
+function copyReducer(state: SavedComposer, action: Exclude<Action, { type: "load" }>): SavedComposer {
   switch (action.type) {
     case "edit":
       try {
-        return commit(state.history, state.spec, action.ops, action.label, action.coalesce ? { coalesce: action.coalesce } : {});
+        return keepSong(state, commit(state.history, state.spec, action.ops, action.label, action.coalesce ? { coalesce: action.coalesce } : {}));
       } catch (error) {
         // An op that does not fit the spec is dropped whole, so the spec never half-applies.
         if (error instanceof PatchError) return state;
         throw error;
       }
     case "undo":
-      return undo(state.history, state.spec);
+      return keepSong(state, undo(state.history, state.spec));
     case "redo":
-      return redo(state.history, state.spec, action.childId);
+      return keepSong(state, redo(state.history, state.spec, action.childId));
     case "jump":
-      return jumpTo(state.history, state.spec, action.nodeId);
-    case "load":
-      return action.step;
+      return keepSong(state, jumpTo(state.history, state.spec, action.nodeId));
+    case "attach":
+      // Only onto the copy the save or freeze started from (see `stillCurrent`).
+      if (!stillCurrent(state.song, action.from)) return state;
+      return action.song ? { history: state.history, spec: state.spec, song: action.song } : { history: state.history, spec: state.spec };
   }
 }
 
@@ -48,11 +66,25 @@ export interface ComposerApi {
   spec: MusicSpec;
   history: History;
   catalog: Catalog;
+  /** The library song this working copy belongs to, if any. */
+  song: SongAttachment | undefined;
+  /**
+   * Attaches the working copy to a song after a save or freeze that started from the copy
+   * `from` identifies. Ignored when the copy has moved on since (another tab opened another
+   * song or variant), so a late result never lands on the wrong copy.
+   */
+  attach(song: SongAttachment | undefined, from: AttachmentIdentity | null): void;
   /** Commits `ops` as one undo step; a `coalesce` key folds consecutive typing into it. */
   edit(ops: PatchOp[], label: string, coalesce?: string): void;
   undo(): void;
   redo(childId?: number): void;
   jumpTo(nodeId: number): void;
+}
+
+function reducer(state: ComposerState, action: Action): ComposerState {
+  if (action.type === "load") return { copy: action.saved ?? state.copy, loaded: true };
+  const copy = copyReducer(state.copy, action);
+  return copy === state.copy ? state : { copy, loaded: state.loaded };
 }
 
 const ComposerContext = createContext<ComposerApi | null>(null);
@@ -68,40 +100,38 @@ export function op(kind: PatchOp["op"], path: string, value?: unknown): PatchOp 
   return kind === "remove" ? { op: kind, path, confidence: 1, rationale: "composer edit" } : { op: kind, path, value, confidence: 1, rationale: "composer edit" };
 }
 
-function isStep(value: unknown): value is Step<MusicSpec> {
-  if (typeof value !== "object" || value === null) return false;
-  const v = value as { spec?: { irVersion?: unknown }; history?: { nodes?: unknown; cursor?: unknown } };
-  return v.spec?.irVersion === 1 && Array.isArray(v.history?.nodes) && typeof v.history?.cursor === "number";
-}
-
 export function ComposerProvider({ children }: { children: ReactNode }) {
-  const [state, dispatch] = useReducer(reducer, undefined, () => ({ history: emptyHistory(), spec: defaultMusicSpec() }));
+  const [state, dispatch] = useReducer(reducer, undefined, (): ComposerState => ({ copy: { history: emptyHistory(), spec: defaultMusicSpec() }, loaded: false }));
 
   // Loaded after mount so the server render and the first client render agree.
   useEffect(() => {
-    try {
-      const saved = window.localStorage.getItem(STORAGE_KEY);
-      const parsed: unknown = saved ? JSON.parse(saved) : null;
-      if (isStep(parsed)) dispatch({ type: "load", step: parsed });
-    } catch {
-      // Storage can be unavailable (private mode, blocked site data); the composer still works.
-    }
+    dispatch({ type: "load", saved: readComposer() });
   }, []);
 
   useEffect(() => {
-    try {
-      window.localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-    } catch {
-      // Persisting is a convenience until S4; a full or blocked store must not break editing.
-    }
+    if (state.loaded) writeComposer(state.copy);
   }, [state]);
+
+  // Another tab saved, froze, opened a song or edited: follow it, so no tab writes back a
+  // stale attachment. Writing the same value again fires no event, so tabs settle.
+  useEffect(() => {
+    const onStorage = (event: StorageEvent) => {
+      if (event.key !== COMPOSER_KEY) return;
+      const saved = parseComposer(event.newValue);
+      if (saved) dispatch({ type: "load", saved });
+    };
+    window.addEventListener("storage", onStorage);
+    return () => window.removeEventListener("storage", onStorage);
+  }, []);
 
   const edit = useCallback((ops: PatchOp[], label: string, coalesce?: string) => dispatch({ type: "edit", ops, label, ...(coalesce ? { coalesce } : {}) }), []);
   const api = useMemo<ComposerApi>(
     () => ({
-      spec: state.spec,
-      history: state.history,
+      spec: state.copy.spec,
+      history: state.copy.history,
       catalog,
+      song: state.copy.song,
+      attach: (song: SongAttachment | undefined, from: AttachmentIdentity | null) => dispatch({ type: "attach", song, from }),
       edit,
       undo: () => dispatch({ type: "undo" }),
       redo: (childId?: number) => dispatch({ type: "redo", ...(childId === undefined ? {} : { childId }) }),

@@ -1,10 +1,11 @@
 /**
- * The library tables (supabase/migrations/20260926000000_library.sql) as TypeScript: the
- * column lists, the row shapes, and the mappers to the IR library types (docs/SPEC.md §2.2).
+ * The library tables (supabase/migrations/20260926000000_library.sql, and for songs and
+ * variants 20260926000400_songs.sql) as TypeScript: the column lists, the row shapes, and
+ * the mappers to the IR library types (docs/SPEC.md §2.2).
  * tests/integration/library-rls.test.ts checks LIBRARY_COLUMNS against the migrated
  * database, so this file cannot drift from the SQL.
  */
-import type { AudioFeatures, PaletteSwatch, Provenance, ReferenceAsset, StyleProfile, Tag } from "@/core/musicspec/ir/types";
+import type { AudioFeatures, DriftKind, MusicSpec, PaletteSwatch, Provenance, ReferenceAsset, StyleProfile, Tag, Take, TargetOverride } from "@/core/musicspec/ir/types";
 
 export const LIBRARY_COLUMNS = {
   genres: ["id", "name", "record", "updated_at"],
@@ -15,10 +16,17 @@ export const LIBRARY_COLUMNS = {
   style_profile_tags: ["profile_id", "tag_id", "owner_id"],
   file_genres: ["file_id", "genre_id", "owner_id"],
   file_tags: ["file_id", "tag_id", "owner_id"],
+  songs: ["id", "owner_id", "title", "brand", "spec", "overrides", "base_variant_id", "revision", "created_at", "updated_at"],
+  variants: ["id", "owner_id", "song_id", "seq", "label", "parent_variant_id", "spec_snapshot", "overrides", "created_at"],
+  takes: ["id", "owner_id", "variant_id", "engine", "engine_version", "render_ref", "verdict", "drifted", "words_blamed", "notes", "created_at"],
 } as const;
 
-/** Every table whose rows belong to one user; RLS limits each to its owner. */
-export const USER_SCOPED_TABLES = ["style_profiles", "files", "tags", "style_profile_genres", "style_profile_tags", "file_genres", "file_tags"] as const;
+/**
+ * Every table whose rows belong to one user; RLS limits each to its owner. A new
+ * user-scoped table joins this list, and tests/integration/library-rls.test.ts covers it
+ * (AGENTS.md).
+ */
+export const USER_SCOPED_TABLES = ["style_profiles", "files", "tags", "style_profile_genres", "style_profile_tags", "file_genres", "file_tags", "songs", "variants", "takes"] as const;
 
 export type StyleProfileRow = {
   id: string;
@@ -169,6 +177,59 @@ export type SaveImportArgs = {
   profile: { id: string; name: string; spec: StyleProfile["spec"]; analysedOn: string; model: string };
 };
 
+export type SongRow = {
+  id: string;
+  owner_id: string;
+  title: string;
+  brand: "VASEY.AUDIO";
+  spec: MusicSpec;
+  overrides: TargetOverride[];
+  base_variant_id: string | null;
+  revision: number;
+  created_at: string;
+  updated_at: string;
+};
+
+export type VariantRow = {
+  id: string;
+  owner_id: string;
+  song_id: string;
+  seq: number;
+  label: string;
+  parent_variant_id: string | null;
+  spec_snapshot: MusicSpec;
+  overrides: TargetOverride[];
+  created_at: string;
+};
+
+export type TakeRow = {
+  id: string;
+  owner_id: string;
+  variant_id: string;
+  engine: Take["engine"];
+  engine_version: string;
+  render_ref: string | null;
+  verdict: Take["verdict"];
+  drifted: DriftKind[];
+  words_blamed: string[];
+  notes: string;
+  created_at: string;
+};
+
+/**
+ * Arguments of `public.freeze_variant`. Every key is sent, `p_parent_variant_id` as `null`
+ * for a first variant: supabase-js drops `undefined` keys, and PostgREST then finds no
+ * function with that signature. The overrides come from the song row, and the diff and
+ * coverage are derived on read, so none of them is an argument.
+ */
+export type FreezeVariantArgs = {
+  p_song_id: string;
+  p_expected_revision: number;
+  p_title: string;
+  p_spec: MusicSpec;
+  p_parent_variant_id: string | null;
+};
+
 type LinkRow<K extends string> = { [P in K]: string } & { owner_id: string };
 type Table<Row, Insert> = { Row: Row; Insert: Insert; Update: Partial<Insert>; Relationships: [] };
 
@@ -188,11 +249,15 @@ export type Database = {
       style_profile_tags: Table<LinkRow<"profile_id" | "tag_id">, { profile_id: string; tag_id: string }>;
       file_genres: Table<LinkRow<"file_id" | "genre_id">, { file_id: string; genre_id: string }>;
       file_tags: Table<LinkRow<"file_id" | "tag_id">, { file_id: string; tag_id: string }>;
+      songs: Table<SongRow, { id?: string; title: string; spec: MusicSpec; base_variant_id?: string | null }>;
+      variants: Table<VariantRow, never>;
+      takes: Table<TakeRow, Omit<TakeRow, "id" | "owner_id" | "created_at">>;
     };
     Views: { [_ in never]: never };
     Functions: {
       save_import: { Args: SaveImportArgs; Returns: { file_id: string; profile_id: string; owner: string }[] };
       file_record: { Args: { sha256: string }; Returns: { present: boolean; owner: string }[] };
+      freeze_variant: { Args: FreezeVariantArgs; Returns: { variant_id: string; variant_label: string; song_revision: number; owner: string }[] };
     };
     Enums: { [_ in never]: never };
     CompositeTypes: { [_ in never]: never };

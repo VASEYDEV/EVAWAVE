@@ -8,7 +8,7 @@ export interface SupabasePublicConfig {
  * Reads the public Supabase settings.
  *
  * Returns `null` only when both variables are unset, which is the legitimate state
- * until a Supabase project is provisioned (S7). If exactly one is set, it throws: a
+ * until a Supabase project is provisioned. If exactly one is set, it throws: a
  * partial configuration is a deployment error, and treating it as "not configured"
  * would silently switch off session validation in src/proxy.ts. Callers that cannot
  * work without Supabase use {@link requireSupabasePublicConfig}.
