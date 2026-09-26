@@ -494,6 +494,11 @@ S5 per SPEC §3. The methods are listed in SPEC §3 S5 "Delivered".
   - The old scheduler fails the first case, and so does dropping the started check.
   - A new test opens a new bar after beat 4 when 4/4 becomes 3/4.
   - Two existing tests now pass the tick's `now`, as the metronome always does.
+- **Thirty-ninth review: the same file could not be chosen again.** Confirmed. The picker
+  kept the chosen file, so choosing it again after a failed import fired no `change`. On a
+  phone, with no drag and drop, the only retry was another file or a reload. The input is
+  now cleared once its file is taken. The length-refusal e2e checks the picker is empty
+  afterwards; the previous component fails it, still holding `C:\fakepath\long-take.wav`.
 
 ## Decisions
 
