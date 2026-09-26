@@ -215,6 +215,12 @@ S5 per SPEC §3. The methods are listed in SPEC §3 S5 "Delivered".
   through import, Create and Download, since a check on one path would pass vacuously
   under the new layout; storing at Create fails it. This separates lifecycles, not access
   (SECURITY.md).
+- **Eighteenth review: the fallback copy on a failed removal.** `removeLocalAudio` dropped
+  the in-tab copy before trying OPFS. When a blob had fallen back to the tab (OPFS opened
+  but could not write) and the OPFS entry was then locked, the delete failed and kept the
+  record, but its only copy was gone. The in-tab copy is now dropped last, once the OPFS
+  side has succeeded or had nothing to remove, so a failed removal removes nothing. A test
+  with that fallback and a locked entry fails on the old code.
 
 ## Decisions
 
