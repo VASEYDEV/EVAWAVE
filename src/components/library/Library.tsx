@@ -7,7 +7,7 @@
 import { useEffect, useId, useMemo, useState } from "react";
 
 import type { MusicSpec } from "@/core/musicspec/ir/types";
-import { deleteWithLocalAudio } from "@/lib/audio/browser";
+import { deleteWithLocalAudio, reconcileLocalAudio } from "@/lib/audio/browser";
 import { createLibraryClient } from "@/lib/library/client";
 import {
   createStyleProfile,
@@ -15,6 +15,7 @@ import {
   deleteFile,
   deleteStyleProfile,
   deleteTag,
+  hasFileRecord,
   loadLibrary,
   profileSpecFrom,
   setLink,
@@ -69,6 +70,13 @@ export function Library() {
     loadLibrary(client).then(
       (loaded) => {
         if (live) setData(loaded);
+        // Housekeeping: drop this device's copies whose record was deleted on another device.
+        // A failure leaves them for the next visit.
+        const known = new Set(loaded.files.map((f) => f.asset.sha256));
+        void client.auth
+          .getSession()
+          .then(({ data: { session } }) => (session ? reconcileLocalAudio(session.user.id, known, (sha256) => hasFileRecord(client, sha256)) : undefined))
+          .catch(() => undefined);
       },
       (error: unknown) => {
         if (live) setStatus(error instanceof Error ? error.message : "Could not load the library.");

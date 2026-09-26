@@ -5,7 +5,7 @@ import { analyseAudio } from "@/core/musicspec/analysis/features";
 import { decodeWav, encodeWav, WavError, type PcmAudio } from "@/core/musicspec/analysis/wav";
 import { applyReviewedPatch, audioProfileBase, AUDIO_DRAFT_MODEL, reviewPatch } from "@/core/musicspec/intake";
 import { lintStyleProfile } from "@/core/musicspec/lint";
-import { blobInTab, deleteWithLocalAudio, inTurnForLocalAudio, keepAudioFor, removeLocalAudio, storeInOpfs } from "@/lib/audio/browser";
+import { blobInTab, deleteWithLocalAudio, inTurnForLocalAudio, keepAudioFor, reconcileLocalAudio, removeLocalAudio, storeInOpfs } from "@/lib/audio/browser";
 import { importAudio, sha256Hex, type ImportDeps } from "@/lib/audio/import";
 import { deleteFile, LibraryError, saveImport, saveImportAndKeepAudio, type ImportRecord } from "@/lib/library/repository";
 import type { Database } from "@/lib/library/schema";
@@ -185,6 +185,15 @@ describe("import order", () => {
 });
 
 describe("a superseded import", () => {
+  it("never reads the file when a newer choice aborted it before it started", async () => {
+    const controller = new AbortController();
+    controller.abort();
+    const read = vi.spyOn(file, "arrayBuffer");
+    await expect(importAudio(file, nodeDeps(), controller.signal)).rejects.toThrow(/abort/i);
+    expect(read).not.toHaveBeenCalled();
+    read.mockRestore();
+  });
+
   it("stops before decoding when a newer choice aborts it during the hash", async () => {
     const controller = new AbortController();
     const decode = vi.fn(async (bytes: ArrayBuffer) => decodeWav(bytes));
@@ -275,6 +284,10 @@ describe("local audio on the device", () => {
       },
       removeEntry: async (name: string) => {
         if (!files.delete(`${path}/${name}`)) throw notFound();
+      },
+      // The names of the files directly in this directory.
+      keys: async function* () {
+        for (const file of [...files.keys()]) if (file.startsWith(`${path}/`) && !file.slice(path.length + 1).includes("/")) yield file.slice(path.length + 1);
       },
     });
     vi.stubGlobal("navigator", { storage: { getDirectory: async () => directory("") }, ...(locks ? { locks: fakeLockManager() } : {}) });
@@ -505,6 +518,18 @@ describe("local audio on the device", () => {
     fakeOpfs();
     expect(await saver.storeInOpfs(a("recovered-elsewhere-sha"), new Blob([wav]))).toBe("opfs");
     await vi.waitFor(() => expect(holder.blobInTab(a("recovered-elsewhere-sha"))).toBeUndefined());
+  });
+
+  it("removes local copies whose record is gone, checking each against the library first", async () => {
+    const files = fakeOpfs({ locks: true });
+    for (const key of [a("kept-sha"), a("orphan-sha"), a("late-sha"), b("other-sha")]) await storeInOpfs(key, new Blob([wav]));
+    // "late-sha" is missing from the loaded list (a truncated list, or a save since), but the library has it.
+    const hasRecord = vi.fn(async (sha256: string) => sha256 === "late-sha");
+    expect(await reconcileLocalAudio(OWNER_A, new Set(["kept-sha"]), hasRecord)).toEqual(["orphan-sha"]);
+    expect([...files.keys()].sort()).toEqual([`audio/${OWNER_A}/kept-sha`, `audio/${OWNER_A}/late-sha`, `audio/${OWNER_B}/other-sha`]);
+    expect(hasRecord.mock.calls.map(([sha256]) => sha256).sort()).toEqual(["late-sha", "orphan-sha"]);
+    // An account with nothing stored here has nothing to reconcile.
+    expect(await reconcileLocalAudio("00000000-0000-4000-8000-00000000000c", new Set(), hasRecord)).toEqual([]);
   });
 
   it("drops the in-tab copy once OPFS takes the file", async () => {

@@ -99,6 +99,11 @@ export async function deleteTag(client: LibraryClient, id: string): Promise<void
   check(await client.from("tags").delete().eq("id", id).select("id"), "delete tag");
 }
 
+/** True when the signed-in account has a file record for `sha256` (RLS scopes the query). */
+export async function hasFileRecord(client: LibraryClient, sha256: string): Promise<boolean> {
+  return check(await client.from("files").select("id").eq("sha256", sha256).limit(1), "check file record").length > 0;
+}
+
 /**
  * Deletes one file record, and rejects unless exactly that row went. RLS hides other owners'
  * rows, so after the signed-in account changes, a delete of a row loaded earlier succeeds

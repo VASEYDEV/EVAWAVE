@@ -239,6 +239,38 @@ async function deleteOnce(key: LocalAudioKey, deleteRecord: () => Promise<void>)
   audioChannel()?.postMessage({ drop: tabKey(key) });
 }
 
+/**
+ * Removes this account's local copies whose library record is gone: deleted from another
+ * device or browser profile, which cannot reach this device's copy. `known` holds the hashes
+ * of the records just loaded. Any other local copy is checked with `hasRecord` while holding
+ * its turn, so a truncated list, or a save in another tab, never costs a copy that still has
+ * a record. Resolves to the hashes removed.
+ */
+export async function reconcileLocalAudio(ownerId: string, known: ReadonlySet<string>, hasRecord: (sha256: string) => Promise<boolean>): Promise<string[]> {
+  if (typeof navigator === "undefined" || typeof navigator.storage?.getDirectory !== "function") return [];
+  let dir: FileSystemDirectoryHandle;
+  try {
+    dir = await ownerDirectory(await navigator.storage.getDirectory(), ownerId, false);
+  } catch (error) {
+    if (isDomError(error, "NotFoundError") || isDomError(error, "SecurityError")) return [];
+    throw error;
+  }
+  // Async iteration of a directory is in lib.dom.asynciterable, which this project does not load.
+  const names: string[] = [];
+  for await (const name of (dir as unknown as { keys(): AsyncIterable<string> }).keys()) names.push(name);
+  const removed: string[] = [];
+  for (const sha256 of names.filter((name) => !known.has(name))) {
+    const key = { ownerId, sha256 };
+    const gone = await inTurnForLocalAudio(key, async () => {
+      if (await hasRecord(sha256)) return false;
+      await removeLocalAudio(key);
+      return true;
+    });
+    if (gone) removed.push(sha256);
+  }
+  return removed;
+}
+
 /** The blob the memory fallback holds for this account's file, if this tab kept one. */
 export function blobInTab(key: LocalAudioKey): Blob | undefined {
   return tabMemory.get(tabKey(key));
