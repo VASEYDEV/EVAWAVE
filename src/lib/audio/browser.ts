@@ -111,11 +111,16 @@ const isDomError = (error: unknown, name: string) => error instanceof DOMExcepti
  * Removes this account's local copy of a file (OPFS and the in-tab fallback), for when its
  * library record is deleted. No OPFS API, a private window's refusal (storeInOpfs could keep
  * nothing there either), or nothing stored under the key is not an error; any other failure
- * (a lock, an I/O error) rejects, so the caller can keep the record and retry.
+ * (a lock, an I/O error) rejects and removes nothing, so the caller can keep the record and
+ * retry.
  */
 export async function removeLocalAudio(key: LocalAudioKey): Promise<void> {
+  if (typeof navigator !== "undefined" && typeof navigator.storage?.getDirectory === "function") await removeFromOpfs(key);
+  // Last, so a failed OPFS removal keeps the in-tab copy (the only one, after a fallback).
   tabMemory.delete(tabKey(key));
-  if (typeof navigator === "undefined" || typeof navigator.storage?.getDirectory !== "function") return;
+}
+
+async function removeFromOpfs(key: LocalAudioKey): Promise<void> {
   let root: FileSystemDirectoryHandle;
   try {
     root = await navigator.storage.getDirectory();

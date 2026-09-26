@@ -358,6 +358,21 @@ describe("local audio on the device", () => {
     expect(deleteRecord).not.toHaveBeenCalled();
   });
 
+  it("keeps a fallback copy when the OPFS removal fails, so the record keeps its audio", async () => {
+    const locked = new DOMException("the entry is locked", "NoModificationAllowedError");
+    // OPFS opens but cannot write (so the blob falls back to the tab), and its entry is locked.
+    opfsWith({
+      getFileHandle: async () => ({ getFile: async () => new Blob([]), createWritable: async () => Promise.reject(new DOMException("no writes", "NotSupportedError")) }),
+      removeEntry: async () => Promise.reject(locked),
+    });
+    const blob = new Blob([wav]);
+    expect(await storeInOpfs(a("fallback-locked-sha"), blob)).toBe("memory");
+    const deleteRecord = vi.fn(async () => {});
+    await expect(deleteWithLocalAudio(a("fallback-locked-sha"), deleteRecord)).rejects.toBe(locked);
+    expect(deleteRecord).not.toHaveBeenCalled();
+    expect(blobInTab(a("fallback-locked-sha"))).toBe(blob);
+  });
+
   it("removes the in-tab copy where OPFS is missing", async () => {
     expect(await storeInOpfs(a("tab-sha"), new Blob([wav]))).toBe("memory");
     expect(await storeInOpfs(b("tab-sha"), new Blob([wav]))).toBe("memory");
