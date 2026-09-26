@@ -1238,9 +1238,9 @@ Acceptance:
 Stop conditions: the session stops and reports if the Jinn v1.2 golden test cannot pass
 without altering a Jinn file, or if a Jinn prompt file is missing.
 
-Input status on 2026-09-26: `jinn-v1.2-condensed.md` is present.
-`jinn-v1.1-egypt-blueprint.md` is **missing**. The handoff package listed it as a
-drop-in that never arrived, so S1 cannot start until it is added.
+Input status: `jinn-v1.2-condensed.md` and `jinn-v1.1-egypt-blueprint.md` are both in
+`docs/evawave/reference/`. The blueprint was uploaded on 2026-09-26 and filed under the
+handoff package's target name, byte-identical.
 
 Known risk: the Jinn v1.2 Finale names about eleven instruments. It passes SC-1 only
 when "epic orchestra" counts as one ensemble record, which is the counting rule in §2.4.

@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- The Jinn reference drop-ins, filed byte-identically under the handoff package's target names in `docs/evawave/reference/`: `jinn-v1.1-egypt-blueprint.md` (S1's negative fixture), `jinn-v1.0-morocco.md` and `research-brief-2026-09-15.md`.
 - `docs/SPEC.md`, the single EVAWAVE spec (ADR 0004). It holds the product scope and confirmed decisions (A1–A16; Suno, ElevenLabs Music and Google Flow Music live, Udio halted), MusicSpec IR v1 as a complete, self-contained type definition that folds in all of the IR v0.3 delta, the "Defined, not inherited" list, the lint rules, and the build plan S1–S5.
 - ADR 0004: EVAWAVE owns MusicSpec IR, with no legacy compiler dependency. It supersedes ADR 0002 and carries its still-valid decisions forward.
 - The owner's 2026-09-26 restart brief, verbatim, in `docs/briefs/`.
@@ -38,6 +39,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- `main` failed the gate after the 2026-09-26 upload. `musicspec-compiler.tsx` at the repo root failed typecheck (TS7006, TS7053) and lint (`prefer-const`), because the root is inside `tsconfig.json`'s include. The three legacy compiler files now live in `docs/archive/legacy/`, which is excluded from tsconfig, ESLint and the gate scan. The upload's two chat bootstrap files moved to `docs/archive/handoff-chat/`. Three exact duplicates of files already in `docs/evawave/reference/` were removed.
 - `scripts/gate.sh` failed on `main` after the handoff archive was uploaded (`cafe6f3`): the placeholder check matched the double-brace sequence inside the archive's compressed bytes. The check now skips binary files (`grep -I`) and still catches placeholders in text files.
 - The `src/core/**` import boundary matched specifier spellings only, so dynamic `import("next/server")`, computed `import()` specifiers, `import("…")` type queries and respelled paths such as `@/lib/./supabase/client` or `@//lib/../lib/supabase/client` got through. A local rule, `eslint-rules/core-boundary.mjs`, now checks the normalized target of every import form, with regression probes for each form and spelling. The same rule also rejects implicit dependencies in the core: JSX, `/// <reference>` directives and `declare module` augmentations of forbidden modules. Runtime loading is closed too: Node built-ins (including `createRequire` from `node:module`), `require`/`module`/`process` globals, their `globalThis.*` forms, `eval` and `new Function` are banned in `src/core`.
 - The Flow engine profile listed Seed after BPM and Length. Its own verified Compose-sheet order is Seed, BPM, Length, and a new data test ties `order` to that list.

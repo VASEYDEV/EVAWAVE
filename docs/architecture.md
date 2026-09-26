@@ -44,7 +44,8 @@ golden file.
 - [SPEC](SPEC.md): product scope and decisions (A1–A16), MusicSpec IR v1 with the
   "Defined, not inherited" list, lint rules, and the build plan S1–S5.
 - [Instrument bank seed v0.1](evawave/instrument-bank-seed-v0.1.md).
-- Reference set, ground truth: [`evawave/reference/`](evawave/reference/).
+- Reference set, ground truth: [`evawave/reference/`](evawave/reference/) (Jinn v1.0, v1.1
+  blueprint and v1.2, the voice-memo transcript, the handoff brief, the research brief).
 - History: [`archive/`](archive/) (Build Brief v0.1, scope v0.2, IR v0.3 delta).
 - Decisions: [ADR 0001](decisions/0001-repo-bootstrap.md),
   [ADR 0002](decisions/0002-session-0-intake-and-stack.md) (superseded),
@@ -53,8 +54,6 @@ golden file.
 
 ## Open items
 
-- `docs/evawave/reference/jinn-v1.1-egypt-blueprint.md`, S1's negative fixture, is not in
-  the repo. S1 cannot start until it is added (SPEC §3).
 - Flow verification results and the ElevenLabs web-app form surface (SPEC §1.11).
 - Tagging model for audio import (SPEC §1.11).
 - PWA and service-worker tooling: to be checked against Turbopack, with options reported,
