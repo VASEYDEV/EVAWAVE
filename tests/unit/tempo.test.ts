@@ -113,7 +113,8 @@ describe("metronome scheduling", () => {
       [1.5, 3, "beat"],
       [2, 0, "bar"],
     ]);
-    expect(cursor).toEqual({ nextTime: 2.5, beatTime: 2.5, beatSec: 0.5, beat: 1, step: 0 });
+    // The cursor stays on the beat of its last click, so that beat can still be re-timed.
+    expect(cursor).toEqual({ beatTime: 2, beatSec: 0.5, beat: 0, lastTime: 2 });
   });
 
   it("accents 1 and 3 in half-time mode", () => {
@@ -156,7 +157,7 @@ describe("metronome scheduling", () => {
 
   it("keeps beats advancing when the subdivision changes mid-beat", () => {
     const sixteenths = scheduleClicks(startCursor(0), 0.3, { ...settings, subdivision: 4 });
-    expect(sixteenths.cursor.step).toBe(3);
+    expect(sixteenths.cursor.lastTime).toBe(0.25);
     // 16ths at 120 BPM were scheduled through 0.25 s; the next beat is still at 0.5 s.
     const { clicks } = scheduleClicks(sixteenths.cursor, 1.6, { ...settings, subdivision: 2 });
     expect(clicks.map((c) => [c.time, c.beat, c.step, c.accent])).toEqual([
@@ -169,9 +170,9 @@ describe("metronome scheduling", () => {
   });
 
   it("finishes the beat in progress at its own tempo and applies a new BPM from the next beat", () => {
-    // 16ths at 120 BPM sounded through 0.25 s; the tempo then doubles to 240 BPM.
+    // 16ths at 120 BPM sounded through 0.25 s; the tempo then doubles to 240 BPM at 0.3 s.
     const before = scheduleClicks(startCursor(0), 0.3, { ...settings, subdivision: 4 });
-    const { clicks } = scheduleClicks(before.cursor, 0.7, { ...settings, bpm: 240, subdivision: 4 });
+    const { clicks } = scheduleClicks(before.cursor, 0.7, { ...settings, bpm: 240, subdivision: 4 }, 0.3);
     expect(clicks.map((c) => [c.time, c.beat, c.step])).toEqual([
       [0.375, 0, 3],
       [0.5, 1, 0],
@@ -191,11 +192,44 @@ describe("metronome scheduling", () => {
   it("lands on the finer grid of the same beat when the subdivision increases mid-beat", () => {
     // 8ths at 60 BPM, scheduled through 0.3 s: the next 8th was due at 0.5 s.
     const eighths = scheduleClicks(startCursor(0), 0.3, { ...settings, bpm: 60, subdivision: 2 });
-    const { clicks } = scheduleClicks(eighths.cursor, 1.1, { ...settings, bpm: 60, subdivision: 4 });
+    // The change comes at 0.3 s, after the 16th at 0.25 s would have sounded.
+    const { clicks } = scheduleClicks(eighths.cursor, 1.1, { ...settings, bpm: 60, subdivision: 4 }, 0.3);
     expect(clicks.map((c) => [c.time, c.beat, c.step])).toEqual([
       [0.5, 0, 2],
       [0.75, 0, 3],
       [1, 1, 0],
+    ]);
+  });
+
+  /** Runs the metronome's 25 ms tick from 0 to `end` s, with the tempo `bpmAt` gives each tick. */
+  const run = (end: number, bpmAt: (now: number) => number) => {
+    let cursor = startCursor(0);
+    const times: number[] = [];
+    for (let i = 0; i * 0.025 <= end; i++) {
+      const now = i * 0.025;
+      const tick = scheduleClicks(cursor, now + 0.1, { ...settings, bpm: bpmAt(now) }, now);
+      times.push(...tick.clicks.map((c) => c.time));
+      cursor = tick.cursor;
+    }
+    return times;
+  };
+
+  it("applies a tempo change to the next beat to sound, even when its downbeat is already scheduled", () => {
+    // At 120 BPM the tick at 0.425 s schedules the 0.5 s downbeat; the tempo doubles at 0.45 s,
+    // before that beat starts, so it lasts a 240 BPM beat.
+    expect(run(1.2, (now) => (now < 0.45 ? 120 : 240))).toEqual([0, 0.5, 0.75, 1, 1.25]);
+    // Once the 0.5 s beat has started, it keeps its length and the change applies from 1 s.
+    expect(run(1.2, (now) => (now < 0.55 ? 120 : 240))).toEqual([0, 0.5, 1, 1.25]);
+  });
+
+  it("opens a new bar after the last beat of a bar when the meter shrinks", () => {
+    // Four beats of 4/4 scheduled (0 to 1.5 s); the meter becomes 3/4 before the next downbeat.
+    const four = scheduleClicks(startCursor(0), 1.6, settings);
+    expect(four.cursor.beat).toBe(3);
+    const { clicks } = scheduleClicks(four.cursor, 2.6, { ...settings, beatsPerBar: 3 }, 1.6);
+    expect(clicks.map((c) => [c.time, c.beat, c.accent])).toEqual([
+      [2, 0, "bar"],
+      [2.5, 1, "beat"],
     ]);
   });
 

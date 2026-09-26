@@ -142,70 +142,78 @@ export interface Click {
 }
 
 export interface MetronomeCursor {
-  /** Audio time of the next click. */
-  nextTime: number;
-  /** Audio time of the beat the next click belongs to; subdivisions count from it. */
+  /** Audio time of the beat the last scheduled click belongs to (the first beat, before any). */
   beatTime: number;
   /**
-   * Length of that beat at the tempo it started with, so a tempo change takes effect at the
-   * next beat. 0 when no beat has started yet.
+   * That beat's length. It holds once the beat has started; a beat still ahead, even with its
+   * downbeat scheduled, takes the tempo current at the next tick. 0 before any click.
    */
   beatSec: number;
+  /** That beat's 0-based position in the bar. */
   beat: number;
-  step: number;
+  /** Audio time of the last scheduled click; −Infinity before any. */
+  lastTime: number;
 }
 
 /** A cursor whose first click, a downbeat, falls at `time`. */
 export function startCursor(time: number): MetronomeCursor {
-  return { nextTime: time, beatTime: time, beatSec: 0, beat: 0, step: 0 };
+  return { beatTime: time, beatSec: 0, beat: 0, lastTime: Number.NEGATIVE_INFINITY };
 }
 
 /** Rounding slack when mapping a time back onto the step grid. */
 const GRID_EPSILON = 1e-9;
 
 /**
- * The clicks due before `until` (audio time), starting at the cursor, and the cursor after
- * them. Called every tick with `until = now + lookahead`. Clicks that fell due before `now`
- * (a tick stalled by a background tab or a long task) are skipped, not played late in a burst;
- * the grid and the bar position carry on from where they would be.
+ * The clicks due before `until` (audio time) after the cursor's last click, and the cursor
+ * after them. Called every tick with `until = now + lookahead`. Clicks that fell due before
+ * `now` (a tick stalled by a background tab or a long task) are skipped, not played late in a
+ * burst; the grid and the bar position carry on from where they would be.
  */
 export function scheduleClicks(cursor: MetronomeCursor, until: number, settings: MetronomeSettings, now = -Infinity): { clicks: Click[]; cursor: MetronomeCursor } {
   if (!(settings.bpm > 0)) throw new RangeError(`bpm must be positive, got ${settings.bpm}`);
   const newBeatSec = 60 / settings.bpm;
   const clicks: Click[] = [];
-  let { beatTime, beat } = cursor;
-  // The beat in progress keeps the tempo it started with; a tempo change applies from the next
-  // beat, so no time that already sounded is reinterpreted.
-  let beatSec = cursor.beatSec > 0 ? cursor.beatSec : newBeatSec;
+  let { beatTime, lastTime, beat } = cursor;
+  // A beat with nothing scheduled yet takes its place in the current meter now; one that has
+  // sounded past a shrunk bar's end is followed by a new bar (nextBeat).
+  if (lastTime < beatTime - GRID_EPSILON && beat >= settings.beatsPerBar) beat = 0;
+  // A beat that has started keeps the tempo it started with, so no time that already sounded
+  // is reinterpreted. A beat still ahead takes the current tempo, even when its downbeat is
+  // already scheduled, so a change applies from the next beat to sound.
+  let beatSec = cursor.beatSec > 0 && beatTime <= now ? cursor.beatSec : newBeatSec;
   const nextBeat = () => {
     beatTime += beatSec;
-    beat += 1;
+    // Past the bar's end (the meter may have shrunk mid-bar), the next beat opens a new bar.
+    beat = beat + 1 >= settings.beatsPerBar ? 0 : beat + 1;
     beatSec = newBeatSec;
   };
-  // Settings can change between ticks while the metronome runs. Re-derive the next click from
-  // its beat: the first step of the current grid at or after the old next click (or `now`,
-  // after a stall), or the next beat's downbeat past the last step, so a new subdivision keeps
-  // the beat grid in phase.
-  const from = Math.max(cursor.nextTime, now);
-  while (beatTime + beatSec <= from + GRID_EPSILON) nextBeat();
-  let step = Math.max(0, Math.ceil((from - beatTime) / (beatSec / settings.subdivision) - GRID_EPSILON));
-  if (step >= settings.subdivision) {
-    nextBeat();
-    step = 0;
-  }
-  beat %= settings.beatsPerBar;
-  let nextTime = beatTime + step * (beatSec / settings.subdivision);
-  while (nextTime < until) {
-    // Beat 3 exists whenever beat is 2 (it wraps at beatsPerBar), in any meter of three or more.
-    const accentBeat = beat === 0 || (settings.halfTimeAccent && beat === 2);
-    clicks.push({ time: nextTime, beat, step, accent: step !== 0 ? "sub" : accentBeat ? "bar" : "beat" });
-    step += 1;
-    if (step === settings.subdivision) {
-      step = 0;
+  // Settings can change between ticks while the metronome runs. The next click is the first
+  // step of the current grid after the last scheduled click and not before `now`, so a new
+  // subdivision or tempo keeps the beat grid in phase.
+  const firstStep = () => {
+    const stepSec = beatSec / settings.subdivision;
+    return Math.max(0, Math.ceil((now - beatTime) / stepSec - GRID_EPSILON), Math.floor((lastTime - beatTime) / stepSec + GRID_EPSILON) + 1);
+  };
+  let step = firstStep();
+  for (;;) {
+    if (step >= settings.subdivision) {
+      // Move to the next beat only to schedule a click in it, so a beat that has not started
+      // stays the cursor's beat and the next tick can still re-time it. After a stall, this
+      // walks past the beats that fell due before `now`.
+      if (beatTime + beatSec >= until) break;
       nextBeat();
-      beat %= settings.beatsPerBar;
+      step = firstStep();
+      continue;
     }
-    nextTime = beatTime + step * (beatSec / settings.subdivision);
+    const time = beatTime + step * (beatSec / settings.subdivision);
+    if (time >= until) break;
+    // A beat past a shrunk bar's end counts as a downbeat. Beat 3 exists whenever beat is 2, in
+    // any meter of three or more.
+    const inBar = beat >= settings.beatsPerBar ? 0 : beat;
+    const accentBeat = inBar === 0 || (settings.halfTimeAccent && inBar === 2);
+    clicks.push({ time, beat: inBar, step, accent: step !== 0 ? "sub" : accentBeat ? "bar" : "beat" });
+    lastTime = time;
+    step += 1;
   }
-  return { clicks, cursor: { nextTime, beatTime, beatSec, beat, step } };
+  return { clicks, cursor: { beatTime, beatSec, beat, lastTime } };
 }
