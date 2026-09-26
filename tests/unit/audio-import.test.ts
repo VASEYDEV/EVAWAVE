@@ -42,7 +42,7 @@ function recorder() {
       bodyKind: body === null ? "none" : typeof body === "string" ? "string" : Object.prototype.toString.call(body),
     });
     const single = new Headers(init?.headers).get("accept")?.includes("vnd.pgrst.object") ?? false;
-    const row = url.includes("/files") ? { id: "file-1" } : { id: "profile-1" };
+    const row = url.includes("/rpc/save_import") ? { file_id: "file-1", profile_id: "profile-1" } : { id: "row-1" };
     return new Response(JSON.stringify(single ? row : [row]), { status: 201, headers: { "content-type": "application/json" } });
   });
   return { requests, fetchMock };
@@ -95,8 +95,8 @@ describe("audio import (§1.7)", () => {
     });
     expect(saved).toEqual({ fileId: "file-1", profileId: "profile-1" });
 
-    // Only two JSON rows left the device, and neither carries audio.
-    expect(requests.map((r) => `${r.method} ${new URL(r.url).pathname}`)).toEqual(["POST /rest/v1/files", "POST /rest/v1/style_profiles"]);
+    // One JSON request left the device, the atomic save_import call, and it carries no audio.
+    expect(requests.map((r) => `${r.method} ${new URL(r.url).pathname}`)).toEqual(["POST /rest/v1/rpc/save_import"]);
     for (const request of requests) {
       expect(request.bodyKind).toBe("string");
       expect(carriesAudio(request.body ?? "")).toBe(false);
@@ -104,14 +104,14 @@ describe("audio import (§1.7)", () => {
     const sent = requests.reduce((n, r) => n + (r.body?.length ?? 0), 0);
     expect(sent).toBeLessThan(wav.byteLength / 20);
 
-    // The profile is upserted by the id made on the device, so a second save writes the same row.
-    expect(new URL(requests[1]?.url ?? "").searchParams.get("on_conflict")).toBe("id");
-
-    // The saved profile row names its provenance and cites the file, not the audio.
-    const profileRow = JSON.parse(requests[1]?.body ?? "{}") as { id: string; provenance: { kind: string; sourceRef: string; model: string } };
-    expect(profileRow.id).toBe(PROFILE_ID);
-    expect(profileRow.provenance).toEqual({ kind: "audio-analysis", sourceRef: "file-1", analysedOn: "2026-09-26T12:00:00.000Z", model: AUDIO_DRAFT_MODEL });
-    expect(lintStyleProfile({ id: "profile-1", ownerId: "u", name: "Desert loop", provenance: profileRow.provenance as never, spec, features: imported.features, genreIds: [], tags: [], createdAt: "", updatedAt: "" })).toEqual([]);
+    // The call carries the file's metadata and the profile with its device-made id; the
+    // function writes both in one transaction and cites the file in the provenance
+    // (tests/integration/library-rls.test.ts runs it under RLS).
+    const args = JSON.parse(requests[0]?.body ?? "{}") as { file: { sha256: string }; profile: { id: string; analysedOn: string; model: string } };
+    expect(args.file.sha256).toBe(imported.asset.sha256);
+    expect(args.profile).toEqual(expect.objectContaining({ id: PROFILE_ID, analysedOn: "2026-09-26T12:00:00.000Z", model: AUDIO_DRAFT_MODEL }));
+    const provenance = { kind: "audio-analysis" as const, sourceRef: saved.fileId, analysedOn: imported.analysedOn, model: AUDIO_DRAFT_MODEL };
+    expect(lintStyleProfile({ id: saved.profileId, ownerId: "u", name: "Desert loop", provenance, spec, features: imported.features, genreIds: [], tags: [], createdAt: "", updatedAt: "" })).toEqual([]);
   });
 
   it("proves the detector: a body with the audio in it is caught", () => {

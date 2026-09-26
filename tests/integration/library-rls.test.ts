@@ -210,6 +210,39 @@ describe("library access for other roles and tables", () => {
     await expect(as(A, () => rows(insert, ["n".repeat(PROFILE_NAME_MAX + 1)]))).rejects.toThrow(/check constraint/);
   });
 
+  describe("save_import (one transaction, under RLS)", () => {
+    const call = "select * from public.save_import($1::jsonb, $2::jsonb)";
+    const file = (sha: string) => JSON.stringify({ filename: "loop.wav", mime: "audio/wav", bytes: 10, sha256: sha, features: { durationSec: 1 } });
+    const profile = (id: string, name = "Desert loop") => JSON.stringify({ id, name, spec: {}, analysedOn: "2026-09-26T12:00:00.000Z", model: "evawave-audio-draft-v1" });
+    const P = "3a6f1d2e-9b8c-4c7d-a1e2-0f9e8d7c6b5a";
+
+    it("writes the file and the profile that cites it, and a repeat writes the same rows", async () => {
+      const [first] = (await as(A, () => rows(call, [file(SHA("d")), profile(P)]))) as { file_id: string; profile_id: string }[];
+      const [again] = (await as(A, () => rows(call, [file(SHA("d")), profile(P)]))) as { file_id: string; profile_id: string }[];
+      expect(again).toEqual(first);
+      expect(await truth("files", "sha256 = $1", [SHA("d")])).toHaveLength(1);
+      const [row] = await truth("style_profiles", "id = $1", [P]);
+      expect(row?.provenance).toEqual({ kind: "audio-analysis", sourceRef: first?.file_id, analysedOn: "2026-09-26T12:00:00.000Z", model: "evawave-audio-draft-v1" });
+      expect(row?.owner_id).toBe(A);
+    });
+
+    it("leaves no file row when the profile write fails", async () => {
+      await expect(as(A, () => rows(call, [file(SHA("e")), profile("7b6a5f4e-3d2c-4b1a-9f8e-7d6c5b4a3f2e", "n".repeat(PROFILE_NAME_MAX + 1))]))).rejects.toThrow(/check constraint/);
+      expect(await truth("files", "sha256 = $1", [SHA("e")])).toHaveLength(0);
+    });
+
+    it("refuses another owner's profile id, and keeps none of that call's rows", async () => {
+      await expect(as(B, () => rows(call, [file(SHA("f")), profile(P, "stolen")]))).rejects.toThrow(/row-level security/);
+      expect(await truth("files", "owner_id = $1 and sha256 = $2", [B, SHA("f")])).toHaveLength(0);
+      const [row] = await truth("style_profiles", "id = $1", [P]);
+      expect([row?.owner_id, row?.name]).toEqual([A, "Desert loop"]);
+    });
+
+    it("is not callable signed out", async () => {
+      await expect(as(null, () => rows(call, [file(SHA("a")), profile(P)]))).rejects.toThrow(/permission denied/);
+    });
+  });
+
   it("stamps updated_at when an owner edits a profile", async () => {
     const [before] = await truth("style_profiles", "id = $1", [ids.profile]);
     await as(A, () => rows("update public.style_profiles set name = 'A profile, renamed' where id = $1", [ids.profile]));

@@ -114,6 +114,16 @@ export function styleProfileInsert(profile: Pick<StyleProfile, "name" | "provena
   return { name: profile.name, provenance: profile.provenance, spec: profile.spec, ...(profile.features ? { features: profile.features } : {}) };
 }
 
+/**
+ * Arguments of `public.save_import` (supabase/migrations/20260926000200_save_import.sql): file
+ * metadata and the profile that cites it, never the audio. The profile `id` is made on the
+ * device when the profile is created, so saving it twice writes one row.
+ */
+export type SaveImportArgs = {
+  file: { filename: string; mime: string; bytes: number; sha256: string; features: AudioFeatures };
+  profile: { id: string; name: string; spec: StyleProfile["spec"]; analysedOn: string; model: string };
+};
+
 type LinkRow<K extends string> = { [P in K]: string } & { owner_id: string };
 type Table<Row, Insert> = { Row: Row; Insert: Insert; Update: Partial<Insert>; Relationships: [] };
 
@@ -135,7 +145,9 @@ export type Database = {
       file_tags: Table<LinkRow<"file_id" | "tag_id">, { file_id: string; tag_id: string }>;
     };
     Views: { [_ in never]: never };
-    Functions: { [_ in never]: never };
+    Functions: {
+      save_import: { Args: SaveImportArgs; Returns: { file_id: string; profile_id: string }[] };
+    };
     Enums: { [_ in never]: never };
     CompositeTypes: { [_ in never]: never };
   };

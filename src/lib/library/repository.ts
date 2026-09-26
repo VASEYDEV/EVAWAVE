@@ -5,9 +5,9 @@
  */
 import type { SupabaseClient } from "@supabase/supabase-js";
 
-import type { AudioFeatures, MusicSpec, Provenance, ReferenceAsset, StyleProfile, Tag } from "@/core/musicspec/ir/types";
+import type { MusicSpec, Provenance, ReferenceAsset, StyleProfile, Tag } from "@/core/musicspec/ir/types";
 
-import { toReferenceAsset, toStyleProfile, toTag, type Database } from "./schema";
+import { toReferenceAsset, toStyleProfile, toTag, type Database, type SaveImportArgs } from "./schema";
 
 export type LibraryClient = SupabaseClient<Database>;
 
@@ -125,35 +125,16 @@ export async function setLink(client: LibraryClient, table: LinkTable, ownerKey:
 }
 
 /** File metadata and an audio-analysis profile from an import (docs/SPEC.md §1.7). Never the audio. */
-export interface ImportRecord {
-  file: { filename: string; mime: string; bytes: number; sha256: string; features: AudioFeatures };
-  /** `id` is generated on the device when the profile is created, so saving is idempotent. */
-  profile: { id: string; name: string; spec: StyleProfile["spec"]; analysedOn: string; model: string };
-}
+export type ImportRecord = SaveImportArgs;
 
 /**
- * Saves an import: the file's metadata (upserted by sha256, so a re-import reuses the row),
- * then the style profile that cites it, upserted by its id, so a repeated save of the same
- * profile (a double click) writes one row. RLS keeps another owner's id from being reused.
- * Only these JSON rows are sent; the blob stays on the device (A6).
+ * Saves an import in one transaction through `public.save_import`: the file's metadata
+ * (upserted by sha256, so a re-import reuses the row) and the style profile that cites it
+ * (upserted by its device-made id, so a repeated save writes one row). A failure part-way
+ * leaves neither row, and RLS keeps another owner's id from being reused. Only this JSON is
+ * sent; the blob stays on the device (A6).
  */
 export async function saveImport(client: LibraryClient, record: ImportRecord): Promise<{ fileId: string; profileId: string }> {
-  const file = check(
-    await client
-      .from("files")
-      .upsert({ kind: "audio", ...record.file }, { onConflict: "owner_id,sha256" })
-      .select("id")
-      .single(),
-    "save file metadata",
-  );
-  const provenance: Provenance = { kind: "audio-analysis", sourceRef: file.id, analysedOn: record.profile.analysedOn, model: record.profile.model };
-  const profile = check(
-    await client
-      .from("style_profiles")
-      .upsert({ id: record.profile.id, name: record.profile.name, spec: record.profile.spec, provenance, features: record.file.features }, { onConflict: "id" })
-      .select("id")
-      .single(),
-    "save style profile",
-  );
-  return { fileId: file.id, profileId: profile.id };
+  const saved = check(await client.rpc("save_import", record).single(), "save import");
+  return { fileId: saved.file_id, profileId: saved.profile_id };
 }
