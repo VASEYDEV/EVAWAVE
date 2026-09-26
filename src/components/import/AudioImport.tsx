@@ -137,7 +137,9 @@ export function AudioImport() {
         file: { filename: asset.filename, mime: asset.mime, bytes: asset.bytes, sha256: asset.sha256, features },
         profile: { id: profile.id, name: profile.name, spec: profile.spec, analysedOn, model: AUDIO_DRAFT_MODEL },
       };
-      const storedIn = await saveImportAndKeepAudio(client, record, source, storeInOpfs);
+      // Kept under the account that owns the saved row: auth.uid(), which the database writes as owner_id.
+      const ownerId = data.session.user.id;
+      const storedIn = await saveImportAndKeepAudio(client, record, source, (sha256, audio) => storeInOpfs({ ownerId, sha256 }, audio));
       const where = storedIn === "opfs" ? "in this browser's private storage" : "in memory for this tab only";
       if (inFlight.current === current) setStatus(`Saved "${profile.name}" and the file's metadata to your library. The audio stays ${where}.`);
     } catch (error) {

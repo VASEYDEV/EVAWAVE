@@ -217,12 +217,16 @@ describe("a superseded import", () => {
   });
 });
 
+/** Two accounts signed in, one after the other, on the same browser. */
+const OWNER_A = "00000000-0000-4000-8000-00000000000a";
+const OWNER_B = "00000000-0000-4000-8000-00000000000b";
+
 describe("the storage fallback", () => {
   it("keeps the blob in the tab when OPFS is missing, as the import reports", async () => {
     // Node has no navigator.storage, like a browser without OPFS.
     const blob = new Blob([wav]);
-    expect(await storeInOpfs("fallback-sha", blob)).toBe("memory");
-    expect(blobInTab("fallback-sha")).toBe(blob);
+    expect(await storeInOpfs({ ownerId: OWNER_A, sha256: "fallback-sha" }, blob)).toBe("memory");
+    expect(blobInTab({ ownerId: OWNER_A, sha256: "fallback-sha" })).toBe(blob);
   });
 });
 
@@ -231,17 +235,31 @@ describe("local audio on the device", () => {
     vi.unstubAllGlobals();
   });
 
-  /** An in-memory stand-in for the Origin Private File System's audio directory. */
+  /**
+   * An in-memory stand-in for the Origin Private File System: a directory tree whose files
+   * are keyed by their path below the root, such as "audio/<owner>/<sha256>".
+   */
   function fakeOpfs() {
     const files = new Map<string, Blob>();
-    const dir = {
+    const dirs = new Set<string>([""]);
+    const notFound = () => new DOMException("not found", "NotFoundError");
+    const directory = (path: string) => ({
+      getDirectoryHandle: async (name: string, options?: { create?: boolean }) => {
+        const child = path ? `${path}/${name}` : name;
+        if (!dirs.has(child)) {
+          if (!options?.create) throw notFound();
+          dirs.add(child);
+        }
+        return directory(child);
+      },
       getFileHandle: async (name: string, options?: { create?: boolean }) => {
-        if (!files.has(name)) {
-          if (!options?.create) throw new DOMException("not found", "NotFoundError");
-          files.set(name, new Blob([]));
+        const file = `${path}/${name}`;
+        if (!files.has(file)) {
+          if (!options?.create) throw notFound();
+          files.set(file, new Blob([]));
         }
         return {
-          getFile: async () => files.get(name) as Blob,
+          getFile: async () => files.get(file) as Blob,
           createWritable: async () => {
             let data = new Blob([]);
             return {
@@ -249,85 +267,102 @@ describe("local audio on the device", () => {
                 data = blob;
               },
               close: async () => {
-                files.set(name, data);
+                files.set(file, data);
               },
             };
           },
         };
       },
       removeEntry: async (name: string) => {
-        if (!files.delete(name)) throw new DOMException("not found", "NotFoundError");
+        if (!files.delete(`${path}/${name}`)) throw notFound();
       },
-    };
-    vi.stubGlobal("navigator", { storage: { getDirectory: async () => ({ getDirectoryHandle: async () => dir }) } });
+    });
+    vi.stubGlobal("navigator", { storage: { getDirectory: async () => directory("") } });
     return files;
   }
 
+  /** An OPFS whose every directory is `dir`, for stubbing one failing operation. */
+  function opfsWith(dir: object) {
+    const self = { ...dir, getDirectoryHandle: async () => self };
+    vi.stubGlobal("navigator", { storage: { getDirectory: async () => self } });
+  }
+
+  const a = (sha256: string) => ({ ownerId: OWNER_A, sha256 });
+  const b = (sha256: string) => ({ ownerId: OWNER_B, sha256 });
+
   it("removes the OPFS copy when its record is deleted", async () => {
     const files = fakeOpfs();
-    expect(await storeInOpfs("opfs-sha", new Blob([wav]))).toBe("opfs");
-    expect(files.has("opfs-sha")).toBe(true);
-    await removeLocalAudio("opfs-sha");
-    expect(files.has("opfs-sha")).toBe(false);
-    // Removing again, or a hash never stored, is not an error.
-    await expect(removeLocalAudio("opfs-sha")).resolves.toBeUndefined();
+    expect(await storeInOpfs(a("opfs-sha"), new Blob([wav]))).toBe("opfs");
+    expect(files.has(`audio/${OWNER_A}/opfs-sha`)).toBe(true);
+    await removeLocalAudio(a("opfs-sha"));
+    expect(files.has(`audio/${OWNER_A}/opfs-sha`)).toBe(false);
+    // Removing again, a hash never stored, or an owner with nothing stored is not an error.
+    await expect(removeLocalAudio(a("opfs-sha"))).resolves.toBeUndefined();
+    await expect(removeLocalAudio(b("opfs-sha"))).resolves.toBeUndefined();
+  });
+
+  it("keeps each account's copy of the same file apart", async () => {
+    const files = fakeOpfs();
+    const blob = new Blob([wav]);
+    await storeInOpfs(a("shared-sha"), blob);
+    await storeInOpfs(b("shared-sha"), blob);
+    expect(files.size).toBe(2);
+    await deleteWithLocalAudio(a("shared-sha"), async () => {});
+    expect([...files.keys()]).toEqual([`audio/${OWNER_B}/shared-sha`]);
+    await removeLocalAudio(b("shared-sha"));
+    expect(files.size).toBe(0);
   });
 
   it("rejects when OPFS refuses the removal, so the record can stay for a retry", async () => {
     const files = fakeOpfs();
-    await storeInOpfs("locked-sha", new Blob([wav]));
+    await storeInOpfs(a("locked-sha"), new Blob([wav]));
     const locked = new DOMException("the entry is locked", "NoModificationAllowedError");
-    vi.stubGlobal("navigator", {
-      storage: {
-        getDirectory: async () => ({
-          getDirectoryHandle: async () => ({
-            removeEntry: async () => {
-              throw locked;
-            },
-          }),
-        }),
+    opfsWith({
+      removeEntry: async () => {
+        throw locked;
       },
     });
-    await expect(removeLocalAudio("locked-sha")).rejects.toBe(locked);
-    expect(files.has("locked-sha")).toBe(true);
+    await expect(removeLocalAudio(a("locked-sha"))).rejects.toBe(locked);
+    expect(files.has(`audio/${OWNER_A}/locked-sha`)).toBe(true);
   });
 
   it("rejects when OPFS itself fails, but not when a private window refuses it", async () => {
     const refusing = (name: string) => vi.stubGlobal("navigator", { storage: { getDirectory: async () => Promise.reject(new DOMException("no", name)) } });
     refusing("UnknownError");
-    await expect(removeLocalAudio("any-sha")).rejects.toThrow("no");
+    await expect(removeLocalAudio(a("any-sha"))).rejects.toThrow("no");
     refusing("SecurityError");
-    await expect(removeLocalAudio("any-sha")).resolves.toBeUndefined();
+    await expect(removeLocalAudio(a("any-sha"))).resolves.toBeUndefined();
   });
 
   it("deletes the record and the local copy together, or neither when the record's delete fails", async () => {
     const files = fakeOpfs();
     const blob = new Blob([wav]);
-    await storeInOpfs("paired-sha", blob);
-    await expect(deleteWithLocalAudio("paired-sha", async () => Promise.reject(new Error("connection lost")))).rejects.toThrow("connection lost");
-    expect(files.has("paired-sha")).toBe(true);
-    expect(new Uint8Array(await (files.get("paired-sha") as Blob).arrayBuffer())).toEqual(new Uint8Array(await blob.arrayBuffer()));
+    const path = `audio/${OWNER_A}/paired-sha`;
+    await storeInOpfs(a("paired-sha"), blob);
+    await expect(deleteWithLocalAudio(a("paired-sha"), async () => Promise.reject(new Error("connection lost")))).rejects.toThrow("connection lost");
+    expect(files.has(path)).toBe(true);
+    expect(new Uint8Array(await (files.get(path) as Blob).arrayBuffer())).toEqual(new Uint8Array(await blob.arrayBuffer()));
     const deleteRecord = vi.fn(async () => {});
-    await deleteWithLocalAudio("paired-sha", deleteRecord);
+    await deleteWithLocalAudio(a("paired-sha"), deleteRecord);
     expect(deleteRecord).toHaveBeenCalledTimes(1);
-    expect(files.has("paired-sha")).toBe(false);
+    expect(files.has(path)).toBe(false);
   });
 
   it("keeps the record when the local copy cannot be removed", async () => {
     fakeOpfs();
-    await storeInOpfs("stuck-sha", new Blob([wav]));
+    await storeInOpfs(a("stuck-sha"), new Blob([wav]));
     const locked = new DOMException("the entry is locked", "NoModificationAllowedError");
-    const dirWithFile = { getFileHandle: async () => ({ getFile: async () => new Blob([wav]) }), removeEntry: async () => Promise.reject(locked) };
-    vi.stubGlobal("navigator", { storage: { getDirectory: async () => ({ getDirectoryHandle: async () => dirWithFile }) } });
+    opfsWith({ getFileHandle: async () => ({ getFile: async () => new Blob([wav]) }), removeEntry: async () => Promise.reject(locked) });
     const deleteRecord = vi.fn(async () => {});
-    await expect(deleteWithLocalAudio("stuck-sha", deleteRecord)).rejects.toBe(locked);
+    await expect(deleteWithLocalAudio(a("stuck-sha"), deleteRecord)).rejects.toBe(locked);
     expect(deleteRecord).not.toHaveBeenCalled();
   });
 
   it("removes the in-tab copy where OPFS is missing", async () => {
-    expect(await storeInOpfs("tab-sha", new Blob([wav]))).toBe("memory");
-    expect(blobInTab("tab-sha")).toBeDefined();
-    await removeLocalAudio("tab-sha");
-    expect(blobInTab("tab-sha")).toBeUndefined();
+    expect(await storeInOpfs(a("tab-sha"), new Blob([wav]))).toBe("memory");
+    expect(await storeInOpfs(b("tab-sha"), new Blob([wav]))).toBe("memory");
+    await removeLocalAudio(a("tab-sha"));
+    expect(blobInTab(a("tab-sha"))).toBeUndefined();
+    expect(blobInTab(b("tab-sha"))).toBeDefined();
   });
 });

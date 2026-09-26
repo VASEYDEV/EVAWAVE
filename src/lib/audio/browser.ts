@@ -63,18 +63,33 @@ export function analyseInWorker(pcm: PcmAudio, signal?: AbortSignal): Promise<Au
   });
 }
 
-/** The fallback store: blobs this tab could not write to OPFS, keyed by sha256. */
+/**
+ * Names one account's local copy of a file. OPFS is per origin, so two accounts on one
+ * browser can save the same file: each copy lives under its owner, at audio/<ownerId>/<sha256>,
+ * and deleting one account's record never removes another account's copy.
+ */
+export interface LocalAudioKey {
+  ownerId: string;
+  sha256: string;
+}
+
+/** The fallback store: blobs this tab could not write to OPFS, keyed by owner and sha256. */
 const tabMemory = new Map<string, Blob>();
 
+const tabKey = ({ ownerId, sha256 }: LocalAudioKey) => `${ownerId}/${sha256}`;
+
+async function ownerDirectory(root: FileSystemDirectoryHandle, ownerId: string, create: boolean): Promise<FileSystemDirectoryHandle> {
+  return (await root.getDirectoryHandle("audio", { create })).getDirectoryHandle(ownerId, { create });
+}
+
 /**
- * Keeps the file in OPFS under audio/<sha256>; falls back to memory where OPFS is missing.
- * The import screen calls it once a library save of a profile from the file succeeds.
+ * Keeps the file in OPFS under audio/<ownerId>/<sha256>; falls back to memory where OPFS is
+ * missing. The import screen calls it once a library save of a profile from the file succeeds.
  */
-export async function storeInOpfs(sha256: string, file: Blob): Promise<"opfs" | "memory"> {
+export async function storeInOpfs(key: LocalAudioKey, file: Blob): Promise<"opfs" | "memory"> {
   try {
-    const root = await navigator.storage.getDirectory();
-    const dir = await root.getDirectoryHandle("audio", { create: true });
-    const handle = await dir.getFileHandle(sha256, { create: true });
+    const dir = await ownerDirectory(await navigator.storage.getDirectory(), key.ownerId, true);
+    const handle = await dir.getFileHandle(key.sha256, { create: true });
     const existing = await handle.getFile();
     if (existing.size !== file.size) {
       const writable = await handle.createWritable();
@@ -85,7 +100,7 @@ export async function storeInOpfs(sha256: string, file: Blob): Promise<"opfs" | 
   } catch {
     // Some browsers (and private windows) have no OPFS or no createWritable; the analysis
     // still works, and the blob stays in this tab's memory only.
-    tabMemory.set(sha256, file);
+    tabMemory.set(tabKey(key), file);
     return "memory";
   }
 }
@@ -93,15 +108,13 @@ export async function storeInOpfs(sha256: string, file: Blob): Promise<"opfs" | 
 const isDomError = (error: unknown, name: string) => error instanceof DOMException && error.name === name;
 
 /**
- * Removes the local copy of `sha256` (OPFS and the in-tab fallback), for when its library
- * record is deleted. No OPFS API, a private window's refusal (storeInOpfs could keep nothing
- * there either), or nothing stored under the hash is not an error; any other failure (a lock,
- * an I/O error) rejects, so the caller can keep the record and retry. OPFS is
- * per origin, so another account on this browser that imported the same file shares the copy;
- * it can import the file again.
+ * Removes this account's local copy of a file (OPFS and the in-tab fallback), for when its
+ * library record is deleted. No OPFS API, a private window's refusal (storeInOpfs could keep
+ * nothing there either), or nothing stored under the key is not an error; any other failure
+ * (a lock, an I/O error) rejects, so the caller can keep the record and retry.
  */
-export async function removeLocalAudio(sha256: string): Promise<void> {
-  tabMemory.delete(sha256);
+export async function removeLocalAudio(key: LocalAudioKey): Promise<void> {
+  tabMemory.delete(tabKey(key));
   if (typeof navigator === "undefined" || typeof navigator.storage?.getDirectory !== "function") return;
   let root: FileSystemDirectoryHandle;
   try {
@@ -111,24 +124,24 @@ export async function removeLocalAudio(sha256: string): Promise<void> {
     throw error;
   }
   try {
-    await (await root.getDirectoryHandle("audio")).removeEntry(sha256);
+    await (await ownerDirectory(root, key.ownerId, false)).removeEntry(key.sha256);
   } catch (error) {
     if (!isDomError(error, "NotFoundError")) throw error;
   }
 }
 
 /**
- * A copy, in memory, of the local audio for `sha256`: the in-tab blob, or the OPFS file's
- * bytes (read now, since the file handle stops being readable once its entry is removed).
- * Undefined when nothing is kept here.
+ * A copy, in memory, of this account's local audio for a file: the in-tab blob, or the OPFS
+ * file's bytes (read now, since the file handle stops being readable once its entry is
+ * removed). Undefined when nothing is kept here.
  */
-async function readLocalAudio(sha256: string): Promise<Blob | undefined> {
-  const inTab = tabMemory.get(sha256);
+async function readLocalAudio(key: LocalAudioKey): Promise<Blob | undefined> {
+  const inTab = tabMemory.get(tabKey(key));
   if (inTab) return inTab;
   if (typeof navigator === "undefined" || typeof navigator.storage?.getDirectory !== "function") return undefined;
   try {
-    const dir = await (await navigator.storage.getDirectory()).getDirectoryHandle("audio");
-    const file = await (await dir.getFileHandle(sha256)).getFile();
+    const dir = await ownerDirectory(await navigator.storage.getDirectory(), key.ownerId, false);
+    const file = await (await dir.getFileHandle(key.sha256)).getFile();
     return new Blob([await file.arrayBuffer()], { type: file.type });
   } catch (error) {
     if (isDomError(error, "NotFoundError") || isDomError(error, "SecurityError")) return undefined;
@@ -142,20 +155,20 @@ async function readLocalAudio(sha256: string): Promise<Blob | undefined> {
  * for a retry. If deleting the record then fails, the copy is stored again, so a failure
  * leaves both stores as they were.
  */
-export async function deleteWithLocalAudio(sha256: string, deleteRecord: () => Promise<void>): Promise<void> {
-  const copy = await readLocalAudio(sha256);
-  await removeLocalAudio(sha256);
+export async function deleteWithLocalAudio(key: LocalAudioKey, deleteRecord: () => Promise<void>): Promise<void> {
+  const copy = await readLocalAudio(key);
+  await removeLocalAudio(key);
   try {
     await deleteRecord();
   } catch (error) {
-    if (copy) await storeInOpfs(sha256, copy);
+    if (copy) await storeInOpfs(key, copy);
     throw error;
   }
 }
 
-/** The blob the memory fallback holds for `sha256`, if this tab kept one. */
-export function blobInTab(sha256: string): Blob | undefined {
-  return tabMemory.get(sha256);
+/** The blob the memory fallback holds for this account's file, if this tab kept one. */
+export function blobInTab(key: LocalAudioKey): Blob | undefined {
+  return tabMemory.get(tabKey(key));
 }
 
 export const browserImportDeps: ImportDeps = {

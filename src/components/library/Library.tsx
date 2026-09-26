@@ -157,7 +157,7 @@ export function Library() {
                   type="button"
                   className="danger"
                   onClick={() =>
-                    void run("Delete file record", () => deleteWithLocalAudio(asset.sha256, () => deleteFile(client, asset.id)))
+                    void run("Delete file record", () => deleteWithLocalAudio({ ownerId: asset.ownerId, sha256: asset.sha256 }, () => deleteFile(client, asset.id)))
                   }
                 >
                   Delete {asset.filename}

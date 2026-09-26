@@ -1,4 +1,3 @@
-import { createHash } from "node:crypto";
 
 import AxeBuilder from "@axe-core/playwright";
 import { expect, test } from "@playwright/test";
@@ -43,19 +42,18 @@ test("imports a WAV into a reviewed audio-analysis style profile, sending no aud
   await expect(page.getByLabel("Accept /D6/tempo")).toBeChecked();
   await expect(page.getByLabel("Accept /D6/key")).toBeChecked();
 
-  // The blob is kept in OPFS under its sha256 only with a library save: not after import, not
-  // after Create, and not with a download, which nothing in the app could later remove.
-  const sha256 = createHash("sha256").update(wav).digest("hex");
+  // The blob is kept in OPFS (under audio/<owner>/<sha256>) only with a library save: not
+  // after import, not after Create, and not with a download, which nothing in the app could
+  // later remove. So the audio directory stays empty, whatever the layout under it.
   const kept = () =>
-    page.evaluate(async (name) => {
+    page.evaluate(async () => {
       try {
-        const dir = await (await navigator.storage.getDirectory()).getDirectoryHandle("audio");
-        await dir.getFileHandle(name);
-        return true;
+        const dir = (await (await navigator.storage.getDirectory()).getDirectoryHandle("audio")) as unknown as { keys(): AsyncIterator<string> };
+        return !(await dir.keys().next()).done;
       } catch {
         return false;
       }
-    }, sha256);
+    });
   expect(await kept()).toBe(false);
 
   await page.getByRole("button", { name: "Create style profile" }).click();
