@@ -7,6 +7,7 @@
 import { useEffect, useId, useMemo, useState } from "react";
 
 import type { MusicSpec } from "@/core/musicspec/ir/types";
+import { removeLocalAudio } from "@/lib/audio/browser";
 import { createLibraryClient } from "@/lib/library/client";
 import {
   createStyleProfile,
@@ -141,7 +142,7 @@ export function Library() {
 
       <section className="panel" aria-labelledby="files-heading">
         <h3 id="files-heading">Files</h3>
-        <p className="hint">Metadata only: audio and images stay on this device (A6). Audio import arrives in S5.</p>
+        <p className="hint">Metadata only: audio and images stay on this device (A6). Deleting a record also removes its audio from this device.</p>
         {data?.files.length ? (
           <ul className="library-list">
             {data.files.map(({ asset, genreIds, tagIds }) => (
@@ -152,7 +153,16 @@ export function Library() {
                 </p>
                 <Links legend={`${asset.filename}: genres`} options={genreOptions} selected={genreIds} onToggle={(g, on) => void run("Update genres", () => setLink(client, "file_genres", asset.id, g, on))} />
                 <Links legend={`${asset.filename}: tags`} options={tagOptions} selected={tagIds} onToggle={(t, on) => void run("Update tags", () => setLink(client, "file_tags", asset.id, t, on))} />
-                <button type="button" className="danger" onClick={() => void run("Delete file record", () => deleteFile(client, asset.id))}>
+                <button
+                  type="button"
+                  className="danger"
+                  onClick={() =>
+                    void run("Delete file record", async () => {
+                      await deleteFile(client, asset.id);
+                      await removeLocalAudio(asset.sha256);
+                    })
+                  }
+                >
                   Delete {asset.filename}
                 </button>
               </li>

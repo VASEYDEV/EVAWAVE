@@ -39,11 +39,14 @@ export interface ImportResult {
 
 /**
  * Hashes, decodes and analyses `file` and drafts the patch. Aborting `signal` (a newer file
- * choice) stops it before analysis; the promise then rejects with the signal's reason.
+ * choice) stops it at the next stage: before the hash, the decode or the analysis. The
+ * promise then rejects with the signal's reason.
  */
 export async function importAudio(file: File, deps: ImportDeps, signal?: AbortSignal): Promise<ImportResult> {
   const bytes = await file.arrayBuffer();
+  signal?.throwIfAborted();
   const sha256 = await deps.digest(bytes);
+  signal?.throwIfAborted();
   const pcm = await deps.decode(bytes);
   signal?.throwIfAborted();
   const features = analyseAudio(pcm.samples, pcm.sampleRate, pcm.channelData);

@@ -4,7 +4,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { decodeWav, encodeWav, WavError } from "@/core/musicspec/analysis/wav";
 import { applyReviewedPatch, audioProfileBase, AUDIO_DRAFT_MODEL, reviewPatch } from "@/core/musicspec/intake";
 import { lintStyleProfile } from "@/core/musicspec/lint";
-import { blobInTab, storeInOpfs } from "@/lib/audio/browser";
+import { blobInTab, removeLocalAudio, storeInOpfs } from "@/lib/audio/browser";
 import { importAudio, sha256Hex, type ImportDeps } from "@/lib/audio/import";
 import { saveImport } from "@/lib/library/repository";
 import type { Database } from "@/lib/library/schema";
@@ -137,6 +137,21 @@ describe("import order", () => {
 });
 
 describe("a superseded import", () => {
+  it("stops before decoding when a newer choice aborts it during the hash", async () => {
+    const controller = new AbortController();
+    const decode = vi.fn(async (bytes: ArrayBuffer) => decodeWav(bytes));
+    const deps: ImportDeps = {
+      ...nodeDeps(),
+      decode,
+      digest: async (bytes) => {
+        controller.abort();
+        return sha256Hex(bytes);
+      },
+    };
+    await expect(importAudio(file, deps, controller.signal)).rejects.toThrow(/abort/i);
+    expect(decode).not.toHaveBeenCalled();
+  });
+
   it("stops before analysis once a newer choice aborts it", async () => {
     const controller = new AbortController();
     const now = vi.fn(() => "2026-09-26T12:00:00.000Z");
@@ -160,5 +175,60 @@ describe("the storage fallback", () => {
     const blob = new Blob([wav]);
     expect(await storeInOpfs("fallback-sha", blob)).toBe("memory");
     expect(blobInTab("fallback-sha")).toBe(blob);
+  });
+});
+
+describe("local audio on the device", () => {
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
+  /** An in-memory stand-in for the Origin Private File System's audio directory. */
+  function fakeOpfs() {
+    const files = new Map<string, Blob>();
+    const dir = {
+      getFileHandle: async (name: string, options?: { create?: boolean }) => {
+        if (!files.has(name)) {
+          if (!options?.create) throw new DOMException("not found", "NotFoundError");
+          files.set(name, new Blob([]));
+        }
+        return {
+          getFile: async () => files.get(name) as Blob,
+          createWritable: async () => {
+            let data = new Blob([]);
+            return {
+              write: async (blob: Blob) => {
+                data = blob;
+              },
+              close: async () => {
+                files.set(name, data);
+              },
+            };
+          },
+        };
+      },
+      removeEntry: async (name: string) => {
+        if (!files.delete(name)) throw new DOMException("not found", "NotFoundError");
+      },
+    };
+    vi.stubGlobal("navigator", { storage: { getDirectory: async () => ({ getDirectoryHandle: async () => dir }) } });
+    return files;
+  }
+
+  it("removes the OPFS copy when its record is deleted", async () => {
+    const files = fakeOpfs();
+    expect(await storeInOpfs("opfs-sha", new Blob([wav]))).toBe("opfs");
+    expect(files.has("opfs-sha")).toBe(true);
+    await removeLocalAudio("opfs-sha");
+    expect(files.has("opfs-sha")).toBe(false);
+    // Removing again, or a hash never stored, is not an error.
+    await expect(removeLocalAudio("opfs-sha")).resolves.toBeUndefined();
+  });
+
+  it("removes the in-tab copy where OPFS is missing", async () => {
+    expect(await storeInOpfs("tab-sha", new Blob([wav]))).toBe("memory");
+    expect(blobInTab("tab-sha")).toBeDefined();
+    await removeLocalAudio("tab-sha");
+    expect(blobInTab("tab-sha")).toBeUndefined();
   });
 });

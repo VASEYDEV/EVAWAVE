@@ -51,6 +51,21 @@ export async function storeInOpfs(sha256: string, file: Blob): Promise<"opfs" | 
   }
 }
 
+/**
+ * Removes the local copy of `sha256` (OPFS and the in-tab fallback), for when its library
+ * record is deleted. OPFS is per origin, so another account on this browser that imported the
+ * same file shares the copy; it can import the file again.
+ */
+export async function removeLocalAudio(sha256: string): Promise<void> {
+  tabMemory.delete(sha256);
+  try {
+    const dir = await (await navigator.storage.getDirectory()).getDirectoryHandle("audio");
+    await dir.removeEntry(sha256);
+  } catch {
+    // No OPFS, or nothing stored under this hash: there is nothing to remove.
+  }
+}
+
 /** The blob the memory fallback holds for `sha256`, if this tab kept one. */
 export function blobInTab(sha256: string): Blob | undefined {
   return tabMemory.get(sha256);
