@@ -27,6 +27,11 @@ Nothing in the app is usable yet. What exists today:
   section caps, regional bundles, lineage and budgets); and a Suno v6 serializer. The
   serializer compiles the Jinn v1.2 spec to the reference Style, Exclude and Lyrics fields
   byte for byte. The linter blocks the Jinn v1.1 blueprint's meter drift.
+- Serializers for ElevenLabs Music (a `music_v2` composition plan timed by bar math, plus
+  the simple prompt) and Google Flow Music (Sound, BPM, Length, and a numbered Producer
+  script), from S2. `compile(spec, engine, catalog)` projects one spec onto any live target
+  without changing it, and refuses the halted Udio. Every payload ships with a path-level
+  coverage report.
 - The product spec, [`docs/SPEC.md`](docs/SPEC.md): scope and confirmed decisions,
   MusicSpec IR v1 as a complete type definition, and the build plan. The
   [instrument bank seed](docs/evawave/instrument-bank-seed-v0.1.md) and the Jinn reference

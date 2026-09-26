@@ -9,6 +9,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- S2, target switching (SPEC §3):
+  - `compileEleven` writes a `music_v2` composition plan and the simple-mode prompt:
+    - one chunk per section and one for the contrast phrase;
+    - pickups, silences and transitions folded in as inline directions;
+    - durations rounded on the cumulative timeline, so they sum to `music_length_ms`.
+  - `compileFlow` writes Sound (with the negatives inline), Lyrics, BPM, Length, Title and a numbered Producer script timed by bar math.
+  - `compile(spec, engineId, catalog)` returns a `CompileResult`. Udio gets `engine-halted`.
+  - `coverage/` holds the path-level coverage reports.
+  - `sectionTimeline` in bar math.
+  - Lint rules CV-1, CV-2 and OV-1. BG-1 now checks the Eleven 30-chunk limit, BG-2 the `eleven.styles_per_chunk` house budget, and LN-1 passthrough lyrics and target overrides.
+- Tests:
+  - Lossless projection: Suno → Eleven → Flow → Suno on a deep-frozen spec, and every ordered pair of targets, for both Jinn fixtures.
+  - Eleven and Flow serializer contracts.
+  - `compile()` refusals.
+  - Coverage.
+  - The S2 lint rules.
 - S1, the musicspec core with no UI (SPEC §3):
   - The IR v1 types, generated into `src/core/musicspec/ir/types.ts` from the SPEC §2.2 block by `scripts/sync-ir-types.mjs`. A test fails when the two drift.
   - Defaults (`ir/defaults.ts`) and bar math (`barmath.ts`).
@@ -39,6 +55,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- `OutputIntent` gains `acknowledgedDrops` (SPEC §2.2, §2.9), where CV-2 reads the drops a user accepted. SPEC §2.4, §2.6, §2.7 and §1.11 record the S2 contracts and open items.
+- `lint()` takes an options object (`overrides`, `rules`) as its fifth argument.
+- The Suno coverage report is path-level (S2's `coverage/`). S1 reported dimensions only.
 - `docs/SPEC.md` for S1:
   - `Section` gains `notes`, and `Catalog` gains `lineageNames`.
   - §2.4 states the cue, pocket, contrast, transition and restatement rules, the four-step wording precedence, the lineage pass, and SC-1 counting (instruments ∪ synth roles; rhythms add nothing).
@@ -58,6 +77,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- `.gitignore` ignored every directory named `coverage/`, which would have kept `src/core/musicspec/coverage/` out of git. The rule is anchored to the repo root (`/coverage/`), where test-coverage output goes.
 - The lineage scrub left a stray space or separator when it removed a name at the start or end of a bracket (`[Hook – full drums ]`). It now tidies bracket edges and dashes. The new lineage tests caught it.
 - `main` failed the gate after the 2026-09-26 upload. `musicspec-compiler.tsx` at the repo root failed typecheck (TS7006, TS7053) and lint (`prefer-const`), because the root is inside `tsconfig.json`'s include. The three legacy compiler files now live in `docs/archive/legacy/`, which is excluded from tsconfig, ESLint and the gate scan. The upload's two chat bootstrap files moved to `docs/archive/handoff-chat/`. Three exact duplicates of files already in `docs/evawave/reference/` were removed.
 - `scripts/gate.sh` failed on `main` after the handoff archive was uploaded (`cafe6f3`): the placeholder check matched the double-brace sequence inside the archive's compressed bytes. The check now skips binary files (`grep -I`) and still catches placeholders in text files.
