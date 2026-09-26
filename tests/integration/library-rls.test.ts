@@ -175,6 +175,22 @@ describe("library access for other roles and tables", () => {
     await expect(as(A, () => rows("insert into public.files (kind, filename, mime, bytes, sha256, local_only) values ('audio', 'x.wav', 'audio/wav', 1, $1, false)", [SHA("b")]))).rejects.toThrow(/check constraint/);
   });
 
+  it("dedupes a re-import per owner, as saveImport's upsert relies on", async () => {
+    // The statement PostgREST runs for saveImport's upsert with on_conflict=owner_id,sha256.
+    const upsert =
+      "insert into public.files (kind, filename, mime, bytes, sha256) values ('audio', $1, 'audio/wav', 10, $2) on conflict (owner_id, sha256) do update set filename = excluded.filename, mime = excluded.mime, bytes = excluded.bytes returning id";
+    const first = (await as(A, () => rows(upsert, ["loop.wav", SHA("c")]))) as { id: string }[];
+    const again = (await as(A, () => rows(upsert, ["loop-renamed.wav", SHA("c")]))) as { id: string }[];
+    expect(again[0]?.id).toBe(first[0]?.id);
+    const other = (await as(B, () => rows(upsert, ["loop.wav", SHA("c")]))) as { id: string }[];
+    expect(other[0]?.id).not.toBe(first[0]?.id);
+    const stored = await truth("files", "sha256 = $1 order by owner_id", [SHA("c")]);
+    expect(stored.map((r) => [r.owner_id, r.filename])).toEqual([
+      [A, "loop-renamed.wav"],
+      [B, "loop.wav"],
+    ]);
+  });
+
   it("stamps updated_at when an owner edits a profile", async () => {
     const [before] = await truth("style_profiles", "id = $1", [ids.profile]);
     await as(A, () => rows("update public.style_profiles set name = 'A profile, renamed' where id = $1", [ids.profile]));
