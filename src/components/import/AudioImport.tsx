@@ -5,7 +5,7 @@
  * field, and build a StyleProfile with `provenance.kind = 'audio-analysis'`. Saving sends only
  * the file's metadata and the profile (A6).
  */
-import { useId, useMemo, useState, type DragEvent } from "react";
+import { useId, useMemo, useRef, useState, type DragEvent } from "react";
 
 import { applyReviewedPatch, audioProfileBase, AUDIO_DRAFT_MODEL, reviewPatch } from "@/core/musicspec/intake";
 import type { StyleProfile } from "@/core/musicspec/ir/types";
@@ -47,11 +47,14 @@ export function AudioImport() {
   const [name, setName] = useState("");
   const [profile, setProfile] = useState<StyleProfile | null>(null);
   const [dragging, setDragging] = useState(false);
+  // Decoding is async, so a second file can finish first; only the latest choice may land.
+  const latest = useRef(0);
 
   const lowConfidence = useMemo(() => new Set(result ? lowConfidenceOps(result.patch, "").map((r) => Number(r.path.split("/").pop())) : []), [result]);
 
   const handle = async (file: File | undefined) => {
     if (!file) return;
+    const run = ++latest.current;
     setResult(null);
     setProfile(null);
     setStatus(`Analysing ${file.name} on this device…`);
@@ -59,11 +62,13 @@ export function AudioImport() {
     await new Promise((resolve) => setTimeout(resolve, 0));
     try {
       const imported = await importAudio(file, { ...browserImportDeps, lineageNames: catalog.lineageNames });
+      if (run !== latest.current) return;
       setResult(imported);
       setAccepted(new Set(imported.patch.ops.filter((o) => o.confidence >= 0.5).map((o) => o.path)));
       setName(file.name.replace(/\.[^.]+$/, ""));
       setStatus(`Analysed ${file.name}. Stored ${imported.asset.storedIn === "opfs" ? "in this browser's private storage" : "in memory for this tab only"}. Review the proposed fields below.`);
     } catch (error) {
+      if (run !== latest.current) return;
       setStatus(`Could not analyse ${file.name}: ${error instanceof Error ? error.message : "unknown error"}. Try a WAV, MP3, AAC or FLAC file.`);
     }
   };
@@ -99,13 +104,13 @@ export function AudioImport() {
       setStatus("The library needs Supabase, which is not configured here. Download the profile instead.");
       return;
     }
-    const client = createLibraryClient();
-    const { data } = await client.auth.getSession();
-    if (!data.session) {
-      setStatus("Sign in to save to your library (Library → Sign in).");
-      return;
-    }
     try {
+      const client = createLibraryClient();
+      const { data } = await client.auth.getSession();
+      if (!data.session) {
+        setStatus("Sign in to save to your library (Library → Sign in).");
+        return;
+      }
       const { asset, features, analysedOn } = result;
       await saveImport(client, {
         file: { filename: asset.filename, mime: asset.mime, bytes: asset.bytes, sha256: asset.sha256, features },

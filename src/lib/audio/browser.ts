@@ -21,6 +21,9 @@ export async function decodeWithWebAudio(bytes: ArrayBuffer): Promise<PcmAudio> 
   }
 }
 
+/** The fallback store: blobs this tab could not write to OPFS, keyed by sha256. */
+const tabMemory = new Map<string, Blob>();
+
 /** Keeps the file in OPFS under audio/<sha256>; falls back to memory where OPFS is missing. */
 export async function storeInOpfs(sha256: string, file: Blob): Promise<"opfs" | "memory"> {
   try {
@@ -37,8 +40,14 @@ export async function storeInOpfs(sha256: string, file: Blob): Promise<"opfs" | 
   } catch {
     // Some browsers (and private windows) have no OPFS or no createWritable; the analysis
     // still works, and the blob stays in this tab's memory only.
+    tabMemory.set(sha256, file);
     return "memory";
   }
+}
+
+/** The blob the memory fallback holds for `sha256`, if this tab kept one. */
+export function blobInTab(sha256: string): Blob | undefined {
+  return tabMemory.get(sha256);
 }
 
 export const browserImportDeps: ImportDeps = {

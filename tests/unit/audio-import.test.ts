@@ -4,6 +4,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { decodeWav, encodeWav } from "@/core/musicspec/analysis/wav";
 import { applyReviewedPatch, audioProfileBase, AUDIO_DRAFT_MODEL, reviewPatch } from "@/core/musicspec/intake";
 import { lintStyleProfile } from "@/core/musicspec/lint";
+import { blobInTab, storeInOpfs } from "@/lib/audio/browser";
 import { importAudio, sha256Hex, type ImportDeps } from "@/lib/audio/import";
 import { saveImport } from "@/lib/library/repository";
 import type { Database } from "@/lib/library/schema";
@@ -117,5 +118,14 @@ describe("audio import (§1.7)", () => {
     expect(carriesAudio(JSON.stringify({ data: Buffer.from(wavBytes.subarray(1000)).toString("base64") }))).toBe(true);
     expect(carriesAudio(Buffer.from(wavBytes.subarray(2000)).toString("hex"))).toBe(true);
     expect(carriesAudio(JSON.stringify({ features: { bpm: 140 } }))).toBe(false);
+  });
+});
+
+describe("the storage fallback", () => {
+  it("keeps the blob in the tab when OPFS is missing, as the import reports", async () => {
+    // Node has no navigator.storage, like a browser without OPFS.
+    const blob = new Blob([wav]);
+    expect(await storeInOpfs("fallback-sha", blob)).toBe("memory");
+    expect(blobInTab("fallback-sha")).toBe(blob);
   });
 });
