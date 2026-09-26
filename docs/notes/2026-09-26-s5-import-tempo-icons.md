@@ -301,6 +301,23 @@ S5 per SPEC §3. The methods are listed in SPEC §3 S5 "Delivered".
     both; dropping the from-OPFS condition fails the second.
   - **`profileName` counts code points**, as Postgres does, like `recordFilename`. A test
     with an emoji straddling the limit keeps it whole and the name well formed.
+- **Twenty-fifth review.** Each fix ships with a test that fails under a mutation.
+  - **Tapped tempos outside 20–300.** Taps under 200 ms apart read over 300 BPM, and
+    Assign wrote that into the spec, past what the tempo field accepts. `assignableBpm`
+    returns the rounded reading only inside `TEMPO_MIN_BPM`–`TEMPO_MAX_BPM`. That range is
+    now the field's own bounds too. Assign is disabled outside it, and the readout says
+    why. Dropping the range check fails the test.
+  - **MIME types over 120 characters.** A constructed `File` could carry one, and every
+    library save then failed the `files.mime` check. `recordMime` keeps a type that fits
+    and uses `application/octet-stream` otherwise. The RLS suite ties `MIME_MAX` to the
+    migration: 120 characters are accepted and 121 refused.
+  - **In-memory copies in other tabs.** A delete in one tab could not reach another tab's
+    fallback copy, which then held the recording with no record until the tab closed. A
+    tab listens on a BroadcastChannel (`evawave:local-audio`) once it holds such a copy.
+    A delete announces the key after the record delete succeeds, and listeners drop that
+    key. A test with two module instances checks that a failed delete tells no one and a
+    successful one clears the other tab. Not announcing, or announcing before the record
+    delete, fails it.
 
 ## Decisions
 
