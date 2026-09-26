@@ -217,11 +217,20 @@ function normalised({ b, a }: Biquad): Normalised {
   return { b0: b[0] / a[0], b1: b[1] / a[0], b2: b[2] / a[0], a1: a[1] / a[0], a2: a[2] / a[0] };
 }
 
-/** BS.1770 channel weights for 5.1 in WAV and Web Audio order: L, R, C, LFE (excluded), Ls, Rs. */
-const SURROUND_WEIGHTS = [1, 1, 1, 0, 1.41, 1.41] as const;
+/**
+ * BS.1770 channel weights by channel count, for the standard WAV (WAVE_FORMAT_EXTENSIBLE) and
+ * Web Audio orders: 1.41 for surrounds between 60° and 120° azimuth, 0 for the LFE, 1.0
+ * otherwise. 5.0 is L R C Ls Rs; 5.1 is L R C LFE Ls Rs; 7.1 is L R C LFE Lb Rb Ls Rs, whose
+ * backs sit behind 120°. Other counts carry no known layout and weigh every channel 1.0.
+ */
+const LAYOUT_WEIGHTS: Readonly<Record<number, readonly number[]>> = {
+  5: [1, 1, 1, 1.41, 1.41],
+  6: [1, 1, 1, 0, 1.41, 1.41],
+  8: [1, 1, 1, 0, 1, 1, 1.41, 1.41],
+};
 
 function channelWeight(index: number, count: number): number {
-  return count === 6 ? (SURROUND_WEIGHTS[index] as number) : 1;
+  return LAYOUT_WEIGHTS[count]?.[index] ?? 1;
 }
 
 /**
@@ -287,8 +296,10 @@ function measureLoudness(channels: readonly Float32Array[], sampleRate: number):
   return { integratedLufs: integrated, loudnessRange: levels.length > 1 ? percentile(levels, 95) - percentile(levels, 10) : 0 };
 }
 
-function energyCurve(samples: Float32Array, sampleRate: number, bpm: number): { curve: number[]; windowSec: number } {
-  const windowSec = bpm > 0 ? (16 * 60) / bpm : 8;
+/** One value per four bars of the detected meter (an unknown meter counts as 4/4). */
+function energyCurve(samples: Float32Array, sampleRate: number, bpm: number, meter: AudioFeatures["meter"]): { curve: number[]; windowSec: number } {
+  const beatsPerBar = meter.signature === "3/4" ? 3 : 4;
+  const windowSec = bpm > 0 ? (4 * beatsPerBar * 60) / bpm : 8;
   const size = Math.max(1, Math.round(windowSec * sampleRate));
   const rms: number[] = [];
   for (let start = 0; start < samples.length; start += size) {
@@ -373,11 +384,12 @@ export function analyseAudio(samples: Float32Array, sampleRate: number, channels
   const pass = framePass(signal, sampleRate);
   const tempo = estimateTempo(pass.flux, pass.frameRate);
   const { lag, ...bpm } = tempo;
-  const { curve, windowSec } = energyCurve(signal, sampleRate, bpm.value);
+  const meter = estimateMeter(accentEnvelope(pass.energy), lag);
+  const { curve, windowSec } = energyCurve(signal, sampleRate, bpm.value, meter);
   return {
     durationSec,
     bpm,
-    meter: estimateMeter(accentEnvelope(pass.energy), lag),
+    meter,
     key: estimateKey(pass.chroma),
     loudness: measureLoudness(channels, sampleRate),
     energyCurve: curve,

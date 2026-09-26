@@ -62,6 +62,17 @@ describe("loudness (ITU-R BS.1770)", () => {
     expect(analyseAudio(mixOf(only(2)), 48000, only(2)).loudness.integratedLufs).toBeCloseTo(-23.01, 1);
   });
 
+  it("weights 5.0 surrounds and 7.1 side surrounds by 1.41, and leaves out the 7.1 LFE", () => {
+    const tone = sine(1000, -20, 10, 48000);
+    const only = (count: number, index: number) => Array.from({ length: count }, (_, c) => (c === index ? tone : new Float32Array(tone.length)));
+    const lufsOf = (channels: Float32Array[]) => analyseAudio(channels[0] as Float32Array, 48000, channels).loudness.integratedLufs;
+    const surround = -23.01 + 10 * Math.log10(1.41);
+    expect(lufsOf(only(5, 3))).toBeCloseTo(surround, 1);
+    expect(lufsOf(only(8, 3))).toBe(-70);
+    expect(lufsOf(only(8, 4))).toBeCloseTo(-23.01, 1);
+    expect(lufsOf(only(8, 6))).toBeCloseTo(surround, 1);
+  });
+
   it("rejects channels that do not match the mix", () => {
     expect(() => analyseAudio(new Float32Array(100), 48000, [new Float32Array(99)])).toThrow(RangeError);
     expect(() => analyseAudio(new Float32Array(100), 48000, [])).toThrow(RangeError);
@@ -87,6 +98,12 @@ describe("tempo and meter", () => {
   it("hears 4/4 from accents every four beats and 3/4 from accents every three", () => {
     expect(analyseAudio(clickTrack(120, 24, 44100, 4), 44100).meter.signature).toBe("4/4");
     expect(analyseAudio(clickTrack(120, 24, 44100, 3), 44100).meter.signature).toBe("3/4");
+  });
+
+  it("sizes energy windows to four bars of the detected meter", () => {
+    // 24 s at 120 BPM: four bars are 8 s in 4/4 and 6 s in 3/4.
+    expect(analyseAudio(clickTrack(120, 24, 44100, 4), 44100).energyCurve).toHaveLength(3);
+    expect(analyseAudio(clickTrack(120, 24, 44100, 3), 44100).energyCurve).toHaveLength(4);
   });
 
   it("claims no meter when every beat is the same", () => {
