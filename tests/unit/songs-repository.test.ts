@@ -76,6 +76,16 @@ describe("createSong and saveSong", () => {
     expect(sent[0]?.body).toEqual({ title: songTitle(v12), spec: v12, overrides: [] });
   });
 
+  it("keeps the working copy's overrides on save and freeze, never dropping them", async () => {
+    const override = { engine: "suno" as const, fieldId: "style", text: "hand-tuned style", basedOnCompiledHash: "h", createdAt: "c" };
+    const saved = recording(() => [{ revision: 4 }]);
+    await saveSong(saved.client, copy({ overrides: [override] }));
+    expect(saved.sent[0]?.body).toMatchObject({ overrides: [override] });
+    const frozen = recording(() => ({ variant_id: "v", variant_label: "v1.0", song_revision: 4, owner: "o" }));
+    await freezeVariant(frozen.client, copy({ overrides: [override] }), catalog);
+    expect(frozen.sent[0]?.body).toMatchObject({ p_overrides: [override] });
+  });
+
   it("saves only at the revision it read, and reads zero rows as a stale or deleted song", async () => {
     const { client, sent } = recording(() => [{ revision: 4 }]);
     await expect(saveSong(client, copy({ baseVariantId: "v-2" }))).resolves.toBe(4);
@@ -126,6 +136,15 @@ describe("freezeVariant", () => {
     expect(sent).toEqual([]);
   });
 
+  it("refuses to freeze an invented producer name carried in a target override", async () => {
+    const INVENTED = "Quillon Vantreese";
+    const withName: Catalog = { ...catalog, lineageNames: [...catalog.lineageNames, INVENTED] };
+    const named = { engine: "suno" as const, fieldId: "style", text: `desert trap after ${INVENTED}`, basedOnCompiledHash: "h", createdAt: "c" };
+    const { client, sent } = recording(() => frozen);
+    await expect(freezeVariant(client, copy({ overrides: [named] }), withName, now)).rejects.toThrow(/LN-1 at overrides\/0/);
+    expect(sent).toEqual([]);
+  });
+
   it("fails clearly when the base variant is gone", async () => {
     const { client } = recording(() => null);
     await expect(freezeVariant(client, copy({ baseVariantId: "v-gone" }), catalog, now)).rejects.toThrow("the variant this copy came from is gone");
@@ -170,13 +189,15 @@ describe("songAttachment", () => {
   const variant = (id: string, label: string, spec: MusicSpec) => ({ id, songId: "s", label, specSnapshot: spec, diff: [], overrides: [], coverage: {}, createdAt: "c" });
   const variants = [variant("v-0", "v1.0", v11), variant("v-1", "v1.1", v12)];
 
+  const override = { engine: "suno" as const, fieldId: "style", text: "hand-tuned style", basedOnCompiledHash: "h", createdAt: "c" };
+
   it("opens a variant as the base of the next freeze, with the song's revision and saved state", () => {
-    const opened = songAttachment(stored, variants, variants[0] ?? null);
-    expect(opened).toEqual({ songId: "s", ownerId: "o", title: "Jinn", revision: 5, savedHash: specHash(v12), baseVariantId: "v-0", baseLabel: "v1.0", variantLabels: ["v1.0", "v1.1"] });
+    const opened = songAttachment(stored, variants, variants[0] ?? null, [override]);
+    expect(opened).toEqual({ songId: "s", ownerId: "o", title: "Jinn", revision: 5, savedHash: specHash(v12), baseVariantId: "v-0", baseLabel: "v1.0", variantLabels: ["v1.0", "v1.1"], overrides: [override] });
   });
 
   it("opens a song with no variants as a copy with no base", () => {
-    expect(songAttachment(stored, [], null)).toMatchObject({ baseVariantId: null, baseLabel: null, variantLabels: [] });
+    expect(songAttachment(stored, [], null, [])).toMatchObject({ baseVariantId: null, baseLabel: null, variantLabels: [], overrides: [] });
   });
 });
 

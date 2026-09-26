@@ -134,7 +134,7 @@ export function Library() {
                     open={async () => {
                       const loaded = await loadSong(client, s.id);
                       const base = loaded.variants.find((v) => v.id === loaded.song.baseVariantId) ?? null;
-                      return { spec: loaded.song.spec, song: songAttachment(loaded, loaded.variants, base) };
+                      return { spec: loaded.song.spec, song: songAttachment(loaded, loaded.variants, base, loaded.song.overrides) };
                     }}
                     onError={setStatus}
                   />

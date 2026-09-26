@@ -182,7 +182,7 @@ export interface Frozen {
  * blocks, because a frozen variant cannot be edited. Coverage is stamped with `now`.
  */
 export async function freezeVariant(client: LibraryClient, copy: WorkingCopy, catalog: Catalog, now: () => Date = () => new Date()): Promise<Frozen> {
-  const blocks = freezeBlockers(copy.spec, catalog);
+  const blocks = freezeBlockers(copy.spec, catalog, copy.overrides);
   if (blocks.length) {
     throw new LibraryError(`freeze: remove the artist or producer name first (LN-1 at ${[...new Set(blocks.map((b) => b.path))].join(", ")}); a frozen variant cannot be edited`);
   }
@@ -249,8 +249,10 @@ export function describeChange(change: FieldDiff): string {
  * The composer attachment for opening a stored song, from `base` (a variant, for a fork) or
  * from the song's own working copy (`base` its base variant). The saved state is always the
  * song's working copy, so a variant opened over a different copy shows as unsaved.
+ * `overrides` are the ones that belong to what is opened: the song's for its working copy,
+ * the variant's for a variant. They travel with the copy so a save or freeze keeps them.
  */
-export function songAttachment(stored: StoredSong, variants: readonly Variant[], base: Variant | null): SongAttachment {
+export function songAttachment(stored: StoredSong, variants: readonly Variant[], base: Variant | null, overrides: readonly TargetOverride[]): SongAttachment {
   return {
     songId: stored.song.id,
     ownerId: stored.song.ownerId,
@@ -260,6 +262,7 @@ export function songAttachment(stored: StoredSong, variants: readonly Variant[],
     baseVariantId: base?.id ?? null,
     baseLabel: base?.label ?? null,
     variantLabels: variants.map((v) => v.label),
+    overrides: [...overrides],
   };
 }
 

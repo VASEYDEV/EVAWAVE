@@ -8,7 +8,7 @@
  * stored it (JSON has no `undefined`).
  */
 import { ENGINE_PROFILES } from "./engines";
-import type { Catalog, CoverageReport, EngineId, FieldDiff, LintResult, MusicSpec, PatchOp } from "./ir/types";
+import type { Catalog, CoverageReport, EngineId, FieldDiff, LintResult, MusicSpec, PatchOp, TargetOverride } from "./ir/types";
 import { lint } from "./lint";
 import { formatPointer, PatchError } from "./patch";
 import { SERIALIZERS, compile } from "./serialize";
@@ -179,14 +179,14 @@ export function variantCoverage(spec: MusicSpec, catalog: Catalog): Partial<Reco
 /**
  * The LN-1 blocks that stop a freeze: a variant is immutable, so an artist or producer name
  * frozen into one could only leave with the whole song. Checked against every live engine's
- * payload as well as the spec's prose.
+ * payload, the spec's prose, and the target overrides the variant would carry.
  */
-export function freezeBlockers(spec: MusicSpec, catalog: Catalog): LintResult[] {
+export function freezeBlockers(spec: MusicSpec, catalog: Catalog, overrides: readonly TargetOverride[] = []): LintResult[] {
   const seen = new Set<string>();
   const blocks: LintResult[] = [];
   for (const engine of Object.keys(SERIALIZERS) as EngineId[]) {
     const result = compile(spec, engine, catalog);
-    for (const hit of lint(spec, ENGINE_PROFILES[engine], catalog, result.ok ? result.payload : undefined)) {
+    for (const hit of lint(spec, ENGINE_PROFILES[engine], catalog, result.ok ? result.payload : undefined, { overrides })) {
       if (hit.ruleId !== "LN-1" || hit.severity !== "block") continue;
       const key = `${hit.path}\u0000${hit.message}`;
       if (seen.has(key)) continue;

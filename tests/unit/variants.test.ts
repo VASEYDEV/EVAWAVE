@@ -175,6 +175,13 @@ describe("freezeBlockers", () => {
     expect(freezeBlockers(v12, withName)).toEqual([]);
   });
 
+  it("reads the target overrides a variant would carry, once however many engines lint them", () => {
+    const override = { engine: "flow" as const, fieldId: "sound", text: `glassy pads like ${INVENTED}`, basedOnCompiledHash: "h", createdAt: "c" };
+    const blocks = freezeBlockers(v12, withName, [override]);
+    expect(blocks).toEqual([expect.objectContaining({ ruleId: "LN-1", severity: "block", path: "overrides/0" })]);
+    expect(freezeBlockers(v12, withName, [{ ...override, text: "glassy pads" }])).toEqual([]);
+  });
+
   it("reports an invented producer name once, whichever engines see it", () => {
     const spec = structuredClone(v12);
     spec.D1.formPhrase = `${spec.D1.formPhrase} in the style of ${INVENTED}`;

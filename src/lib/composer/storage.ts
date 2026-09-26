@@ -7,7 +7,7 @@
  */
 import { emptyHistory, type Step } from "@/core/musicspec/history";
 import { defaultMusicSpec } from "@/core/musicspec/ir/defaults";
-import type { MusicSpec } from "@/core/musicspec/ir/types";
+import type { MusicSpec, TargetOverride } from "@/core/musicspec/ir/types";
 import { specHash } from "@/core/musicspec/variants";
 
 export const COMPOSER_KEY = "evawave:composer:v1";
@@ -27,6 +27,11 @@ export interface SongAttachment {
   baseLabel: string | null;
   /** The song's variant labels, for the next label's preview. */
   variantLabels: string[];
+  /**
+   * The target overrides that belong to this copy (the song's, or the opened variant's).
+   * Nothing edits them yet (SPEC §1.4), but a save or freeze must carry them, never drop them.
+   */
+  overrides: TargetOverride[];
 }
 
 export interface SavedComposer extends Step<MusicSpec> {
@@ -36,6 +41,7 @@ export interface SavedComposer extends Step<MusicSpec> {
 function isAttachment(value: unknown): value is SongAttachment {
   if (typeof value !== "object" || value === null) return false;
   const v = value as Record<string, unknown>;
+  if (!Array.isArray(v.overrides)) return false;
   const text = (key: string) => typeof v[key] === "string";
   const textOrNull = (key: string) => v[key] === null || typeof v[key] === "string";
   return (

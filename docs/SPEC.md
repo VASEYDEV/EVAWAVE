@@ -1144,7 +1144,8 @@ Every container has a default, so an empty spec is valid.
   a stale tab cannot overwrite newer work. The new variant's parent is the variant the
   copy descends from (`Song.baseVariantId`): opening an earlier variant and freezing
   forks from it. Labels run `v1.0`, `v1.1`, … in freeze order per song. A freeze is
-  refused while LN-1 blocks, since a frozen variant cannot be edited. A song's title is
+  refused while LN-1 blocks, in the spec, any live engine's payload or the target
+  overrides it would carry, since a frozen variant cannot be edited. A song's title is
   its `D10.title` ("Untitled" when empty); its active target is read from `D10`, and
   `styleProfileIds` and `tags` are not stored yet.
 
@@ -1695,7 +1696,8 @@ Delivered:
   songs, the Jinn fork stored with its parent), `songs-repository.test.ts`,
   `composer-storage.test.ts`, and `tests/e2e/songs.spec.ts` for the unconfigured states.
 - Not stored yet: a song's style-profile and tag links (read as empty lists). Overrides
-  are stored, but nothing edits them until §1.4 item 3 has a UI.
+  are stored, and travel with the working copy so a save or freeze keeps them, but
+  nothing edits them until §1.4 item 3 has a UI.
 
 ### S7: The take log
 

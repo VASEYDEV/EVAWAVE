@@ -72,7 +72,9 @@ export function SongPanel() {
     run("Saving as a new song", async (library) => {
       // The copy as it is now: edits made while the request runs stay unsaved.
       const saving = spec;
-      const created = await createSong(library, saving);
+      // A copy saved as a new song keeps the overrides it carries.
+      const overrides = song?.overrides ?? [];
+      const created = await createSong(library, saving, overrides);
       attach({
         songId: created.song.id,
         ownerId: created.song.ownerId,
@@ -82,6 +84,7 @@ export function SongPanel() {
         baseVariantId: null,
         baseLabel: null,
         variantLabels: [],
+        overrides: created.song.overrides,
       });
       return `Saved as a new song: ${created.song.title}.`;
     });
@@ -89,8 +92,8 @@ export function SongPanel() {
   const save = (attached: SongAttachment) =>
     run("Saving the song", async (library) => {
       const saving = spec;
-      // Overrides are not edited anywhere yet (SPEC §1.4), so the working copy carries none.
-      const revision = await saveSong(library, { songId: attached.songId, revision: attached.revision, spec: saving, overrides: [], baseVariantId: attached.baseVariantId });
+      // Overrides are not edited anywhere yet (SPEC §1.4), but the copy carries the song's, and a save keeps them.
+      const revision = await saveSong(library, { songId: attached.songId, revision: attached.revision, spec: saving, overrides: attached.overrides, baseVariantId: attached.baseVariantId });
       attach({ ...attached, title: songTitle(saving), revision, savedHash: specHash(saving) });
       return "Saved.";
     });
@@ -98,7 +101,7 @@ export function SongPanel() {
   const freeze = (attached: SongAttachment) =>
     run("Freezing a variant", async (library) => {
       const freezing = spec;
-      const frozen = await freezeVariant(library, { songId: attached.songId, revision: attached.revision, spec: freezing, overrides: [], baseVariantId: attached.baseVariantId }, catalog);
+      const frozen = await freezeVariant(library, { songId: attached.songId, revision: attached.revision, spec: freezing, overrides: attached.overrides, baseVariantId: attached.baseVariantId }, catalog);
       attach({
         ...attached,
         title: songTitle(freezing),

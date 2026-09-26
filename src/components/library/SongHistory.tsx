@@ -55,7 +55,7 @@ export function SongHistory({ songId }: { songId: string }) {
               {base ? `from ${base.label}` : "not frozen yet"}
             </p>
             <div className="row-actions">
-              <OpenInComposer label="Open the working copy in the composer" open={async () => ({ spec: data.song.spec, song: songAttachment(data, data.variants, base) })} onError={setStatus} />
+              <OpenInComposer label="Open the working copy in the composer" open={async () => ({ spec: data.song.spec, song: songAttachment(data, data.variants, base, data.song.overrides) })} onError={setStatus} />
             </div>
           </section>
           <section className="panel" aria-labelledby="variants-heading">
@@ -95,7 +95,7 @@ export function SongHistory({ songId }: { songId: string }) {
                         )
                       ) : null}
                       <div className="row-actions">
-                        <OpenInComposer label={`Open ${variant.label} in the composer`} open={async () => ({ spec: variant.specSnapshot, song: songAttachment(data, data.variants, variant) })} onError={setStatus} />
+                        <OpenInComposer label={`Open ${variant.label} in the composer`} open={async () => ({ spec: variant.specSnapshot, song: songAttachment(data, data.variants, variant, variant.overrides) })} onError={setStatus} />
                       </div>
                       <TakeLog
                         client={client}

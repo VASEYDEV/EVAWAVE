@@ -18,6 +18,7 @@ const attachment = (over: Partial<SongAttachment> = {}): SongAttachment => ({
   baseVariantId: null,
   baseLabel: null,
   variantLabels: [],
+  overrides: [],
   ...over,
 });
 
@@ -41,7 +42,8 @@ describe("parseComposer", () => {
 
   it("keeps the working copy but drops a malformed attachment", () => {
     const step = edited();
-    for (const song of [{ songId: "s" }, attachment({ revision: 1.5 }), { ...attachment(), variantLabels: [1] }, "song-1"]) {
+    const withoutOverrides = Object.fromEntries(Object.entries(attachment()).filter(([key]) => key !== "overrides"));
+    for (const song of [{ songId: "s" }, attachment({ revision: 1.5 }), { ...attachment(), variantLabels: [1] }, { ...attachment(), overrides: "none" }, withoutOverrides, "song-1"]) {
       expect(parseComposer(JSON.stringify({ ...step, song }))).toEqual(step);
     }
   });

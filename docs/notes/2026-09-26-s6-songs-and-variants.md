@@ -56,6 +56,18 @@ agent, and split in two: S6 songs and variants here, S7 the take log next.
 - **P2: root diffs.** `diffToOps` refuses a diff at the empty pointer instead of emitting
   an op `applyOps` rejects; two specs never produce one.
 
+Second round (Codex, on 498c5ad):
+
+- **P1: LN-1 skipped the overrides.** `freezeBlockers` linted without the working copy's
+  overrides, so a name in one could be frozen. It now takes them and passes them to every
+  lint call; `freezeVariant` sends `copy.overrides`.
+- **P2: overrides dropped on save.** The composer sent `overrides: []` on every save and
+  freeze, so opening a song that had overrides and saving it erased them. They now travel
+  in the song attachment (the song's for its working copy, the variant's for a variant),
+  and save, freeze and "save as new song" send them. Checked against the scratch fake
+  Supabase: an opened song's override reaches the stored attachment and the save body.
+  Mutations: linting without overrides fails 2 tests; saving `[]` fails 1.
+
 ## Evidence
 
 - Core: `tests/unit/variants.test.ts` (16), including the Jinn v1.1 → v1.2 diff with
