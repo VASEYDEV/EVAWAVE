@@ -96,6 +96,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- The front-end is restyled to the Vasey Multimedia Brand System v2.0 (ADR 0005): CORE palette tokens (`src/app/styles/tokens.css`), Deep Turquoise field with Charcoal surfaces and Silver text, the three self-hosted typefaces (Bebas Neue, Reddit Sans, JetBrains Mono; OFL, `next/font/local`), the guide's space, radii and motion, a `VASEY/AI` kicker whose slash is the page's one BEAM, and the 25° beam divider. The per-module hue table is retired: every module icon is Turquoise. Semantics read from text and weight, not colour. Tests pin the palette against the guide's contrast matrix, the fonts and their licences, and the single BEAM per page.
 - `rolldown` 1.2.11 becomes a direct devDependency (it was already in the tree through Vite) to bundle the audio analysis worker, which Turbopack in Next 16.3.6 copies as a raw asset instead of bundling.
 - The verification gate adds an `e2e` step after `build`. CI installs Playwright's Chromium first.
 - `@supabase/supabase-js` 2.117.1 → 2.117.2 and `vitest` 5.0.1 → 5.0.2 (patch bumps, CLAUDE.md §6). Majors held back: ESLint 10 (it breaks `eslint-config-next@16.3.6`), TypeScript 7, and `@types/node` 26 (Node 22 is still supported).
