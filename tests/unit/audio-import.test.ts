@@ -239,7 +239,7 @@ describe("local audio on the device", () => {
    * An in-memory stand-in for the Origin Private File System: a directory tree whose files
    * are keyed by their path below the root, such as "audio/<owner>/<sha256>".
    */
-  function fakeOpfs() {
+  function fakeOpfs({ locks = false } = {}) {
     const files = new Map<string, Blob>();
     const dirs = new Set<string>([""]);
     const notFound = () => new DOMException("not found", "NotFoundError");
@@ -277,8 +277,20 @@ describe("local audio on the device", () => {
         if (!files.delete(`${path}/${name}`)) throw notFound();
       },
     });
-    vi.stubGlobal("navigator", { storage: { getDirectory: async () => directory("") } });
+    vi.stubGlobal("navigator", { storage: { getDirectory: async () => directory("") }, ...(locks ? { locks: fakeLockManager() } : {}) });
     return files;
+  }
+
+  /** Web Locks for one origin: requests for the same name run one at a time, in order. */
+  function fakeLockManager() {
+    const tails = new Map<string, Promise<unknown>>();
+    return {
+      request: (name: string, task: () => Promise<unknown>) => {
+        const run = (tails.get(name) ?? Promise.resolve()).then(() => task());
+        tails.set(name, run.catch(() => undefined));
+        return run;
+      },
+    };
   }
 
   /** An OPFS whose every directory is `dir`, for stubbing one failing operation. */
@@ -402,6 +414,23 @@ describe("local audio on the device", () => {
     // Once it has settled, a new delete runs again.
     await expect(deleteWithLocalAudio(a("twice-sha"), deleteRecord)).rejects.toThrow(LibraryError);
     expect(deleteRecord).toHaveBeenCalledTimes(2);
+  });
+
+  it("takes turns with another tab deleting the same file, so no orphan copy comes back", async () => {
+    const files = fakeOpfs({ locks: true });
+    await storeInOpfs(a("two-tabs-sha"), new Blob([wav]));
+    // Two tabs: separate module instances (so no shared in-tab join) on one origin's OPFS and locks.
+    vi.resetModules();
+    const tabOne = await import("@/lib/audio/browser");
+    vi.resetModules();
+    const tabTwo = await import("@/lib/audio/browser");
+    let rows = 1;
+    const deleteRecord = async () => {
+      if (rows-- < 1) throw new LibraryError("delete file: no such record for this account; reload the library");
+    };
+    const results = await Promise.allSettled([tabOne.deleteWithLocalAudio(a("two-tabs-sha"), deleteRecord), tabTwo.deleteWithLocalAudio(a("two-tabs-sha"), deleteRecord)]);
+    expect(results.map((r) => r.status)).toEqual(["fulfilled", "rejected"]);
+    expect(files.has(`audio/${OWNER_A}/two-tabs-sha`)).toBe(false);
   });
 
   it("drops the in-tab copy once OPFS takes the file", async () => {

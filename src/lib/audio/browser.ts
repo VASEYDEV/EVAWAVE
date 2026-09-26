@@ -160,17 +160,29 @@ async function readLocalAudio(key: LocalAudioKey): Promise<Blob | undefined> {
 const deleting = new Map<string, Promise<void>>();
 
 /**
+ * Runs `task` holding a Web Lock named for the file, so tabs of this origin take turns with
+ * it; where the API is missing, runs it directly.
+ */
+async function inTurnAcrossTabs(id: string, task: () => Promise<void>): Promise<void> {
+  const locks = typeof navigator === "undefined" ? undefined : navigator.locks;
+  if (typeof locks?.request !== "function") return task();
+  return await locks.request(`evawave:local-audio:${id}`, task);
+}
+
+/**
  * Deletes a library file record and its local audio as one recoverable step. The local copy
  * is read into memory and removed first, so a failed removal keeps the record (and its hash)
  * for a retry. If deleting the record then fails, the copy is stored again, so a failure
- * leaves both stores as they were. A second call for the same file while one is in flight
- * joins it: run separately, the second would find no row and restore a copy nothing refers to.
+ * leaves both stores as they were. Two deletes of the same file must not overlap: the second
+ * would read the copy, find no row, and restore a copy nothing refers to. So a second call in
+ * this tab joins the first, and other tabs wait their turn on a Web Lock; by then the copy
+ * is gone, and a failure there restores nothing.
  */
 export function deleteWithLocalAudio(key: LocalAudioKey, deleteRecord: () => Promise<void>): Promise<void> {
   const id = tabKey(key);
   const pending = deleting.get(id);
   if (pending) return pending;
-  const run = deleteOnce(key, deleteRecord).finally(() => deleting.delete(id));
+  const run = inTurnAcrossTabs(id, () => deleteOnce(key, deleteRecord)).finally(() => deleting.delete(id));
   deleting.set(id, run);
   return run;
 }
