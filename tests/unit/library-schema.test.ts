@@ -55,6 +55,11 @@ describe("profile names", () => {
     expect(profileName("   ", "desert-loop.wav")).toBe("desert-loop.wav");
     expect(profileName("x".repeat(250), "a.wav")).toHaveLength(PROFILE_NAME_MAX);
     expect(profileName("", `${"y".repeat(240)}.wav`)).toHaveLength(PROFILE_NAME_MAX);
+    // An emoji straddling the limit is kept whole or dropped, never split.
+    const straddling = profileName(`${"x".repeat(PROFILE_NAME_MAX - 1)}🎵🎵`, "a.wav");
+    expect(Array.from(straddling)).toHaveLength(PROFILE_NAME_MAX);
+    expect(straddling.isWellFormed()).toBe(true);
+    expect(straddling.endsWith("🎵")).toBe(true);
   });
 
   it("cuts filenames to the library's 255 characters, counted as Postgres counts them", () => {

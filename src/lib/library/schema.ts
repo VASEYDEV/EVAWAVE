@@ -104,9 +104,15 @@ export function toTag(row: TagRow): Tag {
 /** `style_profiles.name` holds 1–200 characters (the check in the library migration). */
 export const PROFILE_NAME_MAX = 200;
 
-/** A profile name the library accepts: the typed name, else the fallback, cut to the limit. */
+/**
+ * A profile name the library accepts: the typed name, else the fallback, cut to the limit in
+ * code points, as Postgres counts them, so no emoji is split into a lone surrogate.
+ */
 export function profileName(typed: string, fallback: string): string {
-  return (typed.trim() || fallback.trim()).slice(0, PROFILE_NAME_MAX).trim();
+  return Array.from(typed.trim() || fallback.trim())
+    .slice(0, PROFILE_NAME_MAX)
+    .join("")
+    .trim();
 }
 
 /** `files.filename` holds 1–255 characters (the check in the library migration). */
