@@ -5,7 +5,10 @@
 
 /** Taps that count toward the tempo: the last four give three intervals. */
 export const TAP_WINDOW = 4;
-/** A tap whose interval is more than this share away from the running mean is discarded. */
+/**
+ * A tap whose interval is more than this share away from the running mean is discarded. A
+ * second outlier in a row starts a new sequence from that tap.
+ */
 export const TAP_OUTLIER = 0.25;
 /** A gap longer than this starts a new tap sequence. */
 export const TAP_RESET_MS = 2000;
@@ -44,7 +47,12 @@ export function tap(state: TapState, timeMs: number): TapState {
   const interval = timeMs - last;
   if (current.length > 0) {
     const running = mean(current);
-    if (Math.abs(interval - running) > TAP_OUTLIER * running) return { taps: state.taps, discarded: true };
+    if (Math.abs(interval - running) > TAP_OUTLIER * running) {
+      // Intervals are measured from the last kept tap, so after a tempo change or a late tap
+      // every later tap would miss the band until the 2 s reset. Two misses in a row mean the
+      // kept taps no longer describe what the person is tapping: start again from this one.
+      return state.discarded ? { taps: [timeMs], discarded: false } : { taps: state.taps, discarded: true };
+    }
   }
   return { taps: [...state.taps, timeMs].slice(-TAP_WINDOW), discarded: false };
 }
@@ -103,6 +111,13 @@ export function scheduleClicks(cursor: MetronomeCursor, until: number, settings:
   const stepSec = 60 / settings.bpm / settings.subdivision;
   const clicks: Click[] = [];
   let { nextTime, beat, step } = cursor;
+  // Settings can change between ticks while the metronome runs. A cursor left past the new
+  // subdivision or meter moves to the next beat, or the step counter would never wrap.
+  if (step >= settings.subdivision) {
+    step = 0;
+    beat += 1;
+  }
+  beat %= settings.beatsPerBar;
   while (nextTime < until) {
     const accentBeat = beat === 0 || (settings.halfTimeAccent && beat === 2 && settings.beatsPerBar === 4);
     clicks.push({ time: nextTime, beat, step, accent: step !== 0 ? "sub" : accentBeat ? "bar" : "beat" });

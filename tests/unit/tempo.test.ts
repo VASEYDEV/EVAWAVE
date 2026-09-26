@@ -29,6 +29,21 @@ describe("tap tempo (§1.8)", () => {
     expect(Math.round(reading(after).bpm ?? 0)).toBe(140);
   });
 
+  it("starts a new sequence after two outliers in a row, so a tempo change recovers", () => {
+    // 120 BPM, then the person moves to 90 BPM (667 ms).
+    const first = tap(tapAll([0, 500, 1000, 1500]), 2167);
+    expect(first.discarded).toBe(true);
+    const second = tap(first, 2834);
+    expect(second).toEqual({ taps: [2834], discarded: false });
+    expect(Math.round(reading(tap(second, 3501)).bpm ?? 0)).toBe(90);
+  });
+
+  it("recovers from a late tap without waiting for the 2 s reset", () => {
+    const state = tapAll([0, 428, 856, 1400, 1712, 2140]);
+    expect(state.taps).toEqual([1712, 2140]);
+    expect(Math.round(reading(state).bpm ?? 0)).toBe(140);
+  });
+
   it("accepts a tap just inside the 25% band", () => {
     const state = tap(tapAll([0, 400]), 400 + 499);
     expect(state.discarded).toBe(false);
@@ -82,5 +97,26 @@ describe("metronome scheduling", () => {
     const a = scheduleClicks({ nextTime: 0, beat: 0, step: 0 }, 1, settings);
     const b = scheduleClicks(a.cursor, 2.1, settings);
     expect([...a.clicks, ...b.clicks].map((c) => c.time)).toEqual([0, 0.5, 1, 1.5, 2]);
+  });
+
+  it("keeps beats advancing when the subdivision changes mid-beat", () => {
+    const sixteenths = scheduleClicks({ nextTime: 0, beat: 0, step: 0 }, 0.3, { ...settings, subdivision: 4 });
+    expect(sixteenths.cursor.step).toBe(3);
+    const { clicks } = scheduleClicks(sixteenths.cursor, 1.6, { ...settings, subdivision: 2 });
+    expect(clicks.map((c) => [c.beat, c.step, c.accent])).toEqual([
+      [1, 0, "beat"],
+      [1, 1, "sub"],
+      [2, 0, "beat"],
+      [2, 1, "sub"],
+      [3, 0, "beat"],
+    ]);
+  });
+
+  it("wraps the beat when the meter shrinks mid-bar", () => {
+    const { clicks } = scheduleClicks({ nextTime: 0, beat: 3, step: 0 }, 0.6, { ...settings, beatsPerBar: 3 });
+    expect(clicks.map((c) => [c.beat, c.accent])).toEqual([
+      [0, "bar"],
+      [1, "beat"],
+    ]);
   });
 });
