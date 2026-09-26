@@ -20,7 +20,7 @@ two brands never conflate. Full scope: [`SPEC.md`](SPEC.md) §1.
 | Taxonomy data | `src/data/taxonomy/` | Curated JSON plus the generated instrument bank (`instruments/`, from the seed by `scripts/build-instrument-bank.mjs`); ids unique across banks; built and checked by `buildCatalog` at import | The Jinn catalog records (S1) and the seed's General MIDI, percussion, drum machine and world-set instruments (S3). The lineage name list lives in `src/data/lineage/` |
 | App | `src/app/`, `src/components/composer/` | Next.js 16 App Router; client components over the core | The composer (S3): eleven modules bound to IR paths, budgets, lint, coverage, export and history. The spec persists in localStorage. Library (S4), audio import, metronome and tap tempo (S5) follow |
 | Proxy | `src/proxy.ts` | Next.js 16 proxy (the successor to `middleware.ts`) | Supabase Auth session refresh. Passes through while Supabase is unconfigured |
-| Supabase clients | `src/lib/supabase/` | Browser client, server client, proxy session update | Present. Migrations and RLS arrive in S4 |
+| Supabase clients | `src/lib/supabase/`, `src/lib/library/` | Browser client, server client, proxy session update; typed library client and repository | The library (S4): migrations in `supabase/migrations/` with RLS on every table, `/library`, and email sign-in (`/login`, `/auth/confirm`, `/auth/signout`). Setup: `runbooks/supabase.md` |
 
 Hard rules for the core live in
 [`.claude/rules/musicspec-core.md`](../.claude/rules/musicspec-core.md): deterministic

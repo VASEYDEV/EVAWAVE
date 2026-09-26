@@ -35,6 +35,11 @@ Nothing in the app is usable yet. What exists today:
     reachable.
 
   The spec persists in the browser until the S4 library.
+- The library, from S4, at `/library`: style profiles saved from the composer, file
+  metadata, tags, and genre and tag links. Sign-in is by Supabase Auth email link. Row
+  level security keeps each user to their own rows, and a test proves it against the real
+  migrations. It needs a Supabase project: see
+  [`docs/runbooks/supabase.md`](docs/runbooks/supabase.md).
 - An instrument bank of 336 records: the 24 curated Jinn records plus 312 generated
   deterministically from the seed (General MIDI programs and percussion, drum machines,
   world sets).
@@ -67,7 +72,7 @@ bash scripts/gate.sh          # full verification gate (the same one CI runs)
 
 - **Framework:** Next.js 16.3.6 (App Router, Turbopack) · React 19 · TypeScript 5.9 (strict)
 - **Auth and data:** Supabase (`@supabase/ssr`, Supabase Auth, RLS from S4)
-- **Quality:** ESLint 9 flat config (invoked directly) · Vitest · Playwright with axe-core (mobile viewport, WCAG 2.2 AA scan) · `npm audit`
+- **Quality:** ESLint 9 flat config (invoked directly) · Vitest (with PGlite for the RLS tests) · Playwright with axe-core (mobile viewport, WCAG 2.2 AA scan) · `npm audit`
 - **Deploy:** Vercel (planned, not yet configured)
 
 Stack decisions and held-back versions: [ADR 0002](docs/decisions/0002-session-0-intake-and-stack.md).
@@ -79,8 +84,8 @@ the gate fails if any of them appears in the client bundle.
 
 | Variable | Scope | Used by | Notes |
 | --- | --- | --- | --- |
-| `NEXT_PUBLIC_SUPABASE_URL` | public | `src/lib/supabase/*`, `src/proxy.ts` | Both unset: proxy passes through. Only one set: error |
-| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | public | `src/lib/supabase/*`, `src/proxy.ts` | Both unset: proxy passes through. Only one set: error |
+| `NEXT_PUBLIC_SUPABASE_URL` | public | `src/lib/supabase/*`, `src/lib/library/*`, `src/proxy.ts`, `/library`, `/login` | Both unset: proxy passes through and the library says it is not configured. Only one set: error |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | public | `src/lib/supabase/*`, `src/lib/library/*`, `src/proxy.ts`, `/library`, `/login` | Both unset: proxy passes through and the library says it is not configured. Only one set: error |
 | `SUPABASE_SERVICE_ROLE_KEY` | server | not yet | Bypasses RLS; server only |
 | `ANTHROPIC_API_KEY` | server | not yet (text intake, not scheduled in S1–S5) | |
 | `INTAKE_MODEL` | server | not yet (text intake) | Pin explicitly; verify the id against the API docs when intake is built |

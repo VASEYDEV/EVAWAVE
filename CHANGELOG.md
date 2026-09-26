@@ -9,6 +9,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- S4, the library (SPEC §3):
+  - Supabase migrations with row level security on every table. There are owner-only policies on style profiles, files, tags and their genre and tag links. Link rows may only join the owner's rows, the curated genres are read-only, and `anon` has no access.
+  - A generated genre seed migration.
+  - The `/library` page for style profiles saved from the composer, file metadata, tags, and genre and tag links.
+  - Supabase Auth email sign-in: `/login`, `/auth/confirm` with a same-site redirect guard, and POST `/auth/signout`.
+- `tests/integration/library-rls.test.ts`: 43 checks that user B cannot read, update, delete, forge, link or re-own user A's rows in each of the seven user-scoped tables. It also checks that anon reaches nothing, that genres are read-only, and that the columns match the app's types. It runs the real migrations in PGlite.
+- `docs/runbooks/supabase.md`: project setup, migrations, environment, the auth email template and verification.
+- Dev dependency: `@electric-sql/pglite`, so the RLS tests run the real migrations with no Postgres service or Supabase project.
 - S3, the composer (SPEC §3):
   - The eleven modules on one mobile-first page, every control bound to an IR path.
   - Live budget meters, the lint panel, coverage, and an export pane (per-engine files, MusicSpec JSON, word-MIDI blueprint).

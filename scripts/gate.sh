@@ -3,7 +3,7 @@
 # e2e (Playwright on the production build), then the client-bundle secret check (§5) and
 # npm audit (§6, criticals block).
 # CI runs this same script after `npm ci`, so local and CI verification never diverge.
-# Integration tests join when the first ones land (S7, Supabase RLS).
+# Integration tests (tests/integration/, the RLS tests on PGlite) run in the unit step.
 # Written for bash 3.2 (macOS default): no mapfile, no empty-array expansion under set -u.
 set -euo pipefail
 cd "$(dirname "$0")/.."
