@@ -9,7 +9,7 @@ import Link from "next/link";
 import { useEffect, useMemo, useState, type ReactNode } from "react";
 
 import { nextVariantLabel } from "@/core/musicspec/variants";
-import { identityOf, workingHash, type SongAttachment } from "@/lib/composer/storage";
+import { identityOf, newCopyId, workingHash, type SongAttachment } from "@/lib/composer/storage";
 import { createLibraryClient } from "@/lib/library/client";
 import { createSong, freezeVariant, saveSong, songTitle } from "@/lib/library/songs";
 import { getSupabasePublicConfig } from "@/lib/supabase/config";
@@ -76,6 +76,8 @@ export function SongPanel() {
       const created = await createSong(library, saving);
       attach(
         {
+          // The same working copy, now a song's: it keeps its id, or takes one if it had none.
+          copyId: song?.copyId ?? newCopyId(),
           songId: created.song.id,
           ownerId: created.song.ownerId,
           title: created.song.title,

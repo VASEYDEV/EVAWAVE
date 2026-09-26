@@ -9,7 +9,7 @@
 import { ENGINE_IDS } from "@/core/musicspec/engines";
 import type { Catalog, DriftKind, EngineId, FieldDiff, MusicSpec, Song, Take, Variant } from "@/core/musicspec/ir/types";
 import { diffSpecs, freezeBlockers, normalise, variantCoverage } from "@/core/musicspec/variants";
-import { workingHash, type SongAttachment } from "@/lib/composer/storage";
+import { workingHash, type SongOpening } from "@/lib/composer/storage";
 
 import { check, LibraryError, type LibraryClient } from "./repository";
 import type { SongRow, TakeRow, VariantRow } from "./schema";
@@ -163,14 +163,17 @@ const yieldToMain = () => new Promise<void>((resolve) => setTimeout(resolve, 0))
  * thread in one task.
  */
 export async function loadSong(client: LibraryClient, id: string, catalog: Catalog): Promise<StoredSong & { variants: Variant[]; takes: Take[] }> {
-  // Every variant, however long the history: the song's base variant may be the newest,
-  // and a save from a copy that could not find it would clear it.
-  const [song, rows] = await Promise.all([
-    client.from("songs").select("*").eq("id", id).maybeSingle(),
-    allRows("load song: variants", (from, to) => client.from("variants").select("*", { count: "exact" }).eq("song_id", id).order("seq", { ascending: true }).range(from, to)),
-  ]);
+  // The song first, then every variant, however long the history. Variants only ever
+  // arrive (they leave only with their song), so whatever base the song names is among
+  // those read after it; read at the same time, a freeze landing between the two reads
+  // could name a base the variant list does not hold, and a save from that copy would
+  // clear it.
+  const song = await client.from("songs").select("*").eq("id", id).maybeSingle();
   if (song.error) throw new LibraryError(`load song: ${song.error.message}`);
   if (!song.data) throw new LibraryError("load song: no such song for this account; it may have been deleted");
+  const rows = await allRows("load song: variants", (from, to) => client.from("variants").select("*", { count: "exact" }).eq("song_id", id).order("seq", { ascending: true }).range(from, to));
+  const baseId = song.data.base_variant_id;
+  if (baseId && !rows.some((row) => row.id === baseId)) throw new LibraryError("load song: the song changed while it loaded; reload it");
   const snapshots = new Map(rows.map((row) => [row.id, row.spec_snapshot]));
   const loaded: Variant[] = [];
   let slice = performance.now();
@@ -299,7 +302,7 @@ export function describeChange(change: FieldDiff): string {
  * song's working copy, spec and base together, so a variant opened over a different copy
  * shows as unsaved, even when its snapshot equals the song's spec.
  */
-export function songAttachment(stored: StoredSong, variants: readonly Variant[], base: Variant | null): SongAttachment {
+export function songAttachment(stored: StoredSong, variants: readonly Variant[], base: Variant | null): SongOpening {
   return {
     songId: stored.song.id,
     ownerId: stored.song.ownerId,

@@ -167,7 +167,7 @@ describe("loadSong", () => {
     const takes = rows.map((v, i) => ({ id: `t-${String(i).padStart(3, "0")}`, owner_id: "o", variant_id: v.id, engine: "suno", engine_version: "v6", render_ref: null, verdict: "keep", drifted: [], words_blamed: [], notes: "", created_at: new Date(Date.UTC(2026, 8, 26, 0, i)).toISOString() }));
     const { client, sent } = recording(
       (r) => {
-        if (r.path === "/rest/v1/songs") return song;
+        if (r.path === "/rest/v1/songs") return { ...song, base_variant_id: "v-149" };
         if (r.path === "/rest/v1/variants") return rows;
         const ids = (r.query.get("variant_id") ?? "").replace(/^in\.\(|\)$/g, "").split(",");
         return takes.filter((t) => ids.includes(t.variant_id));
@@ -181,6 +181,14 @@ describe("loadSong", () => {
     expect(loaded.takes).toHaveLength(150);
     expect(loaded.takes[0]?.id).toBe("t-149");
     expect(loaded.takes.at(-1)?.id).toBe("t-000");
+  });
+
+  it("reads the song before its variants, and refuses a base the variants it read do not hold", async () => {
+    const rows = [row("v-0", 1, null, v11)];
+    const { client, sent } = recording((r) => (r.path === "/rest/v1/songs" ? song : r.path === "/rest/v1/variants" ? rows : []));
+    // The song names v-1, frozen after the variants were read: never a copy with no base.
+    await expect(loadSong(client, "s", catalog)).rejects.toThrow("the song changed while it loaded; reload it");
+    expect(sent.map((r) => r.path)).toEqual(["/rest/v1/songs", "/rest/v1/variants"]);
   });
 
   it("derives each variant's coverage from its own snapshot", async () => {

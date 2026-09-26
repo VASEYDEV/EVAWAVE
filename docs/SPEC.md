@@ -1697,7 +1697,10 @@ Delivered:
   error; `loadSong` derives each variant's diff and coverage, yielding every 16 ms so a
   long history never blocks the main thread in one task). Song, variant and take lists
   are read a page at a time to the exact count, because PostgREST cuts a response at its
-  row limit without an error. The working copy in the browser carries its song attachment in the same
+  row limit without an error; the song is read before its variants, so the base it names
+  is always among them. Each opening of a song gets its own copy id, and a save or freeze
+  attaches its result only to the copy it began on. Opening refuses, and says so, when the
+  browser will not store the copy. The working copy in the browser carries its song attachment in the same
   `setItem` (`src/lib/composer/storage.ts`), tabs follow each other's writes, and nothing
   is written before the saved copy is read. The composer's Song panel, the `/library`
   Songs section (delete asks twice) and `/songs/[id]`. Opening over unsaved work asks

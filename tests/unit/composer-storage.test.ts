@@ -3,13 +3,14 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { commit, emptyHistory } from "@/core/musicspec/history";
 import { defaultMusicSpec } from "@/core/musicspec/ir/defaults";
 import { specHash } from "@/core/musicspec/variants";
-import { COMPOSER_KEY, hasUnsavedWork, identityOf, openedCopy, parseComposer, stillCurrent, workingHash, writeComposer, type SongAttachment } from "@/lib/composer/storage";
+import { COMPOSER_KEY, hasUnsavedWork, identityOf, openedCopy, parseComposer, stillCurrent, workingHash, writeComposer, type SongAttachment, type SongOpening } from "@/lib/composer/storage";
 
 /** The composer's saved working copy and its song attachment (src/lib/composer/storage.ts). */
 const edited = () =>
   commit(emptyHistory(), defaultMusicSpec(), [{ op: "set", path: "/D6/tempo/bpm", value: 140, confidence: 1, rationale: "composer edit" }], "Tempo");
 
 const attachment = (over: Partial<SongAttachment> = {}): SongAttachment => ({
+  copyId: "copy-1",
   songId: "song-1",
   ownerId: "owner-1",
   title: "Jinn",
@@ -41,8 +42,8 @@ describe("parseComposer", () => {
 
   it("keeps the working copy but drops a malformed attachment", () => {
     const step = edited();
-    const withoutBase = Object.fromEntries(Object.entries(attachment()).filter(([key]) => key !== "baseVariantId"));
-    for (const song of [{ songId: "s" }, attachment({ revision: 1.5 }), { ...attachment(), variantLabels: [1] }, withoutBase, "song-1"]) {
+    const without = (name: string) => Object.fromEntries(Object.entries(attachment()).filter(([key]) => key !== name));
+    for (const song of [{ songId: "s" }, attachment({ revision: 1.5 }), { ...attachment(), variantLabels: [1] }, without("baseVariantId"), without("copyId"), "song-1"]) {
       expect(parseComposer(JSON.stringify({ ...step, song }))).toEqual(step);
     }
   });
@@ -52,14 +53,14 @@ describe("writeComposer", () => {
   it("writes the spec and its attachment in one setItem, so neither is ever stored without the other", () => {
     const setItem = vi.fn();
     vi.stubGlobal("window", { localStorage: { setItem } });
-    writeComposer({ ...edited(), song: attachment() });
+    expect(writeComposer({ ...edited(), song: attachment() })).toBe(true);
     expect(setItem).toHaveBeenCalledTimes(1);
     const [key, value] = setItem.mock.calls[0] as [string, string];
     expect(key).toBe(COMPOSER_KEY);
     expect(parseComposer(value)?.song).toEqual(attachment());
   });
 
-  it("fails soft when storage refuses", () => {
+  it("fails soft when storage refuses, and says so", () => {
     vi.stubGlobal("window", {
       localStorage: {
         setItem: () => {
@@ -68,6 +69,7 @@ describe("writeComposer", () => {
       },
     });
     expect(() => writeComposer(edited())).not.toThrow();
+    expect(writeComposer(edited())).toBe(false);
   });
 });
 
@@ -104,12 +106,23 @@ describe("workingHash", () => {
 });
 
 describe("openedCopy", () => {
+  // What a library page builds for opening: the attachment without a copy id.
+  const song: SongOpening = Object.fromEntries(Object.entries(attachment()).filter(([key]) => key !== "copyId")) as SongOpening;
+
   it("opens a song's spec with a fresh undo history and its attachment", () => {
     const spec = edited().spec;
-    const opened = openedCopy(spec, attachment());
+    const opened = openedCopy(spec, song);
     expect(opened.history).toEqual(emptyHistory());
     expect(opened.spec).toBe(spec);
-    expect(opened.song).toEqual(attachment());
+    expect(opened.song).toEqual({ ...song, copyId: expect.any(String) });
+  });
+
+  it("makes every opening a new copy, even of the same song, base and revision", () => {
+    const first = openedCopy(edited().spec, song).song;
+    const second = openedCopy(edited().spec, song).song;
+    expect(first?.copyId).not.toBe(second?.copyId);
+    // A stale id passed in is never kept.
+    expect(openedCopy(edited().spec, { ...song, copyId: "copy-1" } as SongOpening).song?.copyId).not.toBe("copy-1");
   });
 });
 
@@ -120,6 +133,8 @@ describe("stillCurrent", () => {
     expect(stillCurrent(attachment({ baseVariantId: "v-1", revision: 3, title: "Renamed", savedHash: "x" }), from)).toBe(true);
     // Another tab opened another song, another variant of this one, or a newer save: do not.
     expect(stillCurrent(attachment({ songId: "song-2", baseVariantId: "v-1", revision: 3 }), from)).toBe(false);
+    // Nor another opening of the same song at the same base and revision: another copy.
+    expect(stillCurrent(attachment({ copyId: "copy-2", baseVariantId: "v-1", revision: 3 }), from)).toBe(false);
     expect(stillCurrent(attachment({ baseVariantId: "v-0", revision: 3 }), from)).toBe(false);
     expect(stillCurrent(attachment({ baseVariantId: "v-1", revision: 4 }), from)).toBe(false);
     expect(stillCurrent(undefined, from)).toBe(false);

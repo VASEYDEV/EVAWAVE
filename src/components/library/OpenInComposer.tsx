@@ -9,11 +9,11 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 import type { MusicSpec } from "@/core/musicspec/ir/types";
-import { hasUnsavedWork, openedCopy, readComposer, writeComposer, type SongAttachment } from "@/lib/composer/storage";
+import { hasUnsavedWork, openedCopy, readComposer, writeComposer, type SongOpening } from "@/lib/composer/storage";
 
 export interface Opening {
   spec: MusicSpec;
-  song: SongAttachment;
+  song: SongOpening;
 }
 
 export function OpenInComposer({ label, open, onError }: { label: string; open: () => Promise<Opening>; onError: (message: string) => void }) {
@@ -36,7 +36,13 @@ export function OpenInComposer({ label, open, onError }: { label: string; open: 
         setBusy(false);
         return;
       }
-      writeComposer(openedCopy(spec, song));
+      // The composer reads the copy from storage, so a write the browser refused would open
+      // the old copy there and drop this one without a word.
+      if (!writeComposer(openedCopy(spec, song))) {
+        onError("This browser would not store the working copy (site data is blocked or storage is full), so nothing was opened. Allow site data or free some space, then try again.");
+        setBusy(false);
+        return;
+      }
       router.push("/");
     } catch (error) {
       onError(error instanceof Error ? error.message : "Could not open it in the composer.");

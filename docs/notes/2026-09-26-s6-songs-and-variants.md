@@ -142,9 +142,36 @@ Fifth round (Codex, on db09c94):
 - Not fixed here, listed: the S4 library reads (`loadLibrary`: profiles, files, tags and
   their links) are single requests too, and would be cut the same way past the limit.
 
+Sixth round (Codex, on c925349), each reproduced against the scratch fake Supabase on
+c925349 and gone on the fix:
+
+- **P1: a late freeze onto another opening of the same song.** `stillCurrent` compared
+  the song, base variant and revision. Another tab could open another copy with all three
+  equal: the song's working copy, then its base variant. A pending freeze then attached
+  its new variant to that copy and changed the next freeze's parent. Each opening now
+  gets a `copyId` (`openedCopy` stamps a new one, never one passed in; "save as new
+  song" keeps the copy's). The check includes it. Edits in the same tab keep the id, so
+  a save still attaches after them, as round 3 intended; a spec fingerprint would have
+  dropped those. Unfixed: the v1.1 copy another tab opened (tempo 140) became "from v1.3"
+  at revision 4. Fixed: it stays "Saved · from v1.1" at revision 3.
+- **P2: the song and its variants read at the same time.** A freeze landing between the
+  two reads could name a base that the variant list did not hold, and the copy then
+  opened with no base. `loadSong` now reads the song first. Variants only ever arrive,
+  so the base it names is among those read after. A base still missing (the song was
+  deleted in between) is an error, never a copy with no base. Unfixed, with the song read
+  delayed and a freeze sent meanwhile: "working copy not frozen yet". Fixed: all 5
+  variants, "from v1.4".
+- **P2: opening when storage refuses.** `writeComposer` swallowed the error, and
+  `OpenInComposer` navigated anyway, to the old copy. It now returns whether the browser
+  kept the write. Opening stays on the page with a message when it did not. Unfixed,
+  with `setItem` throwing: it went to the composer with no message. Fixed: it stays on
+  `/library` and says why.
+- Mutations: the identity without the copy id, an opening that keeps a passed id, no
+  base check, and a write that always reports success each fail their test.
+
 ## Evidence
 
-Counts as of the fifth round.
+Counts as of the sixth round.
 
 - Core: `tests/unit/variants.test.ts` (18), including the Jinn v1.1 → v1.2 diff with
   `/D6/tempo/bpm` 142 → 140 and an exact replay over 60 seeded random edits. Mutations:
@@ -152,8 +179,8 @@ Counts as of the fifth round.
 - Database: `tests/integration/songs-rls.test.ts` (27). Mutations: dropping the revision
   predicate, granting variant updates, dropping the same-song parent key and dropping
   the revision bump each fail their tests.
-- App: `songs-repository.test.ts` (27 with the S7 take cases; dropping the revision
-  filter fails), `composer-storage.test.ts` (12).
+- App: `songs-repository.test.ts` (28 with the S7 take cases; dropping the revision
+  filter fails), `composer-storage.test.ts` (13).
 - E2e without Supabase: `songs.spec.ts` (3) and the song page in the layout and BEAM
   checks.
 - Signed in, against a fake Supabase in scratch space (not committed): `/library`, the
