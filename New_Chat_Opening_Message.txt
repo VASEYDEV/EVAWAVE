@@ -1,0 +1,1 @@
+Read the attached handoff brief first, then the two prompt files. Treat the brief's Section 1 as your working instructions for this session. I'm building an AI song-prompting app (name TBD). Start with the goals list in Section 7, confirm the Phase A decisions with me, then help me flesh out features. Decisions over options; state assumptions; push back when I'm wrong.
