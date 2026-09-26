@@ -109,6 +109,16 @@ S5 per SPEC §3. The methods are listed in SPEC §3 S5 "Delivered".
   - **A double Save** inserted two profiles. The profile id is made on the device and
     saved by upsert, so a repeat writes one row. The RLS suite proves that, and that
     another owner's upsert with the same id is refused.
+- **Sixth review.**
+  - **The metronome leaked a context when `resume()` was refused.** The context is now
+    closed and released, so retries do not pile up contexts. A test with a blocked fake
+    context fails on the old code.
+  - **Profile names could exceed the 200-character column.** The import's name input
+    and its filename fallback now cap at `PROFILE_NAME_MAX`. The RLS suite ties that
+    constant to the migration's check: 200 characters are accepted and 201 refused.
+  - **Listed, not fixed (CLAUDE.md §1.1):** the `/library` page's profile-name input
+    (S4, `src/components/library/Library.tsx`) has the same missing limit. Using
+    `PROFILE_NAME_MAX` there is a one-line follow-up.
 
 ## Decisions
 
