@@ -21,7 +21,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - A recorded-fetch test proving no request carries audio through import, review and library save.
   - Analysis vectors: a −20 dBFS sine reads −23.01 LUFS; click-track tempo and meter; triad keys; the absolute gate.
   - The tap tempo vectors, metronome start and stop with a fake AudioContext, and intake and PT/PV rule tests.
-  - An RLS check that a re-import dedupes per owner through the same upsert `saveImport` uses, while another owner's identical file gets its own row.
+  - An RLS check that a re-import dedupes per owner through the same upsert `saveImport` uses, while another owner's identical file gets its own row, and that a repeated profile save writes one row while another owner's reuse of its id is refused.
   - E2e for WAV import, tap tempo on a controlled clock, hue and icon on every module, and no horizontal scroll on any page.
 - S4, the library (SPEC §3):
   - Supabase migrations with row level security on every table. There are owner-only policies on style profiles, files, tags and their genre and tag links. Link rows may only join the owner's rows, the curated genres are read-only, and `anon` has no access.

@@ -97,6 +97,18 @@ S5 per SPEC §3. The methods are listed in SPEC §3 S5 "Delivered".
   `resume()` settled, so a double tap made two contexts and two intervals, and the lost
   interval outlived `stop()`. A pending start is now shared, and a stop during start
   leaves nothing running. Tests with a fake AudioContext fail on the old code.
+- **Fifth review.** Each fix ships with a test that fails on the old code.
+  - **Weights for 5.0 and 7.1.** Only 5.1 had BS.1770 weights. 5.0 and 7.1 now use their
+    standard WAV and Web Audio orders: 7.1 side surrounds are 1.41, backs 1.0, and the
+    LFE is left out. Other channel counts carry no known layout and weigh 1.0.
+  - **Energy windows ignored the meter.** 16 beats is four bars only in 4/4. Windows are
+    now four bars of the detected meter.
+  - **A new file during Create** could leave the stored blob with no profile. Creating
+    now blocks new imports until it finishes. The e2e holds the OPFS write open and
+    checks that the file input and Create are disabled. It fails without the lock.
+  - **A double Save** inserted two profiles. The profile id is made on the device and
+    saved by upsert, so a repeat writes one row. The RLS suite proves that, and that
+    another owner's upsert with the same id is refused.
 
 ## Decisions
 

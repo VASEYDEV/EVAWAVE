@@ -1500,8 +1500,10 @@ Delivered:
   - meter: an accent envelope at 4-beat against 3-beat lags;
   - key: chroma against the Krumhansl–Kessler profiles;
   - loudness: BS.1770 K-weighting per channel, summed with the channel weights (1.41 on
-    5.1 surrounds, LFE left out), with gating, and the loudness range from 3 s windows;
-  - energy per 4 bars, sections by energy change, and spectral descriptors;
+    5.0 and 5.1 surrounds and 7.1 side surrounds, LFE left out), with gating, and the
+    loudness range from 3 s windows;
+  - energy per 4 bars of the detected meter, sections by energy change, and spectral
+    descriptors;
   - a WAV decoder and encoder.
 
   Memory stays bounded: the frame pass keeps running sums, not spectra, and loudness
@@ -1532,7 +1534,9 @@ Delivered:
   - `/import`: file picker or drop, hashing, and Web Audio decoding. Import stores
     nothing. The file goes to OPFS (or an in-tab fallback) when the person creates a
     profile from it, so abandoned, failed or superseded imports leave nothing behind. A
-    newer file choice aborts the analysis in flight. It shows the measured features, then a per-field review with
+    newer file choice aborts the analysis in flight; while a profile is being created, no
+    new file can be chosen. The profile's id is made on the device, so saving it twice
+    writes one library row. It shows the measured features, then a per-field review with
     low-confidence suggestions left unticked. The resulting profile carries the PV-1
     badge, can be saved to the library (file metadata and the profile only, through
     `saveImport`) or downloaded.
