@@ -422,6 +422,31 @@ S5 per SPEC §3. The methods are listed in SPEC §3 S5 "Delivered".
   and its rationale names 6/8. A test runs a real 6/8 eighth-note signal through analysis
   and intake. Without the cap it proposes 3/4 at 0.51, auto-ticked. A 4/4 reading keeps
   its own confidence. SPEC §1.11 lists beat-phase tracking as the upgrade.
+- **Thirty-fourth review, first finding: the tempo fold could loop forever.** Confirmed. The
+  prior picks the winning lag, and on a steadily falling flux (a swell with no beat) that
+  lag sits on a slope of the raw autocorrelation, not at a peak. The parabolic fit then put
+  the vertex at a negative lag, and folding a negative tempo into 60–200 BPM never ends.
+  23 of 156 synthetic swells with a 1% noise floor hit it through `analyseAudio`, the worst
+  at a lag of −239 frames. The fit is now `parabolicPeakOffset` in `dsp.ts`: it returns 0
+  unless the middle value is a local maximum, which bounds the offset to ±0.5, and the lag
+  is clamped to the search range. A test runs three seeded 1 s swells that each hung
+  before. Restoring the old fit makes that test hang (killed by `timeout` at 60 s, exit
+  124). Unit tests pin the offset's bounds.
+- **Thirty-fourth review, second finding: duration alone did not bound the decode.**
+  Confirmed by arithmetic. Web Audio decodes every channel at the context's rate, so a
+  10-minute 7.1 file at 48 kHz is 880 MiB of samples. A live context also decodes at the
+  device's rate, and stereo at 192 kHz is the same size. Two changes:
+  - Decoding now uses an `OfflineAudioContext` at a fixed 48 kHz (`DECODE_SAMPLE_RATE`).
+    The e2e decodes a 22.05 kHz WAV and checks that the buffer comes back at 48000.
+  - Before reading the file, the import reads the channel count its container header
+    declares (`analysis/channels.ts`). Duration × channels is capped at 20
+    channel-minutes (`IMPORT_MAX_CHANNEL_SECONDS`), the old ten-minutes-of-stereo budget.
+    When the header does not say, the import assumes 7.1 (`IMPORT_ASSUMED_CHANNELS`), so
+    it takes up to 150 s. For AAC in MP4 the reader takes the count from the esds
+    AudioSpecificConfig, because encoders commonly write 2 in the sample entry. Tests
+    cover each container, truncation and seeded noise after each magic; mutating the esds
+    path or MP3 mono detection fails them. Import tests cover 5.1 over, at, and 7.1
+    assumed.
 
 ## Decisions
 

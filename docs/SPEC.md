@@ -224,16 +224,22 @@ end-to-end Jinn rebuild through the UI with an A/B Suno render.
   filters, as pyloudnorm does: within 0.2 LU of the 48 kHz reference in the tests.
 - **iOS PWA storage**: OPFS quota and eviction for reference audio. Browsers without OPFS
   `createWritable` keep the blob in the tab's memory; the import says which.
-- **Import size.** Web Audio decodes the whole file before analysis. A 3-minute 44.1 kHz
-  stereo track is about 64 MB of decoded samples plus a 32 MB mono mix. Analysis adds
-  about 21 MB of peak memory on top (measured in Node; it was about 220 MB before the frame
-  pass stopped keeping spectra). Imports refuse files over 100 MiB before reading them:
-  about 9.9 minutes of 16-bit 44.1 kHz stereo WAV, 6 minutes at 24-bit 48 kHz. They also
-  refuse recordings over 10 minutes by the duration a media element reads from the
-  metadata, because the encoded size says little about the decoded size (a 100 MiB MP3
-  can hold 109 minutes). Ten minutes of stereo at 48 kHz decodes to about 230 MB. When the
-  metadata cannot tell, only the byte cap applies. A streaming decoder (WebCodecs) would
-  lift both caps.
+- **Import size.** Web Audio decodes the whole file before analysis, every channel at once,
+  at a fixed 48 kHz: an offline context resamples, where a live one would decode at the
+  device's rate (192 kHz on some audio interfaces). A 3-minute stereo track is about 69 MB
+  of decoded samples plus a 35 MB mono mix. Analysis adds about 21 MB of peak memory on
+  top (measured in Node; it was about 220 MB before the frame pass stopped keeping
+  spectra). Imports refuse files over 100 MiB before reading them: about 9.9 minutes of
+  16-bit 44.1 kHz stereo WAV, 6 minutes at 24-bit 48 kHz. They also refuse recordings over
+  10 minutes by the duration a media element reads from the metadata, because the encoded
+  size says little about the decoded size (a 100 MiB MP3 can hold 109 minutes). Duration
+  times channels is capped at 20 channel-minutes, ten minutes of stereo or about 230 MB of
+  samples, so 5.1 runs to 200 seconds and 7.1 to 150. The channel count comes from the
+  container header (`analysis/channels.ts`: WAV, RF64, BW64, AIFF, FLAC, Ogg Opus, Vorbis
+  and FLAC, MP3, ADTS, MP4 with AAC, ALAC, Opus, FLAC or PCM, CAF, Matroska and WebM).
+  When the header does not say, the import assumes 7.1. When the metadata cannot tell the
+  duration, only the byte cap applies. A streaming decoder (WebCodecs) would lift the
+  caps.
 - **Compound meters.** The analysis cannot name 6/8 or 12/8. Autocorrelation at 43 frames per
   second is too spiky for the 3-against-6-beat comparison that would tell 3/4 from a 6/8
   bar; two variants were tried and both misread plain meters. Intake therefore proposes 3/4
@@ -1517,7 +1523,9 @@ Delivered:
 - **Analysis** (`src/core/musicspec/analysis/`), pure and deterministic:
   - tempo: spectral-flux onsets with autocorrelation over 60–200 BPM and a 120 BPM
     log-normal prior, the value folded by octaves into 60–200 BPM (a 58 BPM pulse reads
-    116, with 58 as its half-time candidate);
+    116, with 58 as its half-time candidate). The sub-frame fit applies only at a local
+    autocorrelation peak and stays inside the search, so a beatless swell cannot push the
+    lag to zero or below;
   - meter: an accent envelope at 4-beat against 3-beat lags. A three-beat grouping may be
     half a 6/8 bar counted in eighths, so intake proposes 3/4 at no more than 0.4
     confidence (unticked) and names 6/8;
@@ -1568,7 +1576,9 @@ Delivered:
     profile in memory, with the PV-1 badge, a device-made id and a name capped at 200
     characters. The profile holds only the accepted fields: a tempo, meter or key not
     proposed or not accepted is absent, not a default (`StyleProfileSpec`, §2.2).
-    Recordings over 10 minutes, by their metadata, are refused before they are read. Import, Create and Download store nothing: the file goes to OPFS (or an
+    Recordings over 10 minutes by their metadata, or over 20 channel-minutes by the
+    channel count their header declares, are refused before they are read. Decoding runs
+    at a fixed 48 kHz. Import, Create and Download store nothing: the file goes to OPFS (or an
     in-tab fallback) only after a library save succeeds, because a library record is the
     one reference the app can later remove it by, so no stored blob is ever unreachable.
     A downloaded profile cites the audio by its sha256. Saving goes
