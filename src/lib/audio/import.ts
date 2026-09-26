@@ -16,6 +16,11 @@ export interface ImportDeps {
   decode(bytes: ArrayBuffer): Promise<PcmAudio>;
   /** Hex sha256 of the bytes, for dedupe and as the local key. */
   digest(bytes: ArrayBuffer): Promise<string>;
+  /**
+   * Runs the analysis. The browser runs it in a worker that an abort terminates; without this
+   * it runs here, synchronously (Node and the tests).
+   */
+  analyse?(pcm: PcmAudio, signal?: AbortSignal): Promise<AudioFeatures>;
   /** The time the analysis ran, ISO 8601; the core never reads the clock. */
   now(): string;
   lineageNames?: readonly string[];
@@ -39,8 +44,8 @@ export interface ImportResult {
 
 /**
  * Hashes, decodes and analyses `file` and drafts the patch. Aborting `signal` (a newer file
- * choice) stops it at the next stage: before the hash, the decode or the analysis. The
- * promise then rejects with the signal's reason.
+ * choice) stops it at the next stage: before the hash, the decode or the analysis, and during
+ * an analysis that `deps.analyse` can stop. The promise then rejects with the signal's reason.
  */
 export async function importAudio(file: File, deps: ImportDeps, signal?: AbortSignal): Promise<ImportResult> {
   const bytes = await file.arrayBuffer();
@@ -49,7 +54,8 @@ export async function importAudio(file: File, deps: ImportDeps, signal?: AbortSi
   signal?.throwIfAborted();
   const pcm = await deps.decode(bytes);
   signal?.throwIfAborted();
-  const features = analyseAudio(pcm.samples, pcm.sampleRate, pcm.channelData);
+  const features = deps.analyse ? await deps.analyse(pcm, signal) : analyseAudio(pcm.samples, pcm.sampleRate, pcm.channelData);
+  signal?.throwIfAborted();
   const analysedOn = deps.now();
   const patch = draftFromAudio(features, { createdAt: analysedOn, sourceRef: sha256 }, deps.lineageNames ?? []);
   return {

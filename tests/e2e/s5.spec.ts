@@ -21,10 +21,23 @@ test("imports a WAV into a reviewed audio-analysis style profile, sending no aud
   });
   const wav = Buffer.from(encodeWav(mix(clickTrack(140, 12, 22050), triad(62, true, 12, 22050)), 22050));
 
+  // Record every worker the page starts: analysis must run in one, off the main thread.
+  await page.addInitScript(() => {
+    const Native = window.Worker;
+    const started: string[] = [];
+    (window as unknown as { workersStarted: string[] }).workersStarted = started;
+    window.Worker = class extends Native {
+      constructor(url: string | URL, options?: WorkerOptions) {
+        super(url, options);
+        started.push(String(url));
+      }
+    };
+  });
   await page.goto("/import");
   await page.getByLabel("Choose an audio file, or drop one here").setInputFiles({ name: "desert-loop.wav", mimeType: "audio/wav", buffer: wav });
   const review = page.getByRole("list", { name: /^Proposed fields/ });
   await expect(review).toBeVisible({ timeout: 30_000 });
+  expect(await page.evaluate(() => (window as unknown as { workersStarted: string[] }).workersStarted)).toEqual(["/workers/analysis.worker.js"]);
   const tempoItem = review.getByRole("listitem").filter({ has: page.getByText("/D6/tempo", { exact: true }) });
   await expect(tempoItem).toContainText("bpm: 140");
   await expect(page.getByLabel("Accept /D6/tempo")).toBeChecked();

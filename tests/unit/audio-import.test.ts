@@ -1,7 +1,8 @@
 import { createClient } from "@supabase/supabase-js";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
-import { decodeWav, encodeWav, WavError } from "@/core/musicspec/analysis/wav";
+import { analyseAudio } from "@/core/musicspec/analysis/features";
+import { decodeWav, encodeWav, WavError, type PcmAudio } from "@/core/musicspec/analysis/wav";
 import { applyReviewedPatch, audioProfileBase, AUDIO_DRAFT_MODEL, reviewPatch } from "@/core/musicspec/intake";
 import { lintStyleProfile } from "@/core/musicspec/lint";
 import { blobInTab, removeLocalAudio, storeInOpfs } from "@/lib/audio/browser";
@@ -118,6 +119,31 @@ describe("audio import (§1.7)", () => {
     expect(carriesAudio(JSON.stringify({ data: Buffer.from(wavBytes.subarray(1000)).toString("base64") }))).toBe(true);
     expect(carriesAudio(Buffer.from(wavBytes.subarray(2000)).toString("hex"))).toBe(true);
     expect(carriesAudio(JSON.stringify({ features: { bpm: 140 } }))).toBe(false);
+  });
+});
+
+describe("analysis off the main thread", () => {
+  it("hands the decoded audio and the signal to deps.analyse when there is one", async () => {
+    const controller = new AbortController();
+    const analyse = vi.fn(async (pcm: PcmAudio, signal?: AbortSignal) => {
+      expect(signal).toBe(controller.signal);
+      return analyseAudio(pcm.samples, pcm.sampleRate, pcm.channelData);
+    });
+    const imported = await importAudio(file, { ...nodeDeps(), analyse }, controller.signal);
+    expect(analyse).toHaveBeenCalledTimes(1);
+    expect(Math.round(imported.features.bpm.value)).toBe(140);
+  });
+
+  it("rejects when a newer choice aborts the analysis in flight", async () => {
+    const controller = new AbortController();
+    const now = vi.fn(() => "2026-09-26T12:00:00.000Z");
+    const analyse = async (_pcm: PcmAudio, signal?: AbortSignal) => {
+      controller.abort();
+      signal?.throwIfAborted();
+      throw new Error("unreachable");
+    };
+    await expect(importAudio(file, { ...nodeDeps(), analyse, now }, controller.signal)).rejects.toThrow(/abort/i);
+    expect(now).not.toHaveBeenCalled();
   });
 });
 
