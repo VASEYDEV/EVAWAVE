@@ -5,7 +5,7 @@ import { analyseAudio } from "@/core/musicspec/analysis/features";
 import { decodeWav, encodeWav, WavError, type PcmAudio } from "@/core/musicspec/analysis/wav";
 import { applyReviewedPatch, audioProfileBase, AUDIO_DRAFT_MODEL, reviewPatch } from "@/core/musicspec/intake";
 import { lintStyleProfile } from "@/core/musicspec/lint";
-import { blobInTab, removeLocalAudio, storeInOpfs } from "@/lib/audio/browser";
+import { blobInTab, deleteWithLocalAudio, removeLocalAudio, storeInOpfs } from "@/lib/audio/browser";
 import { importAudio, sha256Hex, type ImportDeps } from "@/lib/audio/import";
 import { saveImport, saveImportAndKeepAudio, type ImportRecord } from "@/lib/library/repository";
 import type { Database } from "@/lib/library/schema";
@@ -298,6 +298,30 @@ describe("local audio on the device", () => {
     await expect(removeLocalAudio("any-sha")).rejects.toThrow("no");
     refusing("SecurityError");
     await expect(removeLocalAudio("any-sha")).resolves.toBeUndefined();
+  });
+
+  it("deletes the record and the local copy together, or neither when the record's delete fails", async () => {
+    const files = fakeOpfs();
+    const blob = new Blob([wav]);
+    await storeInOpfs("paired-sha", blob);
+    await expect(deleteWithLocalAudio("paired-sha", async () => Promise.reject(new Error("connection lost")))).rejects.toThrow("connection lost");
+    expect(files.has("paired-sha")).toBe(true);
+    expect(new Uint8Array(await (files.get("paired-sha") as Blob).arrayBuffer())).toEqual(new Uint8Array(await blob.arrayBuffer()));
+    const deleteRecord = vi.fn(async () => {});
+    await deleteWithLocalAudio("paired-sha", deleteRecord);
+    expect(deleteRecord).toHaveBeenCalledTimes(1);
+    expect(files.has("paired-sha")).toBe(false);
+  });
+
+  it("keeps the record when the local copy cannot be removed", async () => {
+    fakeOpfs();
+    await storeInOpfs("stuck-sha", new Blob([wav]));
+    const locked = new DOMException("the entry is locked", "NoModificationAllowedError");
+    const dirWithFile = { getFileHandle: async () => ({ getFile: async () => new Blob([wav]) }), removeEntry: async () => Promise.reject(locked) };
+    vi.stubGlobal("navigator", { storage: { getDirectory: async () => ({ getDirectoryHandle: async () => dirWithFile }) } });
+    const deleteRecord = vi.fn(async () => {});
+    await expect(deleteWithLocalAudio("stuck-sha", deleteRecord)).rejects.toBe(locked);
+    expect(deleteRecord).not.toHaveBeenCalled();
   });
 
   it("removes the in-tab copy where OPFS is missing", async () => {

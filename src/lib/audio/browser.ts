@@ -117,6 +117,42 @@ export async function removeLocalAudio(sha256: string): Promise<void> {
   }
 }
 
+/**
+ * A copy, in memory, of the local audio for `sha256`: the in-tab blob, or the OPFS file's
+ * bytes (read now, since the file handle stops being readable once its entry is removed).
+ * Undefined when nothing is kept here.
+ */
+async function readLocalAudio(sha256: string): Promise<Blob | undefined> {
+  const inTab = tabMemory.get(sha256);
+  if (inTab) return inTab;
+  if (typeof navigator === "undefined" || typeof navigator.storage?.getDirectory !== "function") return undefined;
+  try {
+    const dir = await (await navigator.storage.getDirectory()).getDirectoryHandle("audio");
+    const file = await (await dir.getFileHandle(sha256)).getFile();
+    return new Blob([await file.arrayBuffer()], { type: file.type });
+  } catch (error) {
+    if (isDomError(error, "NotFoundError") || isDomError(error, "SecurityError")) return undefined;
+    throw error;
+  }
+}
+
+/**
+ * Deletes a library file record and its local audio as one recoverable step. The local copy
+ * is read into memory and removed first, so a failed removal keeps the record (and its hash)
+ * for a retry. If deleting the record then fails, the copy is stored again, so a failure
+ * leaves both stores as they were.
+ */
+export async function deleteWithLocalAudio(sha256: string, deleteRecord: () => Promise<void>): Promise<void> {
+  const copy = await readLocalAudio(sha256);
+  await removeLocalAudio(sha256);
+  try {
+    await deleteRecord();
+  } catch (error) {
+    if (copy) await storeInOpfs(sha256, copy);
+    throw error;
+  }
+}
+
 /** The blob the memory fallback holds for `sha256`, if this tab kept one. */
 export function blobInTab(sha256: string): Blob | undefined {
   return tabMemory.get(sha256);

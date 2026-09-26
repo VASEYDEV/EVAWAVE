@@ -7,7 +7,7 @@
 import { useEffect, useId, useMemo, useState } from "react";
 
 import type { MusicSpec } from "@/core/musicspec/ir/types";
-import { removeLocalAudio } from "@/lib/audio/browser";
+import { deleteWithLocalAudio } from "@/lib/audio/browser";
 import { createLibraryClient } from "@/lib/library/client";
 import {
   createStyleProfile,
@@ -157,12 +157,7 @@ export function Library() {
                   type="button"
                   className="danger"
                   onClick={() =>
-                    void run("Delete file record", async () => {
-                      // Local copy first: if it cannot be removed, the record (and its hash)
-                      // stays for a retry.
-                      await removeLocalAudio(asset.sha256);
-                      await deleteFile(client, asset.id);
-                    })
+                    void run("Delete file record", () => deleteWithLocalAudio(asset.sha256, () => deleteFile(client, asset.id)))
                   }
                 >
                   Delete {asset.filename}
