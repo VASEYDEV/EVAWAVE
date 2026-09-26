@@ -87,16 +87,24 @@ export async function createStyleProfile(client: LibraryClient, name: string, sp
   check(await client.from("style_profiles").insert({ name, spec, provenance }).select("id"), "create style profile");
 }
 
+/**
+ * Deletes one of the caller's style profiles. RLS hides another account's row, so PostgREST
+ * answers such a delete with no rows and no error; that is a failure here, not a success, as
+ * after an account change in another tab.
+ */
 export async function deleteStyleProfile(client: LibraryClient, id: string): Promise<void> {
-  check(await client.from("style_profiles").delete().eq("id", id).select("id"), "delete style profile");
+  const deleted = check(await client.from("style_profiles").delete().eq("id", id).select("id"), "delete style profile");
+  if (deleted.length !== 1) throw new LibraryError("delete style profile: no such profile for this account; reload the library");
 }
 
 export async function createTag(client: LibraryClient, label: string, colour: string | null): Promise<void> {
   check(await client.from("tags").insert({ label, colour }).select("id"), "create tag");
 }
 
+/** Deletes one of the caller's tags; a delete that removes no row fails, as for a profile. */
 export async function deleteTag(client: LibraryClient, id: string): Promise<void> {
-  check(await client.from("tags").delete().eq("id", id).select("id"), "delete tag");
+  const deleted = check(await client.from("tags").delete().eq("id", id).select("id"), "delete tag");
+  if (deleted.length !== 1) throw new LibraryError("delete tag: no such tag for this account; reload the library");
 }
 
 /**
