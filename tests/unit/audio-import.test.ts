@@ -654,6 +654,22 @@ describe("local audio on the device", () => {
     expect(blobInTab(b("mem-other-sha"))).toBeDefined();
   });
 
+  it("tells other tabs to drop their in-memory copy when reconciliation removes it, and only then", async () => {
+    // Two tabs without OPFS, each holding fallback copies. The record of one file was deleted
+    // on another device; the other file's record is still there.
+    vi.resetModules();
+    const holder = await import("@/lib/audio/browser");
+    vi.resetModules();
+    const reconciler = await import("@/lib/audio/browser");
+    for (const tab of [holder, reconciler]) {
+      for (const sha256 of ["recon-orphan-sha", "recon-late-sha"]) expect(await tab.storeInOpfs(a(sha256), new Blob([wav]))).toBe("memory");
+    }
+    expect(await reconciler.reconcileLocalAudio(OWNER_A, new Set(), async (sha256) => sha256 === "recon-late-sha")).toEqual(["recon-orphan-sha"]);
+    await vi.waitFor(() => expect(holder.blobInTab(a("recon-orphan-sha"))).toBeUndefined());
+    await new Promise((resolve) => setTimeout(resolve, 50));
+    expect(holder.blobInTab(a("recon-late-sha"))).toBeDefined();
+  });
+
   it("counts a record as gone only when the check ran as the account whose copy it is", async () => {
     const answering = (row: { present: boolean; owner: string }) =>
       createClient<Database>("https://project.supabase.test", "anon-key-for-tests", {

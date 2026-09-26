@@ -83,8 +83,9 @@ let channel: BroadcastChannel | undefined;
 
 /**
  * Tabs of this origin tell each other when a fallback copy in memory is no longer needed:
- * after its record is deleted, or once OPFS holds the file. Another tab's memory is its own,
- * and no lock can reach it. A tab starts listening once it holds such a copy.
+ * after its record is deleted (here, or elsewhere and found by reconciliation), or once OPFS
+ * holds the file. Another tab's memory is its own, and no lock can reach it. A tab starts
+ * listening once it holds such a copy.
  */
 function audioChannel(): BroadcastChannel | undefined {
   if (channel || typeof BroadcastChannel !== "function") return channel;
@@ -258,6 +259,8 @@ export async function reconcileLocalAudio(ownerId: string, known: ReadonlySet<st
     const gone = await inTurnForLocalAudio(key, async () => {
       if (await hasRecord(sha256)) return false;
       await removeLocalAudio(key);
+      // Other tabs may hold a fallback copy of it too; the record is gone, so they drop theirs.
+      audioChannel()?.postMessage({ drop: tabKey(key) });
       return true;
     });
     if (gone) removed.push(sha256);
