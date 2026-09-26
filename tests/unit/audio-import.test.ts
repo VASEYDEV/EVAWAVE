@@ -5,7 +5,7 @@ import { analyseAudio } from "@/core/musicspec/analysis/features";
 import { decodeWav, encodeWav, WavError, type PcmAudio } from "@/core/musicspec/analysis/wav";
 import { applyReviewedPatch, audioProfileBase, AUDIO_DRAFT_MODEL, reviewPatch } from "@/core/musicspec/intake";
 import { lintStyleProfile } from "@/core/musicspec/lint";
-import { blobInTab, deleteWithLocalAudio, inTurnForLocalAudio, removeLocalAudio, storeInOpfs } from "@/lib/audio/browser";
+import { blobInTab, deleteWithLocalAudio, inTurnForLocalAudio, keepAudioFor, removeLocalAudio, storeInOpfs } from "@/lib/audio/browser";
 import { importAudio, sha256Hex, type ImportDeps } from "@/lib/audio/import";
 import { deleteFile, LibraryError, saveImport, saveImportAndKeepAudio, type ImportRecord } from "@/lib/library/repository";
 import type { Database } from "@/lib/library/schema";
@@ -42,7 +42,7 @@ function recorder() {
       bodyKind: body === null ? "none" : typeof body === "string" ? "string" : Object.prototype.toString.call(body),
     });
     const single = new Headers(init?.headers).get("accept")?.includes("vnd.pgrst.object") ?? false;
-    const row = url.includes("/rpc/save_import") ? { file_id: "file-1", profile_id: "profile-1" } : { id: "row-1" };
+    const row = url.includes("/rpc/save_import") ? { file_id: "file-1", profile_id: "profile-1", owner: OWNER_A } : { id: "row-1" };
     return new Response(JSON.stringify(single ? row : [row]), { status: 201, headers: { "content-type": "application/json" } });
   });
   return { requests, fetchMock };
@@ -93,7 +93,7 @@ describe("audio import (§1.7)", () => {
       file: { filename: imported.asset.filename, mime: imported.asset.mime, bytes: imported.asset.bytes, sha256: imported.asset.sha256, features: imported.features },
       profile: { id: PROFILE_ID, name: "Desert loop", spec, analysedOn: imported.analysedOn, model: AUDIO_DRAFT_MODEL },
     });
-    expect(saved).toEqual({ fileId: "file-1", profileId: "profile-1" });
+    expect(saved).toEqual({ fileId: "file-1", profileId: "profile-1", ownerId: OWNER_A });
 
     // One JSON request left the device, the atomic save_import call, and it carries no audio.
     expect(requests.map((r) => `${r.method} ${new URL(r.url).pathname}`)).toEqual(["POST /rest/v1/rpc/save_import"]);
@@ -129,11 +129,11 @@ describe("keeping the audio with a library save", () => {
   };
   const clientWith = (fetchMock: typeof fetch) => createClient<Database>("https://project.supabase.test", "anon-key-for-tests", { global: { fetch: fetchMock }, auth: { persistSession: false } });
 
-  it("stores the audio only after the save succeeds", async () => {
+  it("stores the audio only after the save succeeds, under the owner the rows were written for", async () => {
     const { fetchMock } = recorder();
     const store = vi.fn(async () => "opfs" as const);
     await expect(saveImportAndKeepAudio(clientWith(fetchMock), record, file, store)).resolves.toBe("opfs");
-    expect(store).toHaveBeenCalledWith("c".repeat(64), file);
+    expect(store).toHaveBeenCalledWith({ ownerId: OWNER_A, sha256: "c".repeat(64) }, file);
   });
 
   it("stores nothing when the save fails", async () => {
@@ -449,6 +449,16 @@ describe("local audio on the device", () => {
     await Promise.all([deleting, saving]);
     expect(rows).toBe(1);
     expect(files.has(`audio/${OWNER_A}/turns-sha`)).toBe(true);
+  });
+
+  it("keeps the audio only when the save ran as the account whose turn it holds", async () => {
+    const files = fakeOpfs();
+    const keep = keepAudioFor(OWNER_A);
+    // Another tab switched accounts mid-save: the rows are B's, so A's turn keeps nothing.
+    expect(await keep(b("switched-sha"), new Blob([wav]))).toBe("not-kept");
+    expect(files.size).toBe(0);
+    expect(await keep(a("switched-sha"), new Blob([wav]))).toBe("opfs");
+    expect([...files.keys()]).toEqual([`audio/${OWNER_A}/switched-sha`]);
   });
 
   it("drops the in-tab copy once OPFS takes the file", async () => {

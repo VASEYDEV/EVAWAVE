@@ -107,6 +107,16 @@ export async function storeInOpfs(key: LocalAudioKey, file: Blob): Promise<"opfs
   }
 }
 
+/**
+ * The `store` step for a save made while holding `ownerId`'s turn: keeps the audio when the
+ * rows were written for that account. If another tab switched accounts mid-save, the rows
+ * belong to the new account, whose turn this is not, so nothing is kept and that account can
+ * add the audio by importing the file again.
+ */
+export function keepAudioFor(ownerId: string): (saved: LocalAudioKey, audio: Blob) => Promise<"opfs" | "memory" | "not-kept"> {
+  return async (saved, audio) => (saved.ownerId === ownerId ? storeInOpfs(saved, audio) : "not-kept");
+}
+
 const isDomError = (error: unknown, name: string) => error instanceof DOMException && error.name === name;
 
 /**

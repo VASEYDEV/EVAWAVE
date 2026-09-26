@@ -109,6 +109,24 @@ export function profileName(typed: string, fallback: string): string {
   return (typed.trim() || fallback.trim()).slice(0, PROFILE_NAME_MAX).trim();
 }
 
+/** `files.filename` holds 1–255 characters (the check in the library migration). */
+export const FILENAME_MAX = 255;
+
+/**
+ * A filename the library accepts: cut to FILENAME_MAX characters, counted as code points the
+ * way Postgres counts them (so no emoji is split), keeping a short extension; "audio" when the
+ * name is empty.
+ */
+export function recordFilename(name: string): string {
+  const chars = Array.from(name);
+  if (!chars.length) return "audio";
+  if (chars.length <= FILENAME_MAX) return name;
+  const dot = name.lastIndexOf(".");
+  const extension = dot > 0 ? Array.from(name.slice(dot)) : [];
+  const kept = extension.length <= 16 ? extension : [];
+  return [...chars.slice(0, FILENAME_MAX - kept.length), ...kept].join("");
+}
+
 /** The insert payload for a new style profile. The owner comes from the session (auth.uid()). */
 export function styleProfileInsert(profile: Pick<StyleProfile, "name" | "provenance" | "spec" | "features">): Pick<StyleProfileRow, "name" | "provenance" | "spec"> & { features?: AudioFeatures } {
   return { name: profile.name, provenance: profile.provenance, spec: profile.spec, ...(profile.features ? { features: profile.features } : {}) };
@@ -146,7 +164,7 @@ export type Database = {
     };
     Views: { [_ in never]: never };
     Functions: {
-      save_import: { Args: SaveImportArgs; Returns: { file_id: string; profile_id: string }[] };
+      save_import: { Args: SaveImportArgs; Returns: { file_id: string; profile_id: string; owner: string }[] };
     };
     Enums: { [_ in never]: never };
     CompositeTypes: { [_ in never]: never };

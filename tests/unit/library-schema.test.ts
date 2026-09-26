@@ -5,7 +5,7 @@ import { describe, expect, it } from "vitest";
 
 import type { MusicSpec } from "@/core/musicspec/ir/types";
 import { profileSpecFrom } from "@/lib/library/repository";
-import { PROFILE_NAME_MAX, profileName, toReferenceAsset, toStyleProfile, toTag, type FileRow, type StyleProfileRow } from "@/lib/library/schema";
+import { FILENAME_MAX, PROFILE_NAME_MAX, profileName, recordFilename, toReferenceAsset, toStyleProfile, toTag, type FileRow, type StyleProfileRow } from "@/lib/library/schema";
 
 const spec = JSON.parse(readFileSync(fileURLToPath(new URL("../fixtures/jinn-v1.2.spec.json", import.meta.url)), "utf8")) as MusicSpec;
 
@@ -55,5 +55,19 @@ describe("profile names", () => {
     expect(profileName("   ", "desert-loop.wav")).toBe("desert-loop.wav");
     expect(profileName("x".repeat(250), "a.wav")).toHaveLength(PROFILE_NAME_MAX);
     expect(profileName("", `${"y".repeat(240)}.wav`)).toHaveLength(PROFILE_NAME_MAX);
+  });
+
+  it("cuts filenames to the library's 255 characters, counted as Postgres counts them", () => {
+    expect(recordFilename("desert-loop.wav")).toBe("desert-loop.wav");
+    expect(recordFilename("")).toBe("audio");
+    const long = recordFilename(`${"z".repeat(300)}.wav`);
+    expect(long).toHaveLength(FILENAME_MAX);
+    expect(long.endsWith(".wav")).toBe(true);
+    // Emoji are one code point but two UTF-16 units: none is split, and none is counted twice.
+    const emoji = recordFilename(`${"🎵".repeat(300)}.flac`);
+    expect(Array.from(emoji)).toHaveLength(FILENAME_MAX);
+    expect(emoji.isWellFormed()).toBe(true);
+    expect(emoji.endsWith(".flac")).toBe(true);
+    expect(Array.from(recordFilename("🎵".repeat(FILENAME_MAX)))).toHaveLength(FILENAME_MAX);
   });
 });

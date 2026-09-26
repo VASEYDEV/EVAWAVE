@@ -140,17 +140,18 @@ export type ImportRecord = SaveImportArgs;
  * leaves neither row, and RLS keeps another owner's id from being reused. Only this JSON is
  * sent; the blob stays on the device (A6).
  */
-export async function saveImport(client: LibraryClient, record: ImportRecord): Promise<{ fileId: string; profileId: string }> {
+export async function saveImport(client: LibraryClient, record: ImportRecord): Promise<{ fileId: string; profileId: string; ownerId: string }> {
   const saved = check(await client.rpc("save_import", record).single(), "save import");
-  return { fileId: saved.file_id, profileId: saved.profile_id };
+  return { fileId: saved.file_id, profileId: saved.profile_id, ownerId: saved.owner };
 }
 
 /**
  * Saves an import, then keeps its audio on the device with `store`. The saved file row is the
  * durable reference the local copy needs (and /library's delete removes both), so nothing is
- * stored when the save fails. Resolves to where the audio went.
+ * stored when the save fails. `store` gets the owner the rows were written for, which is the
+ * account the call ran as, not the one read before it. Resolves to where the audio went.
  */
-export async function saveImportAndKeepAudio<Where>(client: LibraryClient, record: ImportRecord, audio: Blob, store: (sha256: string, blob: Blob) => Promise<Where>): Promise<Where> {
-  await saveImport(client, record);
-  return store(record.file.sha256, audio);
+export async function saveImportAndKeepAudio<Where>(client: LibraryClient, record: ImportRecord, audio: Blob, store: (saved: { ownerId: string; sha256: string }, blob: Blob) => Promise<Where>): Promise<Where> {
+  const { ownerId } = await saveImport(client, record);
+  return store({ ownerId, sha256: record.file.sha256 }, audio);
 }
