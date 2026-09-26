@@ -341,6 +341,47 @@ describe("a superseded import", () => {
     expect(decode).not.toHaveBeenCalled();
   });
 
+  it("waits for a superseded import's decode to settle before reading the next file", async () => {
+    const events: string[] = [];
+    let finishFirst!: () => void;
+    const firstDecoding = new Promise<void>((resolve) => (finishFirst = resolve));
+    const first = new AbortController();
+    const firstImport = importAudio(file, {
+      ...nodeDeps(),
+      decode: async (bytes) => {
+        events.push("first decode starts");
+        await firstDecoding;
+        events.push("first decode ends");
+        return decodeWav(bytes);
+      },
+    }, first.signal);
+    await vi.waitFor(() => expect(events).toEqual(["first decode starts"]));
+    // Newer choices abort the first import, whose decode cannot stop. The second choice is
+    // itself replaced once it is waiting for its turn.
+    first.abort();
+    const firstRefused = expect(firstImport).rejects.toThrow(/abort/i);
+    const decodeNamed = (name: string): ImportDeps => ({ ...nodeDeps(), decode: async (bytes) => (events.push(`${name} decode`), decodeWav(bytes)) });
+    const second = new AbortController();
+    const secondFile = new File([wav], "second.wav", { type: "audio/wav" });
+    const readSecond = vi.spyOn(secondFile, "arrayBuffer");
+    const secondRefused = expect(importAudio(secondFile, decodeNamed("second"), second.signal)).rejects.toThrow(/abort/i);
+    await new Promise((resolve) => setTimeout(resolve, 20));
+    second.abort();
+    const thirdFile = new File([wav], "third.wav", { type: "audio/wav" });
+    const readThird = vi.spyOn(thirdFile, "arrayBuffer");
+    const thirdImport = importAudio(thirdFile, decodeNamed("third"));
+    await new Promise((resolve) => setTimeout(resolve, 20));
+    expect(readThird).not.toHaveBeenCalled();
+
+    finishFirst();
+    await firstRefused;
+    await secondRefused;
+    await expect(thirdImport).resolves.toMatchObject({ asset: { filename: "third.wav" } });
+    expect(events).toEqual(["first decode starts", "first decode ends", "third decode"]);
+    expect(readSecond).not.toHaveBeenCalled();
+    expect(readThird).toHaveBeenCalledTimes(1);
+  });
+
   it("stops before analysis once a newer choice aborts it", async () => {
     const controller = new AbortController();
     const now = vi.fn(() => "2026-09-26T12:00:00.000Z");

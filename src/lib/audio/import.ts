@@ -127,9 +127,18 @@ export interface ImportResult {
 }
 
 /**
+ * The read, hash and decode of the import holding the turn. No abort stops them (Web Audio's
+ * decode takes no signal), so an import chosen meanwhile waits for them to settle before it
+ * reads: two decodes never hold their samples at once. It settles to nothing, so it keeps no
+ * decoded audio alive.
+ */
+let decodeTurn: Promise<void> = Promise.resolve();
+
+/**
  * Hashes, decodes and analyses `file` and drafts the patch. Aborting `signal` (a newer file
  * choice) stops it at the next stage: before the read, the hash, the decode or the analysis, and during
  * an analysis that `deps.analyse` can stop. The promise then rejects with the signal's reason.
+ * The read, hash and decode wait for an earlier import's to settle (`decodeTurn`).
  */
 export async function importAudio(file: File, deps: ImportDeps, signal?: AbortSignal): Promise<ImportResult> {
   // An import superseded before it starts never reads the file: it can be large.
@@ -146,18 +155,27 @@ export async function importAudio(file: File, deps: ImportDeps, signal?: AbortSi
   signal?.throwIfAborted();
   const limit = IMPORT_MAX_CHANNEL_SECONDS / (channels ?? IMPORT_ASSUMED_CHANNELS);
   if (seconds > limit) throw new ImportTooLongError(seconds, limit, channels ?? "unknown");
-  const bytes = await file.arrayBuffer();
-  signal?.throwIfAborted();
-  const sha256 = await deps.digest(bytes);
-  signal?.throwIfAborted();
-  const pcm = await deps.decode(bytes);
+  const decoded = decodeTurn.then(async () => {
+    // An import superseded while it waited never reads the file.
+    signal?.throwIfAborted();
+    const bytes = await file.arrayBuffer();
+    signal?.throwIfAborted();
+    const sha256 = await deps.digest(bytes);
+    signal?.throwIfAborted();
+    return { byteLength: bytes.byteLength, sha256, pcm: await deps.decode(bytes) };
+  });
+  decodeTurn = decoded.then(
+    () => undefined,
+    () => undefined,
+  );
+  const { byteLength, sha256, pcm } = await decoded;
   signal?.throwIfAborted();
   const features = deps.analyse ? await deps.analyse(pcm, signal) : analyseAudio(pcm.samples, pcm.sampleRate, pcm.channelData);
   signal?.throwIfAborted();
   const analysedOn = deps.now();
   const patch = draftFromAudio(features, { createdAt: analysedOn, sourceRef: sha256 }, deps.lineageNames ?? []);
   return {
-    asset: { kind: "audio", filename: file.name, mime: file.type || "application/octet-stream", bytes: bytes.byteLength, sha256, localOnly: true },
+    asset: { kind: "audio", filename: file.name, mime: file.type || "application/octet-stream", bytes: byteLength, sha256, localOnly: true },
     features,
     patch,
     analysedOn,
