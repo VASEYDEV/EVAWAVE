@@ -219,14 +219,29 @@ Ninth round (Codex, on c35e4aa):
   variants. It now says "…its N variants and every take logged on them" (or just the
   title when there are none).
 
+Tenth round (Codex, on 5df1d80):
+
+- **P2: a delete from a stale list.** The delete matched only the song's id. A variant
+  frozen in another tab after the list loaded would go too, unnamed by the confirmation.
+  `deleteSong` now matches the revision the list was loaded at; a save or freeze since
+  makes it remove nothing and say "the song changed since the list loaded… reload".
+  Checked against the scratch fake Supabase with a freeze sent between the first and the
+  second press: the song stays and the message shows. Mutation: deleting by id alone
+  fails the repository test.
+- **P2: patches frozen into snapshots.** The IR keeps `patches` (intake proposals and
+  their verdicts) to the working copy, never a variant snapshot, but the freeze stored
+  the spec as sent. The snapshot now has `patches` emptied; the song keeps them. Test: a
+  freeze with a patch leaves it on the song and not in the variant. Mutation: storing
+  the spec as sent fails it.
+
 ## Evidence
 
-Counts as of the ninth round.
+Counts as of the tenth round.
 
 - Core: `tests/unit/variants.test.ts` (18), including the Jinn v1.1 → v1.2 diff with
   `/D6/tempo/bpm` 142 → 140 and an exact replay over 60 seeded random edits. Mutations:
   plain text sort and ascending removals each fail.
-- Database: `tests/integration/songs-rls.test.ts` (29). Mutations: dropping the revision
+- Database: `tests/integration/songs-rls.test.ts` (30). Mutations: dropping the revision
   predicate, granting variant updates, dropping the same-song parent key and dropping
   the revision bump each fail their tests.
 - App: `songs-repository.test.ts` (29 with the S7 take cases; dropping the revision

@@ -1692,7 +1692,8 @@ Delivered:
     the expected revision, inserts the variant as the caller's and saves the working copy
     as its base. A direct insert would skip the revision check and the lock, and a
     variant can never be taken back (review of #14).
-  - A variant stores its snapshot, parent and overrides, nothing derived. The function
+  - A variant stores its snapshot, parent and overrides, nothing derived. The snapshot
+    leaves out the working copy's `patches`, which stay on the song (§2.2). The function
     takes the title, the spec and the parent; it copies the song's overrides, which no
     client can write (review of #14).
   - The function refuses LN-1 itself: `20260926000350_lineage_names.sql` holds the

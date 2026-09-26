@@ -285,10 +285,15 @@ export async function freezeVariant(client: LibraryClient, copy: WorkingCopy, ca
   return { variantId: frozen.variant_id, label: frozen.variant_label, revision: frozen.song_revision, ownerId: frozen.owner };
 }
 
-/** Deletes one of the caller's songs and, with it, its variants. A delete of no row fails. */
-export async function deleteSong(client: LibraryClient, id: string): Promise<void> {
-  const deleted = check(await client.from("songs").delete().eq("id", id).select("id"), "delete song");
-  if (deleted.length !== 1) throw new LibraryError("delete song: no such song for this account; reload the library");
+/**
+ * Deletes one of the caller's songs and, with it, its variants and their takes, only at the
+ * revision the caller listed. A song saved or frozen since (in another tab, or on another
+ * device) may hold variants the confirmation never named, so that delete removes nothing
+ * and fails, as does a delete of a song that is gone.
+ */
+export async function deleteSong(client: LibraryClient, id: string, revision: number): Promise<void> {
+  const deleted = check(await client.from("songs").delete().eq("id", id).eq("revision", revision).select("id"), "delete song");
+  if (deleted.length !== 1) throw new LibraryError("delete song: the song changed since the list loaded, or is gone; reload the library before deleting it");
 }
 
 /** The coverage score of each engine with a report for a variant, in the engines' build order (A3). */

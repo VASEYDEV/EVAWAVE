@@ -248,9 +248,14 @@ describe("paging by key", () => {
 });
 
 describe("deleteSong and coverageScores", () => {
-  it("rejects a delete that removed no row", async () => {
-    await expect(deleteSong(recording(() => []).client, "s")).rejects.toThrow("no such song");
-    await expect(deleteSong(recording(() => [{ id: "s" }]).client, "s")).resolves.toBeUndefined();
+  it("deletes only at the listed revision, and rejects a delete that removed no row", async () => {
+    const { client, sent } = recording(() => [{ id: "s" }]);
+    await expect(deleteSong(client, "s", 4)).resolves.toBeUndefined();
+    expect(sent[0]?.method).toBe("DELETE");
+    expect(sent[0]?.query.get("id")).toBe("eq.s");
+    expect(sent[0]?.query.get("revision")).toBe("eq.4");
+    // Saved or frozen since the list loaded, or gone: nothing removed, and it says so.
+    await expect(deleteSong(recording(() => []).client, "s", 4)).rejects.toThrow("changed since the list loaded");
   });
 
   it("lists scores in build order whatever order the reports come in", () => {

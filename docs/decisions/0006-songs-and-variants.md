@@ -31,8 +31,9 @@ v1.9, and `undefined` in a diff that JSON cannot carry.
    would skip the revision check and the lock, and could never be undone), the function is
    security definer and checks ownership itself, with an empty `search_path`. It takes
    only what a save takes (the title and the spec) and the parent.
-4. **Nothing derived is stored.** A variant keeps its snapshot, its parent and the
-   overrides copied from its song. Its diff and coverage follow from the snapshots, so
+4. **Nothing derived is stored.** A variant keeps its snapshot (without the working
+   copy's `patches`, which the IR keeps out of a snapshot), its parent and the overrides
+   copied from its song. Its diff and coverage follow from the snapshots, so
    the app derives them when it reads, with the pure core. A stored copy of either could
    only be what the client sent, and a variant keeps whatever it is frozen with (review
    of #14).

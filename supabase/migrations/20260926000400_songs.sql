@@ -199,8 +199,10 @@ begin
     raise exception 'freeze: the spec names an artist or producer (LN-1); describe the sound instead';
   end if;
 
+  -- The snapshot leaves out the working copy's patches (intake proposals and their
+  -- verdicts belong to the working copy only, SPEC §2.2); the song keeps them.
   insert into public.variants (owner_id, song_id, parent_variant_id, spec_snapshot, overrides)
-  values (v_caller, p_song_id, p_parent_variant_id, p_spec, v_overrides)
+  values (v_caller, p_song_id, p_parent_variant_id, p_spec || '{"patches": []}'::jsonb, v_overrides)
   returning variants.id, variants.label into v_variant, v_label;
 
   -- The working copy now equals the snapshot and descends from it.

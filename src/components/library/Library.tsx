@@ -162,7 +162,7 @@ export function Library() {
                 <div className="row-actions">
                   {confirmDelete === s.id ? (
                     <>
-                      <button type="button" className="danger" onClick={() => void run("Delete song", () => deleteSong(client, s.id)).then(() => setConfirmDelete(null))}>
+                      <button type="button" className="danger" onClick={() => void run("Delete song", () => deleteSong(client, s.id, s.revision)).then(() => setConfirmDelete(null))}>
                         {/* Everything the delete takes with it: the variants, and every take logged on them. */}
                         {s.variantCount
                           ? `Delete ${s.title}, its ${s.variantCount === 1 ? "variant" : `${s.variantCount} variants`} and every take logged on ${s.variantCount === 1 ? "it" : "them"}`

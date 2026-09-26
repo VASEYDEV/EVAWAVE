@@ -177,6 +177,16 @@ describe("saving and freezing only land on the revision they read", () => {
     expect([row?.base_variant_id, (row?.spec as MusicSpec).D6.tempo.bpm, row?.title]).toEqual([frozen.variant_id, 140, "Jinn"]);
   });
 
+  it("a freeze keeps the working copy's patches on the song, never in the variant", async () => {
+    const id = await song(A, "Patches");
+    const patch = { id: "p-1", source: "audio-analysis", createdAt: "c", ops: [], status: "proposed", acceptedPaths: [], rejectedPaths: [] };
+    const frozen = await freeze(A, id, { spec: { ...v12, patches: [patch] } });
+    const [variant] = await h.truth("variants", "id = $1", [frozen.variant_id]);
+    const [row] = await h.truth("songs", "id = $1", [id]);
+    expect((variant?.spec_snapshot as MusicSpec).patches).toEqual([]);
+    expect((row?.spec as MusicSpec).patches).toEqual([patch]);
+  });
+
   it("a spec that is not a MusicSpec aborts the freeze whole: no variant, no save", async () => {
     const id = await song(A, "Bad spec");
     await expect(freeze(A, id, { spec: { D6: { tempo: { bpm: 140 } } } })).rejects.toThrow(/check constraint/);
