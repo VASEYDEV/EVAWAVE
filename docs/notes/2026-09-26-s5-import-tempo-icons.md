@@ -318,6 +318,19 @@ S5 per SPEC §3. The methods are listed in SPEC §3 S5 "Delivered".
     key. A test with two module instances checks that a failed delete tells no one and a
     successful one clears the other tab. Not announcing, or announcing before the record
     delete, fails it.
+- **Twenty-sixth review.**
+  - **A nameless import (fixed).** A `File` with an empty name and no typed name gave
+    `profileName("", "")`, an empty string the library's 1–200 check refuses. The name now
+    falls back to "audio", as the filename does. A test fails on the old code.
+  - **Tempos outside 60–200 BPM (fixed another way).** The integer lag grid rounds
+    outward, so it spans about 58.7–215 BPM, and a 58 BPM click track read 57.9. Codex
+    suggested rounding inward and clamping the interpolated peak. Measured, that reads
+    58 BPM as 60.09 and 59 as 60.00: a pile-up at the grid's end, not the in-range
+    candidate. Autocorrelation cannot find 116 for a 58 BPM click, because nothing
+    happens on the half beat. The grid keeps its outward rounding, so edge tempos still
+    show as true peaks. The value is then folded by octaves into 60–200: 58 reads 115.8,
+    with 57.9 as its half-time candidate, and 59 reads 117.8. The probed tempos from 60 to
+    215 (60, 61, 90, 120, 140, 170, 198, 200, 205, 210, 215) read as before. A test covers 58 and 59; it fails on the old code.
 
 ## Decisions
 

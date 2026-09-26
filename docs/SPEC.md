@@ -1499,7 +1499,8 @@ Delivered:
 
 - **Analysis** (`src/core/musicspec/analysis/`), pure and deterministic:
   - tempo: spectral-flux onsets with autocorrelation over 60–200 BPM and a 120 BPM
-    log-normal prior;
+    log-normal prior, the value folded by octaves into 60–200 BPM (a 58 BPM pulse reads
+    116, with 58 as its half-time candidate);
   - meter: an accent envelope at 4-beat against 3-beat lags;
   - key: chroma against the Krumhansl–Kessler profiles;
   - loudness: BS.1770 K-weighting per channel, summed with the channel weights (1.41 on
