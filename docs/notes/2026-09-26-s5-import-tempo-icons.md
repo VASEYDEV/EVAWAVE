@@ -74,6 +74,13 @@ S5 per SPEC §3. The methods are listed in SPEC §3 S5 "Delivered".
 - **Orphans in OPFS.** The blob was stored before decoding, so a corrupt or unsupported
   file stayed in storage. Import now decodes and analyses first. A test proves a failed
   decode stores nothing.
+- **Superseded imports stored** (second review). The latest-file guard ran after the
+  import had stored its blob. A newer choice now aborts the import in flight through an
+  `AbortSignal`, checked after decoding and before storing. It never deletes on abort,
+  because the same sha256 may belong to an earlier import.
+- **A reading after two taps** (second review). SPEC §1.8 defines BPM over the last 4
+  taps, but one interval already read and could be assigned. Nothing reads now until the
+  fourth tap.
 
 ## Decisions
 

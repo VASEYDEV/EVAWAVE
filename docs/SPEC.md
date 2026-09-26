@@ -1515,8 +1515,9 @@ Delivered:
   - `reviewPatch` and `applyReviewedPatch` apply accepted paths only. A proposed or
     rejected patch changes nothing, and protected roots are refused (PT-2).
   - A profile starts from the default D1–D6, D8 and D9.
-- **Tempo** (`tempo.ts`): tap tempo is the mean of the last 3 intervals. An interval
-  more than ±25 % off the running mean is discarded, and a 2 s gap resets. A second
+- **Tempo** (`tempo.ts`): tap tempo is the mean of the last 3 intervals, and nothing
+  reads (or can be assigned) until 4 taps are in. An interval more than ±25 % off the
+  running mean is discarded, and a 2 s gap resets. A second
   discard in a row starts a new sequence from that tap, so a tempo change or a late tap
   recovers without waiting for the reset. Metronome clicks come from a 25 ms tick with
   100 ms lookahead, accenting beat 1, or beats 1 and 3 in half-time mode, with optional
@@ -1527,7 +1528,8 @@ Delivered:
   (`lowConfidenceOps`, `protectedOps`). PV-1 is `lintStyleProfile`.
 - **App:**
   - `/import`: file picker or drop, hashing, and Web Audio decoding. The file goes to
-    OPFS (or an in-tab fallback) only once it has decoded and analysed. It shows the measured features, then a per-field review with
+    OPFS (or an in-tab fallback) only once it has decoded and analysed. A newer file
+    choice aborts the import in flight before anything is stored. It shows the measured features, then a per-field review with
     low-confidence suggestions left unticked. The resulting profile carries the PV-1
     badge, can be saved to the library (file metadata and the profile only, through
     `saveImport`) or downloaded.
