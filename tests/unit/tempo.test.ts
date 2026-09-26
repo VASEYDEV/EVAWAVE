@@ -121,6 +121,13 @@ describe("metronome scheduling", () => {
     expect(clicks.map((c) => c.accent)).toEqual(["bar", "beat", "bar", "beat"]);
   });
 
+  it("accents 1 and 3 in half-time mode in other meters too, where beat 3 exists", () => {
+    const accents = (beatsPerBar: number, beats: number) => scheduleClicks(startCursor(0), beats * 0.5, { ...settings, beatsPerBar, halfTimeAccent: true }).clicks.map((c) => c.accent);
+    expect(accents(3, 6)).toEqual(["bar", "beat", "bar", "bar", "beat", "bar"]);
+    expect(accents(6, 6)).toEqual(["bar", "beat", "bar", "beat", "beat", "beat"]);
+    expect(accents(2, 4)).toEqual(["bar", "beat", "bar", "beat"]);
+  });
+
   it("adds subdivision clicks between beats", () => {
     const { clicks } = scheduleClicks(startCursor(0), 0.5, { ...settings, subdivision: 4 });
     expect(clicks.map((c) => [c.time, c.step, c.accent])).toEqual([

@@ -185,7 +185,8 @@ export function scheduleClicks(cursor: MetronomeCursor, until: number, settings:
   beat %= settings.beatsPerBar;
   let nextTime = beatTime + step * (beatSec / settings.subdivision);
   while (nextTime < until) {
-    const accentBeat = beat === 0 || (settings.halfTimeAccent && beat === 2 && settings.beatsPerBar === 4);
+    // Beat 3 exists whenever beat is 2 (it wraps at beatsPerBar), in any meter of three or more.
+    const accentBeat = beat === 0 || (settings.halfTimeAccent && beat === 2);
     clicks.push({ time: nextTime, beat, step, accent: step !== 0 ? "sub" : accentBeat ? "bar" : "beat" });
     step += 1;
     if (step === settings.subdivision) {
