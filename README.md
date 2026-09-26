@@ -27,6 +27,17 @@ Nothing in the app is usable yet. What exists today:
   section caps, regional bundles, lineage and budgets); and a Suno v6 serializer. The
   serializer compiles the Jinn v1.2 spec to the reference Style, Exclude and Lyrics fields
   byte for byte. The linter blocks the Jinn v1.1 blueprint's meter drift.
+- The composer, from S3. It shows the eleven modules of SPEC §1.5 on one mobile-first page:
+  - every input is bound to an IR path;
+  - budget meters, the lint panel, coverage for the active target, and an export pane
+    (per-engine files, the MusicSpec JSON and a word-MIDI blueprint);
+  - non-destructive undo and redo, where an edit after an undo keeps the old branch
+    reachable.
+
+  The spec persists in the browser until the S4 library.
+- An instrument bank of 336 records: the 24 curated Jinn records plus 312 generated
+  deterministically from the seed (General MIDI programs and percussion, drum machines,
+  world sets).
 - Serializers for ElevenLabs Music (a `music_v2` composition plan timed by bar math, plus
   the simple prompt) and Google Flow Music (Sound, BPM, Length, and a numbered Producer
   script), from S2. `compile(spec, engine, catalog)` projects one spec onto any live target
@@ -46,7 +57,7 @@ Requires Node 22.13+ on the 22 line, 24, or 26 and later. The locked Vitest excl
 
 ```bash
 git clone https://github.com/VASEYDEV/EVAWAVE.git && cd EVAWAVE
-npm ci
+npm ci && npx playwright install chromium   # the browser is for the e2e step
 cp .env.example .env.local    # optional until Supabase is provisioned (S4)
 npm run dev                   # http://localhost:3000
 bash scripts/gate.sh          # full verification gate (the same one CI runs)
@@ -56,7 +67,7 @@ bash scripts/gate.sh          # full verification gate (the same one CI runs)
 
 - **Framework:** Next.js 16.3.6 (App Router, Turbopack) · React 19 · TypeScript 5.9 (strict)
 - **Auth and data:** Supabase (`@supabase/ssr`, Supabase Auth, RLS from S4)
-- **Quality:** ESLint 9 flat config (invoked directly) · Vitest · `npm audit`
+- **Quality:** ESLint 9 flat config (invoked directly) · Vitest · Playwright with axe-core (mobile viewport, WCAG 2.2 AA scan) · `npm audit`
 - **Deploy:** Vercel (planned, not yet configured)
 
 Stack decisions and held-back versions: [ADR 0002](docs/decisions/0002-session-0-intake-and-stack.md).

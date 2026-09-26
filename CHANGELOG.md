@@ -9,6 +9,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- S3, the composer (SPEC §3):
+  - The eleven modules on one mobile-first page, every control bound to an IR path.
+  - Live budget meters, the lint panel, coverage, and an export pane (per-engine files, MusicSpec JSON, word-MIDI blueprint).
+  - Non-destructive undo and redo over a branching history, with Ctrl/Cmd+Z and a branch list.
+  - The spec persists in localStorage until S4.
+- `patch.ts`: RFC 6901 `PatchOp` application, copy-on-write, where every op returns its inverse.
+- `history.ts`: an append-only undo tree with typing coalescing and `jumpTo`.
+- `blueprint.ts`: the word-MIDI blueprint export.
+- `scripts/build-instrument-bank.mjs` generates `src/data/taxonomy/instruments/` from the instrument bank seed: 312 records from GM programs and percussion, drum machines and world sets. `manifest.json` lists every merge and every section left for curation, and the generator has a `--check` mode.
+- Playwright e2e on a Pixel 7 viewport:
+  - build the §2.8 Hook B through the UI and match its Suno brackets;
+  - undo to the empty spec and redo;
+  - reach an undone branch;
+  - check that Udio is halted and that target switching leaves the spec unchanged.
+- An axe scan for WCAG 2.2 A and AA. The gate and CI run both.
+- Dev dependencies: `@playwright/test`, which S3's acceptance names, and `@axe-core/playwright`, which verifies the WCAG 2.2 AA claim.
 - S2, target switching (SPEC §3):
   - `compileEleven` writes a `music_v2` composition plan and the simple-mode prompt:
     - one chunk per section and one for the contrast phrase;
@@ -55,6 +71,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- The verification gate adds an `e2e` step after `build`. CI installs Playwright's Chromium first.
+- `@supabase/supabase-js` 2.117.1 → 2.117.2 and `vitest` 5.0.1 → 5.0.2 (patch bumps, CLAUDE.md §6). Majors held back: ESLint 10 (it breaks `eslint-config-next@16.3.6`), TypeScript 7, and `@types/node` 26 (Node 22 is still supported).
 - `OutputIntent` gains `acknowledgedDrops` (SPEC §2.2, §2.9), where CV-2 reads the drops a user accepted. SPEC §2.4, §2.6, §2.7 and §1.11 record the S2 contracts and open items.
 - `lint()` takes an options object (`overrides`, `rules`) as its fifth argument.
 - The Suno coverage report is path-level (S2's `coverage/`). S1 reported dimensions only.
