@@ -4,7 +4,7 @@ import { fileURLToPath } from "node:url";
 import { PGlite } from "@electric-sql/pglite";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
-import { LIBRARY_COLUMNS, USER_SCOPED_TABLES } from "@/lib/library/schema";
+import { LIBRARY_COLUMNS, PROFILE_NAME_MAX, USER_SCOPED_TABLES } from "@/lib/library/schema";
 
 /**
  * S4 acceptance (docs/SPEC.md §3): user B cannot read or write user A's rows in any
@@ -202,6 +202,12 @@ describe("library access for other roles and tables", () => {
     await expect(as(B, () => rows(upsert, [id, "stolen"]))).rejects.toThrow(/row-level security/);
     const [row] = await truth("style_profiles", "id = $1", [id]);
     expect([row?.owner_id, row?.name]).toEqual([A, "Desert loop"]);
+  });
+
+  it("accepts profile names up to PROFILE_NAME_MAX and no longer, as the app assumes", async () => {
+    const insert = "insert into public.style_profiles (name, provenance) values ($1, '{\"kind\":\"hand-built\"}') returning id";
+    await expect(as(A, () => rows(insert, ["n".repeat(PROFILE_NAME_MAX)]))).resolves.toHaveLength(1);
+    await expect(as(A, () => rows(insert, ["n".repeat(PROFILE_NAME_MAX + 1)]))).rejects.toThrow(/check constraint/);
   });
 
   it("stamps updated_at when an owner edits a profile", async () => {

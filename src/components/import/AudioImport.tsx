@@ -15,6 +15,7 @@ import { browserImportDeps, storeInOpfs } from "@/lib/audio/browser";
 import { importAudio, type ImportResult } from "@/lib/audio/import";
 import { createLibraryClient } from "@/lib/library/client";
 import { saveImport } from "@/lib/library/repository";
+import { PROFILE_NAME_MAX, profileName } from "@/lib/library/schema";
 import { getSupabasePublicConfig } from "@/lib/supabase/config";
 
 function formatSec(sec: number): string {
@@ -106,7 +107,7 @@ export function AudioImport() {
       // Made here, so saving the same profile twice upserts one library row.
       id: crypto.randomUUID(),
       ownerId: "local",
-      name: name.trim() || result.asset.filename,
+      name: profileName(name, result.asset.filename),
       provenance: { kind: "audio-analysis", sourceRef: result.asset.sha256, analysedOn: result.analysedOn, model: AUDIO_DRAFT_MODEL },
       spec: doc,
       features: result.features,
@@ -240,7 +241,7 @@ export function AudioImport() {
           </ul>
           <div className="add-row">
             <label htmlFor={nameId}>Profile name</label>
-            <input id={nameId} type="text" value={name} onChange={(e) => setName(e.target.value)} />
+            <input id={nameId} type="text" maxLength={PROFILE_NAME_MAX} value={name} onChange={(e) => setName(e.target.value)} />
             <button type="button" disabled={creating} onClick={() => void createProfile()}>
               Create style profile
             </button>

@@ -5,7 +5,7 @@ import { describe, expect, it } from "vitest";
 
 import type { MusicSpec } from "@/core/musicspec/ir/types";
 import { profileSpecFrom } from "@/lib/library/repository";
-import { toReferenceAsset, toStyleProfile, toTag, type FileRow, type StyleProfileRow } from "@/lib/library/schema";
+import { PROFILE_NAME_MAX, profileName, toReferenceAsset, toStyleProfile, toTag, type FileRow, type StyleProfileRow } from "@/lib/library/schema";
 
 const spec = JSON.parse(readFileSync(fileURLToPath(new URL("../fixtures/jinn-v1.2.spec.json", import.meta.url)), "utf8")) as MusicSpec;
 
@@ -46,5 +46,14 @@ describe("library mappers", () => {
 
   it("maps a tag, dropping a null colour", () => {
     expect(toTag({ id: "t1", owner_id: "u1", label: "dark", colour: null, created_at: "x" })).toEqual({ id: "t1", ownerId: "u1", label: "dark" });
+  });
+});
+
+describe("profile names", () => {
+  it("keeps names inside the library's 200-character limit, from the typed name or the filename", () => {
+    expect(profileName("  Desert loop  ", "desert-loop.wav")).toBe("Desert loop");
+    expect(profileName("   ", "desert-loop.wav")).toBe("desert-loop.wav");
+    expect(profileName("x".repeat(250), "a.wav")).toHaveLength(PROFILE_NAME_MAX);
+    expect(profileName("", `${"y".repeat(240)}.wav`)).toHaveLength(PROFILE_NAME_MAX);
   });
 });

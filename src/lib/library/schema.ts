@@ -101,6 +101,14 @@ export function toTag(row: TagRow): Tag {
   return { id: row.id, ownerId: row.owner_id, label: row.label, ...(row.colour ? { colour: row.colour } : {}) };
 }
 
+/** `style_profiles.name` holds 1–200 characters (the check in the library migration). */
+export const PROFILE_NAME_MAX = 200;
+
+/** A profile name the library accepts: the typed name, else the fallback, cut to the limit. */
+export function profileName(typed: string, fallback: string): string {
+  return (typed.trim() || fallback.trim()).slice(0, PROFILE_NAME_MAX).trim();
+}
+
 /** The insert payload for a new style profile. The owner comes from the session (auth.uid()). */
 export function styleProfileInsert(profile: Pick<StyleProfile, "name" | "provenance" | "spec" | "features">): Pick<StyleProfileRow, "name" | "provenance" | "spec"> & { features?: AudioFeatures } {
   return { name: profile.name, provenance: profile.provenance, spec: profile.spec, ...(profile.features ? { features: profile.features } : {}) };
