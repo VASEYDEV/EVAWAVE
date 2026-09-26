@@ -121,6 +121,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- `deleteStyleProfile` and `deleteTag` reported success when RLS let them remove no row, as after an account change in another tab. They now reject with a "reload the library" message, as `deleteFile` already did.
+- The `/library` profile-name input took names past the 200-character limit the database enforces, so a long name failed only on save. It and `/import`'s input now clamp the typed name to `PROFILE_NAME_MAX` code points (`clampProfileName`), the unit the database counts. The native `maxLength` attribute `/import` used counted UTF-16 code units, so it refused emoji names at half the limit.
 - `.gitignore` ignored every directory named `coverage/`, which would have kept `src/core/musicspec/coverage/` out of git. The rule is anchored to the repo root (`/coverage/`), where test-coverage output goes.
 - The lineage scrub left a stray space or separator when it removed a name at the start or end of a bracket (`[Hook – full drums ]`). It now tidies bracket edges and dashes. The new lineage tests caught it.
 - `main` failed the gate after the 2026-09-26 upload. `musicspec-compiler.tsx` at the repo root failed typecheck (TS7006, TS7053) and lint (`prefer-const`), because the root is inside `tsconfig.json`'s include. The three legacy compiler files now live in `docs/archive/legacy/`, which is excluded from tsconfig, ESLint and the gate scan. The upload's two chat bootstrap files moved to `docs/archive/handoff-chat/`. Three exact duplicates of files already in `docs/evawave/reference/` were removed.

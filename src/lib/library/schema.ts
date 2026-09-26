@@ -116,6 +116,17 @@ export function profileName(typed: string, fallback: string): string {
     .trim();
 }
 
+/**
+ * A profile name as a text field may hold it while it is typed: cut to PROFILE_NAME_MAX code
+ * points, the unit Postgres counts, and otherwise untouched. A native `maxLength` counts
+ * UTF-16 code units instead, which halves the cap for emoji and refuses names the library
+ * accepts, so the inputs clamp through this rather than the attribute.
+ */
+export function clampProfileName(typed: string): string {
+  const points = Array.from(typed);
+  return points.length > PROFILE_NAME_MAX ? points.slice(0, PROFILE_NAME_MAX).join("") : typed;
+}
+
 /** `files.filename` holds 1–255 characters (the check in the library migration). */
 export const FILENAME_MAX = 255;
 
