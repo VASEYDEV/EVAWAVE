@@ -385,11 +385,34 @@ S5 per SPEC §3. The methods are listed in SPEC §3 S5 "Delivered".
   at 24-bit 48 kHz, and any compressed track of normal length. A test refuses a file
   over the limit without reading it and reads one at the limit. Dropping the check
   fails it. A streaming decoder (WebCodecs) would lift the cap.
+- **Thirty-second review.** Each fix ships with a test that fails under a mutation.
+  - **Defaults standing in for rejected traits.** The profile base supplied 120 BPM, 4/4
+    and C Ionian when the analysis proposed none, or the person unticked them. Those
+    defaults were shown and saved as the profile's traits. An IR change in SPEC §2.2 adds
+    `StyleProfileSpec`: whole D1–D5, D8 and D9 modules, with D6 partial down to the
+    meter-lock fields. `audioProfileSpec` keeps a module only if an accepted op wrote into
+    it, and keeps D6 only down to the fields accepted ops wrote. `/import` shows "not
+    set" for an absent tempo, meter or key. PV-1 flags only a profile whose tempo came
+    from analysis. Tests cover tempo only, meter only, nothing, and moods; returning the
+    unpruned spec fails them. The PV-1 no-tempo case fails the old rule.
+  - **Subdivisions in eighth-note meters.** BPM counts the signature's denominator, so
+    in 6/8 the "8ths" and "16ths" choices clicked 16ths and 32nds. `subdivisionSteps`
+    maps a note value to clicks per beat for the meter. In x/8 meters, 8ths are the beat
+    itself, so that choice is disabled. A test covers every signature.
+  - **The byte cap did not bound decoded memory.** A 100 MiB MP3 can hold 109 minutes,
+    which decodes to gigabytes. Imports now also refuse recordings over
+    `IMPORT_MAX_SECONDS` (10 minutes). The duration comes from a media element reading
+    the metadata, before the file is read, with a 5 s timeout. When it cannot tell, only
+    the byte cap applies. A unit test covers over, at, and unknown. An e2e stubs the
+    media element's duration to 11 minutes and checks the page refuses the file with no
+    worker started. With the probe unwired, the e2e fails. Chromium reports a truncated
+    WAV's real length rather than its header's, so the e2e stubs the duration instead.
 
 ## Decisions
 
 - **The profile base** is the default D1–D6, D8 and D9. Every draft op targets a path that
-  exists there, so any subset of accepted fields is a valid profile.
+  exists there, so any subset of accepted fields is a valid profile. Since the
+  thirty-second review, the result keeps only what accepted ops wrote.
 - **Mood words carry 0.4 confidence** and start unticked (PT-1). Tempo, meter and key
   carry the analyser's own confidence; loudness character is 0.8 because it is measured.
 - **PV-1** reads a StyleProfile, not a MusicSpec, so it is `lintStyleProfile`, not a
