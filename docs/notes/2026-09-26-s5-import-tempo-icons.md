@@ -158,3 +158,9 @@ S5 per SPEC §3. The methods are listed in SPEC §3 S5 "Delivered".
     `Library.tsx` has no automated test: the library needs a live Supabase session, which
     no test here has. OPFS is per origin, so another account on the same browser that
     imported the same file loses its local copy too, and can import it again.
+- **Ninth review: beat phase after a subdivision change.** The first-round metronome fix
+  folded the step counter but kept the next click on the old step grid. At 120 BPM, a
+  change from 16ths to 8ths after 0.25 s put beat 2 at 0.375 s instead of 0.5 s. The
+  cursor now carries its beat's time, and each tick re-derives the next click from that
+  beat under the current settings. Tests pin the times for 16ths to 8ths and 8ths to
+  16ths; they fail on the old scheduler.

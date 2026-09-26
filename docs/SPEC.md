@@ -1525,9 +1525,9 @@ Delivered:
   new sequence from that tap, so a tempo change or a late tap recovers without waiting
   for the reset. Metronome clicks come from a 25 ms tick with 100 ms lookahead,
   accenting beat 1, or beats 1 and 3 in half-time mode, with optional 8th or 16th
-  clicks. Changing the subdivision or meter while it runs moves the next click onto the
-  next beat, and a second start while one is pending joins it. The controls sit in
-  module 1 and `Assign` writes the rounded BPM with `source: 'tap'`.
+  clicks. The cursor is anchored to its beat, so changing the subdivision or meter while
+  it runs keeps the beat grid in phase, and a second start while one is pending joins it.
+  The controls sit in module 1 and `Assign` writes the rounded BPM with `source: 'tap'`.
 - **Lint:** PT-1 and PT-2 are spec-level rules and also run per patch
   (`lowConfidenceOps`, `protectedOps`). PV-1 is `lintStyleProfile`.
 - **App:**
