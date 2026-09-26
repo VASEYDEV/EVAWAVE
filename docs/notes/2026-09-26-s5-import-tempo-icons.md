@@ -447,6 +447,13 @@ S5 per SPEC §3. The methods are listed in SPEC §3 S5 "Delivered".
     cover each container, truncation and seeded noise after each magic; mutating the esds
     path or MP3 mono detection fails them. Import tests cover 5.1 over, at, and 7.1
     assumed.
+- **Thirty-fifth review: reconciliation did not tell other tabs.** Confirmed. Without OPFS,
+  two tabs can each hold a fallback copy of one file. When `/library` reconciliation in one
+  tab found the record gone, it removed only its own copy. The other tab kept the whole
+  blob until it loaded the library or closed. A delete already announced the drop;
+  reconciliation now does too, after the removal and inside the file's turn. A test with
+  two module instances checks that the other tab drops the orphan and keeps a copy whose
+  record still exists. Without the announcement it fails.
 
 ## Decisions
 
