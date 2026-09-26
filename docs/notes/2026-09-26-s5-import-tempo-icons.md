@@ -240,13 +240,19 @@ S5 per SPEC §3. The methods are listed in SPEC §3 S5 "Delivered".
     removed it; one record delete succeeded, and the other removed no row, failed, and
     restored a copy nothing referred to. `deleteWithLocalAudio` now joins a delete already
     in flight for the same owner and hash. A test runs two at once: the record delete runs
-    once and no copy comes back. It fails on the old code. **Listed, not fixed:** two tabs
-    deleting the same record at the same moment can still restore an orphan; the Web
-    Locks API could serialise them.
+    once and no copy comes back. It fails on the old code. Two tabs could still race; the
+    twenty-first review fixed that.
   - **A stale in-tab copy after OPFS recovers.** A save that fell back to memory and was
     retried into OPFS kept the in-tab blob for the life of the tab. A successful OPFS
     write now drops it. A test stores through the fallback, then into OPFS, and checks the
     tab no longer holds it; it fails on the old code.
+- **Twenty-first review: deletes across tabs.** The join is per tab, so two tabs deleting
+  the same record at once could still restore an orphan. Each delete now runs holding a
+  Web Lock named for the owner and hash (`evawave:local-audio:<owner>/<sha256>`), so tabs
+  of the origin take turns. The second finds no copy and no row, so it fails and restores
+  nothing. Where the API is missing, the delete runs as before. A test loads the module
+  twice, one instance per tab, over one fake OPFS and lock manager. One delete succeeds,
+  the other fails, and no copy is left; without the lock it leaves one.
 
 ## Decisions
 

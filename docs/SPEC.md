@@ -1550,7 +1550,9 @@ Delivered:
     through `public.save_import`, which writes the file metadata and the profile in one
     transaction under RLS, so saving twice writes one row and a failure leaves neither.
     Deleting a file record in `/library` removes its local copy first, keeping the record
-    if that fails, and restores the copy if deleting the record then fails. Local copies
+    if that fails, and restores the copy if deleting the record then fails. Deletes of the
+    same file never overlap: a second in the same tab joins the first, and tabs take turns
+    on a Web Lock. Local copies
     are kept per account, under `audio/<owner>/<sha256>`, so two accounts on one browser
     that save the same file each keep their own copy.
   - Module hues as `--mod-*` tokens. Provisional icons come from
