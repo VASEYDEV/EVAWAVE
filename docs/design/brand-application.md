@@ -104,6 +104,8 @@ JetBrains Mono ships with `font-feature-settings: 'liga' 0, 'calt' 0` in its `@f
 
 - **Header:** kicker, wordmark, tagline, site nav (44 px targets, Turquoise underline on the
   current page), a 1 px Teal baseline and the beam. Exactly one `h1`, `nav[aria-label="Site"]`.
+  The header is positioned for its beam, so the skip link carries `z-index: 1` to paint above
+  it when focused.
 - **Modules** (`section.module > details`): Charcoal, radius 16, a 3 px top rule in Teal that
   turns Turquoise when open (quick); the icon is 28 px Turquoise and gains a Turquoise
   drop-shadow when open; the number is Data mono; the "owns" line is Label. Closed and open

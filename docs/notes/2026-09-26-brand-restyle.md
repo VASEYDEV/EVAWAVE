@@ -70,6 +70,15 @@ arrived as an attachment and is kept as ground truth at
 - Keyboard walk: the 3 px Turquoise ring is visible on every control on both surfaces
   (5.23:1 on Charcoal, 6.07:1 on the field).
 
+## Review round
+
+Codex, P2 on `pages.css`: the focused skip link (`top: 8px`) sat under the header, which
+is now positioned for its beam and follows the link in the DOM, so the kicker and wordmark
+painted over "Skip to content". Reproduced with `document.elementFromPoint` at five points
+of the focused link: every one returned a header element. Fixed with `z-index: 1` on
+`.skip-link`; `tests/e2e/brand.spec.ts` now tabs once and asserts nothing else paints at
+those five points, and that test failed on the unfixed build before passing on the fix.
+
 ## Not done, and why
 
 - Favicon, app-icon suite and manifest: need the VASEY/AI vector mark (marks are traced,

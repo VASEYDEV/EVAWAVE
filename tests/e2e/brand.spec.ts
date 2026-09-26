@@ -68,3 +68,27 @@ test("BEAM appears exactly once per page: the kicker's slash", async ({ page }) 
     expect(await count(), path).toBe(1);
   }
 });
+
+test("the skip link paints above the header when it is focused", async ({ page }) => {
+  // The header is positioned (for its beam) and follows the link in the DOM, so without an
+  // explicit stacking order it would paint over the revealed link.
+  await page.goto("/");
+  await page.keyboard.press("Tab");
+  const link = page.locator("a.skip-link");
+  await expect(link).toBeFocused();
+  const box = await link.boundingBox();
+  expect(box).not.toBeNull();
+  expect(box!.y).toBeGreaterThanOrEqual(0);
+  const covering = await page.evaluate(
+    ({ x, y, width, height }) => {
+      const link = document.querySelector("a.skip-link")!;
+      const points: [number, number][] = [[0.5, 0.5], [0.1, 0.5], [0.9, 0.5], [0.5, 0.2], [0.5, 0.8]];
+      return points
+        .map(([fx, fy]) => document.elementFromPoint(x + width * fx, y + height * fy))
+        .filter((el) => el !== link && !link.contains(el))
+        .map((el) => `${el?.tagName.toLowerCase()}.${el?.className}`);
+    },
+    box!,
+  );
+  expect(covering).toEqual([]);
+});

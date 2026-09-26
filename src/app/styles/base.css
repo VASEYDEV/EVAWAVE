@@ -68,6 +68,7 @@ p {
 
 .skip-link {
   position: absolute;
+  z-index: 1; /* above the positioned header that follows it in the DOM */
   left: var(--space-2);
   top: -3rem;
   padding: var(--space-2) var(--space-3);
