@@ -118,22 +118,26 @@ const GRID_EPSILON = 1e-9;
 
 /**
  * The clicks due before `until` (audio time), starting at the cursor, and the cursor after
- * them. Called every tick with `until = now + lookahead`.
+ * them. Called every tick with `until = now + lookahead`. Clicks that fell due before `now`
+ * (a tick stalled by a background tab or a long task) are skipped, not played late in a burst;
+ * the grid and the bar position carry on from where they would be.
  */
-export function scheduleClicks(cursor: MetronomeCursor, until: number, settings: MetronomeSettings): { clicks: Click[]; cursor: MetronomeCursor } {
+export function scheduleClicks(cursor: MetronomeCursor, until: number, settings: MetronomeSettings, now = -Infinity): { clicks: Click[]; cursor: MetronomeCursor } {
   if (!(settings.bpm > 0)) throw new RangeError(`bpm must be positive, got ${settings.bpm}`);
   const beatSec = 60 / settings.bpm;
   const stepSec = beatSec / settings.subdivision;
   const clicks: Click[] = [];
   let { beatTime, beat } = cursor;
   // Settings can change between ticks while the metronome runs. Re-derive the next click from
-  // its beat: the first step of the current grid at or after the old next click, or the next
-  // beat's downbeat past the last step, so a new subdivision keeps the beat grid in phase.
-  while (beatTime + beatSec <= cursor.nextTime + GRID_EPSILON) {
+  // its beat: the first step of the current grid at or after the old next click (or `now`,
+  // after a stall), or the next beat's downbeat past the last step, so a new subdivision keeps
+  // the beat grid in phase.
+  const from = Math.max(cursor.nextTime, now);
+  while (beatTime + beatSec <= from + GRID_EPSILON) {
     beatTime += beatSec;
     beat += 1;
   }
-  let step = Math.max(0, Math.ceil((cursor.nextTime - beatTime) / stepSec - GRID_EPSILON));
+  let step = Math.max(0, Math.ceil((from - beatTime) / stepSec - GRID_EPSILON));
   if (step >= settings.subdivision) {
     beatTime += beatSec;
     beat += 1;

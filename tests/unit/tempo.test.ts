@@ -116,6 +116,13 @@ describe("metronome scheduling", () => {
     ]);
   });
 
+  it("skips clicks that fell due during a stalled tick instead of playing them in a burst", () => {
+    // Scheduled through 0.3 s, then the tab was throttled until 10 s (20 beats later at 120 BPM).
+    const early = scheduleClicks(startCursor(0), 0.3, settings);
+    const { clicks } = scheduleClicks(early.cursor, 10.1, settings, 10);
+    expect(clicks.map((c) => [c.time, c.beat, c.accent])).toEqual([[10, 0, "bar"]]);
+  });
+
   it("lands on the finer grid of the same beat when the subdivision increases mid-beat", () => {
     // 8ths at 60 BPM, scheduled through 0.3 s: the next 8th was due at 0.5 s.
     const eighths = scheduleClicks(startCursor(0), 0.3, { ...settings, bpm: 60, subdivision: 2 });

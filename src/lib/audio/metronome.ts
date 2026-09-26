@@ -69,7 +69,7 @@ export class Metronome {
   private tick(): void {
     const context = this.context;
     if (!context) return;
-    const { clicks, cursor } = scheduleClicks(this.cursor, context.currentTime + METRONOME_LOOKAHEAD_SEC, this.settings);
+    const { clicks, cursor } = scheduleClicks(this.cursor, context.currentTime + METRONOME_LOOKAHEAD_SEC, this.settings, context.currentTime);
     this.cursor = cursor;
     for (const click of clicks) this.play(context, click);
   }
