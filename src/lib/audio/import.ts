@@ -1,10 +1,10 @@
 /**
  * Audio import to a draft StyleProfile patch (docs/SPEC.md §1.7). Everything runs on the
  * device: the file is hashed, decoded and analysed here, and only metadata and features ever
- * leave (A6). Import itself stores nothing. The screen keeps the blob on the device when the
- * person creates a profile from it, so an abandoned, failed or superseded import leaves
- * nothing behind. The steps that touch the platform are injected, so tests can run the same
- * pipeline and prove no request carries audio.
+ * leave (A6). Import itself stores nothing. The screen keeps the blob on the device only once
+ * a durable reference to it exists (a saved library row or a downloaded profile), so no
+ * stored blob is ever unreachable. The steps that touch the platform are injected, so tests
+ * can run the same pipeline and prove no request carries audio.
  */
 import { analyseAudio } from "@/core/musicspec/analysis/features";
 import type { PcmAudio } from "@/core/musicspec/analysis/wav";

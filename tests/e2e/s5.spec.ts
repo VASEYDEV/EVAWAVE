@@ -30,7 +30,8 @@ test("imports a WAV into a reviewed audio-analysis style profile, sending no aud
   await expect(page.getByLabel("Accept /D6/tempo")).toBeChecked();
   await expect(page.getByLabel("Accept /D6/key")).toBeChecked();
 
-  // Import alone keeps nothing; creating the profile keeps the blob in OPFS under its sha256.
+  // The blob is kept in OPFS under its sha256 only once something durable refers to it: not
+  // after import, not after Create, but with the downloaded profile (or a library save).
   const sha256 = createHash("sha256").update(wav).digest("hex");
   const kept = () =>
     page.evaluate(async (name) => {
@@ -44,27 +45,14 @@ test("imports a WAV into a reviewed audio-analysis style profile, sending no aud
     }, sha256);
   expect(await kept()).toBe(false);
 
-  // Hold the OPFS write open: while the profile is being created, no new file can replace it.
-  await page.evaluate(() => {
-    const proto = FileSystemFileHandle.prototype;
-    const original = proto.createWritable;
-    const held = window as unknown as { releaseWrite?: () => void };
-    proto.createWritable = function (this: FileSystemFileHandle, ...args: Parameters<typeof original>) {
-      return new Promise((resolve) => {
-        held.releaseWrite = () => resolve(original.apply(this, args));
-      });
-    };
-  });
-  const fileInput = page.getByLabel("Choose an audio file, or drop one here");
-  const create = page.getByRole("button", { name: "Create style profile" });
-  await create.click();
-  await expect(fileInput).toBeDisabled();
-  await expect(create).toBeDisabled();
-  await page.waitForFunction(() => typeof (window as unknown as { releaseWrite?: unknown }).releaseWrite === "function");
-  await page.evaluate(() => (window as unknown as { releaseWrite: () => void }).releaseWrite());
+  await page.getByRole("button", { name: "Create style profile" }).click();
   await expect(page.getByTestId("provenance")).toHaveText("audio-analysis");
-  await expect(fileInput).toBeEnabled();
   await expect(page.getByTestId("profile-tempo")).toHaveText("140 BPM (analysis)");
+  expect(await kept()).toBe(false);
+
+  const downloaded = page.waitForEvent("download");
+  await page.getByRole("button", { name: "Download profile JSON" }).click();
+  expect((await downloaded).suggestedFilename()).toBe("desert-loop-style-profile.json");
   await expect(page.getByRole("status")).toContainText("The audio stays in this browser's private storage.");
   expect(await kept()).toBe(true);
 

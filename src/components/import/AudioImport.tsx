@@ -49,15 +49,13 @@ export function AudioImport() {
   const [profile, setProfile] = useState<StyleProfile | null>(null);
   const [dragging, setDragging] = useState(false);
   const [source, setSource] = useState<File | null>(null);
-  // While a profile is being created (and its blob stored), no new file may replace it.
-  const [creating, setCreating] = useState(false);
   // A newer file choice aborts the import in flight, so its analysis never lands.
   const inFlight = useRef<AbortController | null>(null);
 
   const lowConfidence = useMemo(() => new Set(result ? lowConfidenceOps(result.patch, "").map((r) => Number(r.path.split("/").pop())) : []), [result]);
 
   const handle = async (file: File | undefined) => {
-    if (!file || creating) return;
+    if (!file) return;
     inFlight.current?.abort();
     const controller = new AbortController();
     inFlight.current = controller;
@@ -74,7 +72,7 @@ export function AudioImport() {
       setSource(file);
       setAccepted(new Set(imported.patch.ops.filter((o) => o.confidence >= 0.5).map((o) => o.path)));
       setName(file.name.replace(/\.[^.]+$/, ""));
-      setStatus(`Analysed ${file.name} on this device. Review the proposed fields below; nothing is kept until you create a profile.`);
+      setStatus(`Analysed ${file.name} on this device. Review the proposed fields below; nothing is kept until you save or download a profile.`);
     } catch (error) {
       if (controller.signal.aborted) return;
       setStatus(`Could not analyse ${file.name}: ${error instanceof Error ? error.message : "unknown error"}. Try a WAV, MP3, AAC or FLAC file.`);
@@ -87,22 +85,10 @@ export function AudioImport() {
     void handle(event.dataTransfer.files[0]);
   };
 
-  const createProfile = async () => {
-    if (!result || !source || creating) return;
-    setCreating(true);
-    try {
-      await keepProfile(result, source);
-    } finally {
-      setCreating(false);
-    }
-  };
-
-  const keepProfile = async (result: ImportResult, source: File) => {
+  const createProfile = () => {
+    if (!result) return;
     const reviewed = reviewPatch(result.patch, accepted);
     const { doc } = applyReviewedPatch(audioProfileBase(), reviewed);
-    // The blob is kept on the device only now, when the person keeps a profile from it (§1.7,
-    // A6), so abandoned, failed or superseded imports leave nothing in storage.
-    const storedIn = await storeInOpfs(result.asset.sha256, source);
     setProfile({
       // Made here, so saving the same profile twice upserts one library row.
       id: crypto.randomUUID(),
@@ -116,13 +102,28 @@ export function AudioImport() {
       createdAt: result.analysedOn,
       updatedAt: result.analysedOn,
     });
-    setStatus(
-      `Style profile created from ${reviewed.acceptedPaths.length} accepted field(s). The audio stays ${storedIn === "opfs" ? "in this browser's private storage" : "in memory for this tab only"}.`,
-    );
+    setStatus(`Style profile created from ${reviewed.acceptedPaths.length} accepted field(s). Save it to the library or download it to keep it and its audio.`);
+  };
+
+  /**
+   * Keeps the blob on the device (§1.7, A6). Called only once something durable refers to
+   * it, a library row or a downloaded profile, so no stored blob is ever unreachable.
+   */
+  const keepAudio = async (sha256: string, file: File): Promise<string> =>
+    (await storeInOpfs(sha256, file)) === "opfs" ? "in this browser's private storage" : "in memory for this tab only";
+
+  const downloadProfile = async () => {
+    if (!result || !profile || !source) return;
+    const current = inFlight.current;
+    // Download first, inside the click, so the browser keeps it tied to the gesture.
+    download(`${profile.name.replace(/[^a-z0-9]+/gi, "-").toLowerCase() || "profile"}-style-profile.json`, `${JSON.stringify(profile, null, 2)}\n`);
+    const where = await keepAudio(result.asset.sha256, source);
+    if (inFlight.current === current) setStatus(`Downloaded "${profile.name}". The audio stays ${where}.`);
   };
 
   const save = async () => {
-    if (!result || !profile) return;
+    if (!result || !profile || !source) return;
+    const current = inFlight.current;
     if (!getSupabasePublicConfig()) {
       setStatus("The library needs Supabase, which is not configured here. Download the profile instead.");
       return;
@@ -139,7 +140,8 @@ export function AudioImport() {
         file: { filename: asset.filename, mime: asset.mime, bytes: asset.bytes, sha256: asset.sha256, features },
         profile: { id: profile.id, name: profile.name, spec: profile.spec, analysedOn, model: AUDIO_DRAFT_MODEL },
       });
-      setStatus(`Saved "${profile.name}" and the file's metadata to your library.`);
+      const where = await keepAudio(asset.sha256, source);
+      if (inFlight.current === current) setStatus(`Saved "${profile.name}" and the file's metadata to your library. The audio stays ${where}.`);
     } catch (error) {
       setStatus(error instanceof Error ? error.message : "Saving failed.");
     }
@@ -160,7 +162,7 @@ export function AudioImport() {
         onDrop={onDrop}
       >
         <label htmlFor={inputId}>Choose an audio file, or drop one here</label>
-        <input id={inputId} type="file" accept="audio/*,.wav,.mp3,.m4a,.aac,.flac,.ogg" disabled={creating} onChange={(e) => void handle(e.target.files?.[0])} />
+        <input id={inputId} type="file" accept="audio/*,.wav,.mp3,.m4a,.aac,.flac,.ogg" onChange={(e) => void handle(e.target.files?.[0])} />
       </div>
       <p role="status" aria-live="polite">
         {status}
@@ -242,7 +244,7 @@ export function AudioImport() {
           <div className="add-row">
             <label htmlFor={nameId}>Profile name</label>
             <input id={nameId} type="text" maxLength={PROFILE_NAME_MAX} value={name} onChange={(e) => setName(e.target.value)} />
-            <button type="button" disabled={creating} onClick={() => void createProfile()}>
+            <button type="button" onClick={createProfile}>
               Create style profile
             </button>
           </div>
@@ -273,7 +275,7 @@ export function AudioImport() {
             <button type="button" onClick={() => void save()}>
               Save to library
             </button>
-            <button type="button" onClick={() => download(`${profile.name.replace(/[^a-z0-9]+/gi, "-").toLowerCase() || "profile"}-style-profile.json`, `${JSON.stringify(profile, null, 2)}\n`)}>
+            <button type="button" onClick={() => void downloadProfile()}>
               Download profile JSON
             </button>
           </div>

@@ -29,7 +29,7 @@ const tabMemory = new Map<string, Blob>();
 
 /**
  * Keeps the file in OPFS under audio/<sha256>; falls back to memory where OPFS is missing.
- * The import screen calls it when the person creates a profile from the file.
+ * The import screen calls it when the person saves or downloads a profile from the file.
  */
 export async function storeInOpfs(sha256: string, file: Blob): Promise<"opfs" | "memory"> {
   try {
