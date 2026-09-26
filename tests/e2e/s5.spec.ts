@@ -12,6 +12,27 @@ import { clickTrack, mix, triad } from "../support/signals";
  */
 const TAGS = ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "wcag22aa"];
 
+test("refuses a recording longer than the import limit from its metadata, before any analysis", async ({ page }) => {
+  const wav = Buffer.from(encodeWav(clickTrack(120, 4, 22050), 22050));
+  await page.addInitScript(() => {
+    // The media element's metadata says 11 minutes; the file itself is short.
+    Object.defineProperty(HTMLMediaElement.prototype, "duration", { get: () => 11 * 60 });
+    const Native = window.Worker;
+    const started: string[] = [];
+    (window as unknown as { workersStarted: string[] }).workersStarted = started;
+    window.Worker = class extends Native {
+      constructor(url: string | URL, options?: WorkerOptions) {
+        super(url, options);
+        started.push(String(url));
+      }
+    };
+  });
+  await page.goto("/import");
+  await page.getByLabel("Choose an audio file, or drop one here").setInputFiles({ name: "long-take.wav", mimeType: "audio/wav", buffer: wav });
+  await expect(page.getByRole("status")).toContainText("This recording is 11 minutes long; imports take recordings up to 10 minutes for now.", { timeout: 15_000 });
+  expect(await page.evaluate(() => (window as unknown as { workersStarted: string[] }).workersStarted)).toEqual([]);
+});
+
 test("imports a WAV into a reviewed audio-analysis style profile, sending no audio", async ({ page }) => {
   const sent: { url: string; bytes: number; riff: boolean }[] = [];
   page.on("request", (request) => {

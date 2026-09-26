@@ -6,7 +6,7 @@ import { decodeWav, encodeWav, WavError, type PcmAudio } from "@/core/musicspec/
 import { applyReviewedPatch, audioProfileBase, AUDIO_DRAFT_MODEL, reviewPatch } from "@/core/musicspec/intake";
 import { lintStyleProfile } from "@/core/musicspec/lint";
 import { blobInTab, deleteWithLocalAudio, inTurnForLocalAudio, keepAudioFor, removeLocalAudio, storeInOpfs } from "@/lib/audio/browser";
-import { IMPORT_MAX_BYTES, importAudio, ImportTooLargeError, sha256Hex, type ImportDeps } from "@/lib/audio/import";
+import { IMPORT_MAX_BYTES, IMPORT_MAX_SECONDS, importAudio, ImportTooLargeError, ImportTooLongError, sha256Hex, type ImportDeps } from "@/lib/audio/import";
 import { deleteFile, hasFileRecord, LibraryError, saveImport, saveImportAndKeepAudio, type ImportRecord } from "@/lib/library/repository";
 import type { Database } from "@/lib/library/schema";
 
@@ -199,6 +199,22 @@ describe("a superseded import", () => {
     const readAt = vi.spyOn(at, "arrayBuffer");
     await importAudio(at, nodeDeps());
     expect(readAt).toHaveBeenCalledTimes(1);
+  });
+
+  it("refuses a recording over the length limit without reading it, from its metadata", async () => {
+    const withLength = (seconds: number | undefined) => ({ ...nodeDeps(), probeDuration: vi.fn(async () => seconds) });
+    const fresh = () => new File([wav], "long.wav", { type: "audio/wav" });
+    const over = fresh();
+    const readOver = vi.spyOn(over, "arrayBuffer");
+    await expect(importAudio(over, withLength(IMPORT_MAX_SECONDS + 1))).rejects.toBeInstanceOf(ImportTooLongError);
+    expect(readOver).not.toHaveBeenCalled();
+    // At the limit, or when the metadata cannot tell, the import goes ahead.
+    for (const seconds of [IMPORT_MAX_SECONDS, undefined]) {
+      const ok = fresh();
+      const read = vi.spyOn(ok, "arrayBuffer");
+      await importAudio(ok, withLength(seconds));
+      expect(read).toHaveBeenCalledTimes(1);
+    }
   });
 
   it("never reads the file when a newer choice aborted it before it started", async () => {

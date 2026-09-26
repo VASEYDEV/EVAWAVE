@@ -671,13 +671,20 @@ export interface StyleProfile {
   ownerId: string;
   name: string;
   provenance: Provenance;
-  spec: Partial<Pick<MusicSpec, 'D1' | 'D2' | 'D3' | 'D4' | 'D5' | 'D6' | 'D8' | 'D9'>>;
+  spec: StyleProfileSpec;
   features?: AudioFeatures;                         // present when provenance.kind is 'audio-analysis'
   genreIds: string[];
   tags: string[];
   createdAt: string;
   updatedAt: string;
 }
+
+// Whole D1–D5, D8 and D9 modules, and only the D6 fields the profile sets: an audio-analysis
+// profile holds just the traits the person accepted, so a rejected tempo, meter or key is
+// absent rather than a default (120 BPM, 4/4, C Ionian).
+export type StyleProfileSpec = Partial<Pick<MusicSpec, 'D1' | 'D2' | 'D3' | 'D4' | 'D5' | 'D8' | 'D9'>> & {
+  D6?: Partial<Omit<TheoryProfile, 'meterLock'>> & { meterLock?: Partial<MeterLock> };
+};
 
 export interface ReferenceAsset {
   id: string;

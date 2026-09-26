@@ -285,8 +285,37 @@ export function blobInTab(key: LocalAudioKey): Blob | undefined {
   return tabMemory.get(tabKey(key));
 }
 
+/** How long a media element may take to read a file's metadata before the probe gives up. */
+const PROBE_TIMEOUT_MS = 5000;
+
+/**
+ * The duration a media element reads from the file's metadata, without decoding it or
+ * reading it into memory; undefined when the element cannot tell (unknown or streaming
+ * length, an unsupported type, or no answer within PROBE_TIMEOUT_MS).
+ */
+export function probeDurationWithMediaElement(file: File): Promise<number | undefined> {
+  if (typeof document === "undefined") return Promise.resolve(undefined);
+  return new Promise((resolve) => {
+    const url = URL.createObjectURL(file);
+    const audio = document.createElement("audio");
+    const done = (seconds?: number) => {
+      clearTimeout(timer);
+      audio.removeAttribute("src");
+      audio.load();
+      URL.revokeObjectURL(url);
+      resolve(seconds !== undefined && Number.isFinite(seconds) ? seconds : undefined);
+    };
+    const timer = setTimeout(() => done(), PROBE_TIMEOUT_MS);
+    audio.preload = "metadata";
+    audio.onloadedmetadata = () => done(audio.duration);
+    audio.onerror = () => done();
+    audio.src = url;
+  });
+}
+
 export const browserImportDeps: ImportDeps = {
   decode: decodeWithWebAudio,
+  probeDuration: probeDurationWithMediaElement,
   analyse: analyseInWorker,
   digest: sha256Hex,
   now: () => new Date().toISOString(),

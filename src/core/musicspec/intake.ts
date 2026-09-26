@@ -94,6 +94,48 @@ export function audioProfileBase(): StyleProfile["spec"] {
   return { D1: d.D1, D2: d.D2, D3: d.D3, D4: d.D4, D5: d.D5, D6: d.D6, D8: d.D8, D9: d.D9 };
 }
 
+/**
+ * The profile spec a reviewed patch gives: only what accepted ops wrote. The base gives every
+ * op a path to land on. Afterwards a module stays only if an accepted op wrote into it, and
+ * D6 keeps only the fields accepted ops wrote. So a tempo, meter or key that the analysis did
+ * not propose, or that the person rejected, is absent rather than a default (120 BPM, 4/4,
+ * C Ionian). The other modules' defaults are empty lists, so they stay whole.
+ */
+export function audioProfileSpec(reviewed: IRPatch): AppliedPatch<StyleProfile["spec"]> {
+  const { doc, applied, refused } = applyReviewedPatch(audioProfileBase(), reviewed);
+  const spec: Record<string, unknown> = {};
+  for (const o of applied) {
+    const tokens = parsePointer(o.path);
+    const [module] = tokens;
+    if (module === undefined) continue;
+    // D6 down to the field the op wrote (stopping above any array index); other modules whole.
+    const keep: string[] = [module];
+    let node: unknown = (doc as Record<string, unknown>)[module];
+    for (const token of module === "D6" ? tokens.slice(1) : []) {
+      if (Array.isArray(node) || typeof node !== "object" || node === null) break;
+      keep.push(token);
+      node = (node as Record<string, unknown>)[token];
+    }
+    copyPath(doc, spec, keep);
+  }
+  // The kept paths are paths of the base, so `spec` is a partial of it: a StyleProfileSpec.
+  return { doc: spec as StyleProfile["spec"], applied, refused };
+}
+
+/** Copies the value at `path` in `from` to the same path in `to`, making objects on the way. */
+function copyPath(from: unknown, to: Record<string, unknown>, path: readonly string[]): void {
+  let source = from as Record<string, unknown>;
+  let target = to;
+  path.forEach((token, i) => {
+    if (i === path.length - 1) {
+      target[token] = structuredClone(source[token]);
+      return;
+    }
+    source = source[token] as Record<string, unknown>;
+    target = (target[token] ??= {}) as Record<string, unknown>;
+  });
+}
+
 /** Records the person's decision per op path; undecided ops count as rejected. */
 export function reviewPatch(patch: IRPatch, accepted: ReadonlySet<string>): IRPatch {
   const paths = patch.ops.map((o) => o.path);

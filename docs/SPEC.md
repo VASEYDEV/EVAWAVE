@@ -228,8 +228,12 @@ end-to-end Jinn rebuild through the UI with an A/B Suno render.
   stereo track is about 64 MB of decoded samples plus a 32 MB mono mix. Analysis adds
   about 21 MB of peak memory on top (measured in Node; it was about 220 MB before the frame
   pass stopped keeping spectra). Imports refuse files over 100 MiB before reading them:
-  about 9.9 minutes of 16-bit 44.1 kHz stereo WAV, 6 minutes at 24-bit 48 kHz, and any
-  compressed track of normal length. A streaming decoder (WebCodecs) would lift the cap.
+  about 9.9 minutes of 16-bit 44.1 kHz stereo WAV, 6 minutes at 24-bit 48 kHz. They also
+  refuse recordings over 10 minutes by the duration a media element reads from the
+  metadata, because the encoded size says little about the decoded size (a 100 MiB MP3
+  can hold 109 minutes). Ten minutes of stereo at 48 kHz decodes to about 230 MB. When the
+  metadata cannot tell, only the byte cap applies. A streaming decoder (WebCodecs) would
+  lift both caps.
 - **Lockup**: `EVAWAVE` vs `EVA/WAVE`.
 
 ---
@@ -927,13 +931,20 @@ export interface StyleProfile {
   ownerId: string;
   name: string;
   provenance: Provenance;
-  spec: Partial<Pick<MusicSpec, 'D1' | 'D2' | 'D3' | 'D4' | 'D5' | 'D6' | 'D8' | 'D9'>>;
+  spec: StyleProfileSpec;
   features?: AudioFeatures;                         // present when provenance.kind is 'audio-analysis'
   genreIds: string[];
   tags: string[];
   createdAt: string;
   updatedAt: string;
 }
+
+// Whole D1–D5, D8 and D9 modules, and only the D6 fields the profile sets: an audio-analysis
+// profile holds just the traits the person accepted, so a rejected tempo, meter or key is
+// absent rather than a default (120 BPM, 4/4, C Ionian).
+export type StyleProfileSpec = Partial<Pick<MusicSpec, 'D1' | 'D2' | 'D3' | 'D4' | 'D5' | 'D8' | 'D9'>> & {
+  D6?: Partial<Omit<TheoryProfile, 'meterLock'>> & { meterLock?: Partial<MeterLock> };
+};
 
 export interface ReferenceAsset {
   id: string;
@@ -1223,7 +1234,7 @@ engine: `engine-unknown` covers no profile, `engine-halted` covers a stub (Udio,
 | OV-1 | A `TargetOverride` whose `basedOnCompiledHash` is stale | warn | S2 |
 | PT-1 | A patch op with `confidence < 0.5` | info (low-confidence in the diff) | S5 |
 | PT-2 | A patch op targeting `references` or `patches` | block | S5 |
-| PV-1 | An audio-analysis StyleProfile with `features.bpm.confidence < 0.6` | info (low-confidence badge until a human edits tempo) | S5 |
+| PV-1 | An audio-analysis StyleProfile with `features.bpm.confidence < 0.6` and an analysed tempo | info (low-confidence badge until a human edits tempo) | S5 |
 
 LN-1 reads a curated name denylist (data). Fixtures and tests use invented names only.
 
@@ -1534,7 +1545,8 @@ Delivered:
   grid: a tap after a discard that fits the old grid, but keeps the discarded tap's
   new, off-grid interval, starts again from the discarded tap. Metronome clicks come from a 25 ms tick with 100 ms lookahead,
   accenting beat 1, or beats 1 and 3 in half-time mode, with optional 8th or 16th
-  clicks. The cursor is anchored to its beat, so changing the subdivision or meter while
+  clicks, counted in note values against the meter's beat unit (16ths are 2 per beat in
+  6/8, and 8ths there are the beat itself). The cursor is anchored to its beat, so changing the subdivision or meter while
   it runs keeps the beat grid in phase; a tempo change takes effect at the next beat;
   clicks missed during a stalled tick are skipped, not played in a burst; and a second
   start while one is pending joins it.
@@ -1547,7 +1559,9 @@ Delivered:
     next stage and terminates the worker. It shows the measured features, then a
     per-field review with low-confidence suggestions left unticked. Create makes the
     profile in memory, with the PV-1 badge, a device-made id and a name capped at 200
-    characters. Import, Create and Download store nothing: the file goes to OPFS (or an
+    characters. The profile holds only the accepted fields: a tempo, meter or key not
+    proposed or not accepted is absent, not a default (`StyleProfileSpec`, §2.2).
+    Recordings over 10 minutes, by their metadata, are refused before they are read. Import, Create and Download store nothing: the file goes to OPFS (or an
     in-tab fallback) only after a library save succeeds, because a library record is the
     one reference the app can later remove it by, so no stored blob is ever unreachable.
     A downloaded profile cites the audio by its sha256. Saving goes

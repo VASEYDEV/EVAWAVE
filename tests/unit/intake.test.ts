@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import { analyseAudio } from "@/core/musicspec/analysis/features";
-import { applyReviewedPatch, audioProfileBase, AUDIO_DRAFT_MODEL, draftFromAudio, reviewPatch } from "@/core/musicspec/intake";
+import { applyReviewedPatch, audioProfileBase, audioProfileSpec, AUDIO_DRAFT_MODEL, draftFromAudio, reviewPatch } from "@/core/musicspec/intake";
 import { defaultMusicSpec } from "@/core/musicspec/ir/defaults";
 import type { AudioFeatures, IRPatch, StyleProfile } from "@/core/musicspec/ir/types";
 import { lint, lintStyleProfile, lowConfidenceOps, protectedOps } from "@/core/musicspec/lint";
@@ -60,6 +60,20 @@ describe("review and apply (§1.7 step 5, §2.4)", () => {
     expect(doc.D9).toEqual(audioProfileBase().D9);
   });
 
+  it("builds the profile from accepted fields only, with no default standing in for a rejected one", () => {
+    // Tempo accepted; meter and key rejected: D6 holds the tempo alone, not 4/4 or C Ionian.
+    const tempoOnly = audioProfileSpec(reviewPatch(patch, new Set(["/D6/tempo"]))).doc;
+    expect(tempoOnly).toEqual({ D6: { tempo: { bpm: 140, source: "analysis" } } });
+    // The meter op writes one field of the lock, and only that field is kept.
+    const meterOnly = audioProfileSpec(reviewPatch(patch, new Set(["/D6/meterLock/signature"]))).doc;
+    expect(meterOnly).toEqual({ D6: { meterLock: { signature: opAt(patch, "/D6/meterLock/signature")?.value } } });
+    // Nothing accepted: no module at all, so nothing invented.
+    expect(audioProfileSpec(reviewPatch(patch, new Set())).doc).toEqual({});
+    // Other modules stay whole: their defaults are empty lists.
+    const withMoods = audioProfileSpec(reviewPatch(patch, new Set(["/D2/moods"]))).doc;
+    expect(withMoods).toEqual({ D2: { ...audioProfileBase().D2, moods: opAt(patch, "/D2/moods")?.value } });
+  });
+
   it("leaves the spec untouched for a proposed or rejected patch", () => {
     const base = audioProfileBase();
     expect(applyReviewedPatch(base, patch).doc).toBe(base);
@@ -108,5 +122,7 @@ describe("PT-1, PT-2, PV-1", () => {
     expect(lintStyleProfile(profile(0.5, "tap"))).toEqual([]);
     expect(lintStyleProfile(profile(0.9, "analysis"))).toEqual([]);
     expect(lintStyleProfile(profile(0.5, "analysis", "hand-built"))).toEqual([]);
+    // No tempo accepted: the profile makes no tempo claim to flag.
+    expect(lintStyleProfile({ ...profile(0.5, "analysis"), spec: {} })).toEqual([]);
   });
 });

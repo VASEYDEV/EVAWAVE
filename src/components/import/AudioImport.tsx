@@ -7,12 +7,12 @@
  */
 import { useEffect, useId, useMemo, useRef, useState, type DragEvent } from "react";
 
-import { applyReviewedPatch, audioProfileBase, AUDIO_DRAFT_MODEL, reviewPatch } from "@/core/musicspec/intake";
+import { AUDIO_DRAFT_MODEL, audioProfileSpec, reviewPatch } from "@/core/musicspec/intake";
 import type { StyleProfile } from "@/core/musicspec/ir/types";
 import { lintStyleProfile, lowConfidenceOps } from "@/core/musicspec/lint";
 import { catalog } from "@/data/taxonomy";
 import { browserImportDeps, inTurnForLocalAudio, keepAudioFor } from "@/lib/audio/browser";
-import { importAudio, ImportTooLargeError, type ImportResult } from "@/lib/audio/import";
+import { importAudio, ImportTooLargeError, ImportTooLongError, type ImportResult } from "@/lib/audio/import";
 import { createLibraryClient } from "@/lib/library/client";
 import { saveImportAndKeepAudio } from "@/lib/library/repository";
 import { PROFILE_NAME_MAX, profileName, recordFilename, recordMime } from "@/lib/library/schema";
@@ -81,7 +81,7 @@ export function AudioImport() {
     } catch (error) {
       if (controller.signal.aborted) return;
       setStatus(
-        error instanceof ImportTooLargeError
+        error instanceof ImportTooLargeError || error instanceof ImportTooLongError
           ? `Could not analyse ${file.name}: ${error.message}`
           : `Could not analyse ${file.name}: ${error instanceof Error ? error.message : "unknown error"}. Try a WAV, MP3, AAC or FLAC file.`,
       );
@@ -97,7 +97,8 @@ export function AudioImport() {
   const createProfile = () => {
     if (!result) return;
     const reviewed = reviewPatch(result.patch, accepted);
-    const { doc } = applyReviewedPatch(audioProfileBase(), reviewed);
+    // Only accepted fields: a rejected tempo, meter or key is absent, not a default.
+    const { doc } = audioProfileSpec(reviewed);
     setProfile({
       // Made here, so saving the same profile twice upserts one library row.
       id: crypto.randomUUID(),
@@ -270,12 +271,12 @@ export function AudioImport() {
             <dt>Provenance</dt>
             <dd data-testid="provenance">{profile.provenance.kind}</dd>
             <dt>Tempo</dt>
-            <dd data-testid="profile-tempo">
-              {profile.spec.D6?.tempo.bpm} BPM ({profile.spec.D6?.tempo.source})
-            </dd>
+            <dd data-testid="profile-tempo">{profile.spec.D6?.tempo ? `${profile.spec.D6.tempo.bpm} BPM (${profile.spec.D6.tempo.source})` : "not set"}</dd>
+            <dt>Meter</dt>
+            <dd>{profile.spec.D6?.meterLock?.signature ?? "not set"}</dd>
             <dt>Key</dt>
-            <dd>
-              {profile.spec.D6?.key.tonic} {catalog.modes[profile.spec.D6?.key.modeId ?? ""]?.name ?? profile.spec.D6?.key.modeId}
+            <dd data-testid="profile-key">
+              {profile.spec.D6?.key ? `${profile.spec.D6.key.tonic} ${catalog.modes[profile.spec.D6.key.modeId]?.name ?? profile.spec.D6.key.modeId}` : "not set"}
             </dd>
           </dl>
           {badges.map((b) => (
