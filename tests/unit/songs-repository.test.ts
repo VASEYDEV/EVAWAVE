@@ -8,7 +8,7 @@ import type { Catalog, MusicSpec } from "@/core/musicspec/ir/types";
 import { LibraryError } from "@/lib/library/repository";
 import type { Database, SongRow } from "@/lib/library/schema";
 import { specHash } from "@/core/musicspec/variants";
-import { coverageScores, createSong, deleteSong, describeChange, freezeVariant, saveSong, shortValue, songAttachment, songTitle, toSong, type WorkingCopy } from "@/lib/library/songs";
+import { clampText, coverageScores, createSong, deleteSong, deleteTake, describeChange, freezeVariant, loadSong, logTake, renderLink, saveSong, shortValue, songAttachment, songTitle, toSong, wordsBlamed, type TakeInput, type WorkingCopy } from "@/lib/library/songs";
 import { catalog } from "@/data/taxonomy";
 
 /**
@@ -179,3 +179,88 @@ describe("songAttachment", () => {
     expect(songAttachment(stored, [], null)).toMatchObject({ baseVariantId: null, baseLabel: null, variantLabels: [] });
   });
 });
+
+describe("the take log (S7)", () => {
+  const input = (over: Partial<TakeInput> = {}): TakeInput => ({
+    variantId: "v-1",
+    engine: "suno",
+    engineVersion: " v6 ",
+    renderRef: " https://suno.example/song/abc ",
+    verdict: "kill",
+    drifted: ["meter", "meter", "tempo"],
+    wordsBlamed: ["shuffled 16ths"],
+    notes: "  Drifted to 6/8.  ",
+    ...over,
+  });
+  const takeRow = { id: "t-1", owner_id: "o", variant_id: "v-1", engine: "suno", engine_version: "v6", render_ref: null, verdict: "kill", drifted: ["meter"], words_blamed: [], notes: "", created_at: "c" };
+
+  it("logs a take trimmed, with each drift kind once, and no owner", async () => {
+    const { client, sent } = recording(() => takeRow);
+    const logged = await logTake(client, input());
+    expect(sent[0]).toMatchObject({ method: "POST", path: "/rest/v1/takes" });
+    expect(sent[0]?.body).toEqual({
+      variant_id: "v-1",
+      engine: "suno",
+      engine_version: "v6",
+      render_ref: "https://suno.example/song/abc",
+      verdict: "kill",
+      drifted: ["meter", "tempo"],
+      words_blamed: ["shuffled 16ths"],
+      notes: "Drifted to 6/8.",
+    });
+    expect(logged).toMatchObject({ id: "t-1", variantId: "v-1", engine: "suno", wordsBlamed: [] });
+    expect("renderRef" in logged).toBe(false);
+  });
+
+  it("sends an empty render reference as null", async () => {
+    const { client, sent } = recording(() => takeRow);
+    await logTake(client, input({ renderRef: "   " }));
+    expect((sent[0]?.body as { render_ref: unknown }).render_ref).toBeNull();
+  });
+
+  it("refuses audio, a missing version and too many words before sending anything", async () => {
+    const { client, sent } = recording(() => takeRow);
+    await expect(logTake(client, input({ renderRef: " data:audio/wav;base64,UklGRg==" }))).rejects.toThrow("never the audio itself");
+    await expect(logTake(client, input({ engineVersion: "  " }))).rejects.toThrow("which engine version");
+    await expect(logTake(client, input({ wordsBlamed: Array.from({ length: 51 }, (_, i) => `w${i}`) }))).rejects.toThrow("at most 50 words");
+    expect(sent).toEqual([]);
+  });
+
+  it("rejects a take delete that removed no row", async () => {
+    await expect(deleteTake(recording(() => []).client, "t")).rejects.toThrow("no such take");
+    await expect(deleteTake(recording(() => [{ id: "t" }]).client, "t")).resolves.toBeUndefined();
+  });
+
+  it("loads a song's takes for its variants, and asks for none when it has no variants", async () => {
+    const song = { id: "s", owner_id: "o", title: "Jinn", brand: "VASEY.AUDIO", spec: v12, overrides: [], base_variant_id: null, revision: 1, created_at: "c", updated_at: "u" };
+    const variant = { id: "v-1", owner_id: "o", song_id: "s", seq: 1, label: "v1.0", parent_variant_id: null, spec_snapshot: v12, diff: [], overrides: [], coverage: {}, created_at: "c" };
+    const withVariants = recording((r) => (r.path === "/rest/v1/songs" ? song : r.path === "/rest/v1/variants" ? [variant] : [takeRow]));
+    const loaded = await loadSong(withVariants.client, "s");
+    const takesRequest = withVariants.sent.find((r) => r.path === "/rest/v1/takes");
+    expect(takesRequest?.query.get("variant_id")).toBe("in.(v-1)");
+    expect(loaded.takes.map((t) => t.id)).toEqual(["t-1"]);
+
+    const without = recording((r) => (r.path === "/rest/v1/songs" ? song : []));
+    expect((await loadSong(without.client, "s")).takes).toEqual([]);
+    expect(without.sent.some((r) => r.path === "/rest/v1/takes")).toBe(false);
+  });
+});
+
+describe("take helpers", () => {
+  it("splits words blamed on commas, trimmed, each once", () => {
+    expect(wordsBlamed(" shuffled 16ths, rubato,, shuffled 16ths ,")).toEqual(["shuffled 16ths", "rubato"]);
+    expect(wordsBlamed("")).toEqual([]);
+  });
+
+  it("links only https render references", () => {
+    expect(renderLink("https://suno.example/song/abc")).toBe("https://suno.example/song/abc");
+    for (const ref of ["http://suno.example/x", "javascript:alert(1)", "data:audio/wav;base64,AA", "abc-123", undefined]) expect(renderLink(ref)).toBeNull();
+  });
+
+  it("clamps typed text by code points, never splitting a surrogate pair", () => {
+    expect(clampText("🎵".repeat(5), 3)).toBe("🎵🎵🎵");
+    expect(clampText("short", 10)).toBe("short");
+    expect(clampText("🎵".repeat(4000), 4000)).toHaveLength(8000);
+  });
+});
+

@@ -1,23 +1,27 @@
 "use client";
 
 /**
- * A song's variants (docs/SPEC.md §3 S6): each frozen snapshot with its parent, its coverage
- * per engine and its field diff, newest first. Any variant can be opened in the composer,
- * which is how a fork starts: the next freeze from that copy takes the variant as parent.
+ * A song's variants (docs/SPEC.md §3 S6, S7): each frozen snapshot with its parent, its
+ * coverage per engine, its field diff and its take log, newest first. Any variant can be
+ * opened in the composer, which is how a fork starts: the next freeze from that copy takes
+ * the variant as parent.
  */
 import { useEffect, useMemo, useState } from "react";
 
 import { ENGINE_PROFILES } from "@/core/musicspec/engines";
-import type { Variant } from "@/core/musicspec/ir/types";
+import type { Take, Variant } from "@/core/musicspec/ir/types";
 import { createLibraryClient } from "@/lib/library/client";
 import { coverageScores, describeChange, loadSong, songAttachment, type StoredSong } from "@/lib/library/songs";
 
 import { OpenInComposer } from "./OpenInComposer";
+import { TakeLog } from "./TakeLog";
 
 export function SongHistory({ songId }: { songId: string }) {
   const client = useMemo(() => createLibraryClient(), []);
-  const [data, setData] = useState<(StoredSong & { variants: Variant[] }) | null>(null);
+  const [data, setData] = useState<(StoredSong & { variants: Variant[]; takes: Take[] }) | null>(null);
   const [status, setStatus] = useState("");
+  // Bumped after a take is logged or deleted; the effect below reloads when it changes.
+  const [version, setVersion] = useState(0);
 
   useEffect(() => {
     let live = true;
@@ -32,7 +36,7 @@ export function SongHistory({ songId }: { songId: string }) {
     return () => {
       live = false;
     };
-  }, [client, songId]);
+  }, [client, songId, version]);
 
   const labels = new Map((data?.variants ?? []).map((v) => [v.id, v.label]));
   const base = data?.song.baseVariantId ? (data.variants.find((v) => v.id === data.song.baseVariantId) ?? null) : null;
@@ -93,6 +97,14 @@ export function SongHistory({ songId }: { songId: string }) {
                       <div className="row-actions">
                         <OpenInComposer label={`Open ${variant.label} in the composer`} open={async () => ({ spec: variant.specSnapshot, song: songAttachment(data, data.variants, variant) })} onError={setStatus} />
                       </div>
+                      <TakeLog
+                        client={client}
+                        variantId={variant.id}
+                        variantLabel={variant.label}
+                        takes={data.takes.filter((t) => t.variantId === variant.id)}
+                        onChanged={() => setVersion((v) => v + 1)}
+                        onStatus={setStatus}
+                      />
                     </li>
                   );
                 })}

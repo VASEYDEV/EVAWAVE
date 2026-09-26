@@ -366,6 +366,45 @@ button.danger {
   align-items: center;
 }
 
+/* The take log (S7) */
+.takes {
+  display: grid;
+  gap: var(--space-2);
+  padding-top: var(--space-2);
+  border-top: 1px solid var(--line);
+}
+
+.takes h5 {
+  margin: 0;
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.take-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: var(--space-2);
+}
+
+.take-list > li {
+  display: grid;
+  gap: var(--space-1);
+  padding-left: var(--space-3);
+  border-left: 3px solid var(--structure);
+  overflow-wrap: anywhere;
+}
+
+.take-list p {
+  margin: 0;
+}
+
+.take-form {
+  display: grid;
+  gap: var(--space-3);
+}
+
 .swatch {
   display: inline-block;
   width: 0.875rem;
