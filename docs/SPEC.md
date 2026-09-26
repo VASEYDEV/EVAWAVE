@@ -1531,8 +1531,9 @@ Delivered:
   for the reset. Metronome clicks come from a 25 ms tick with 100 ms lookahead,
   accenting beat 1, or beats 1 and 3 in half-time mode, with optional 8th or 16th
   clicks. The cursor is anchored to its beat, so changing the subdivision or meter while
-  it runs keeps the beat grid in phase; clicks missed during a stalled tick are skipped,
-  not played in a burst; and a second start while one is pending joins it.
+  it runs keeps the beat grid in phase; a tempo change takes effect at the next beat;
+  clicks missed during a stalled tick are skipped, not played in a burst; and a second
+  start while one is pending joins it.
   The controls sit in module 1 and `Assign` writes the rounded BPM with `source: 'tap'`.
 - **Lint:** PT-1 and PT-2 are spec-level rules and also run per patch
   (`lowConfidenceOps`, `protectedOps`). PV-1 is `lintStyleProfile`.
@@ -1540,8 +1541,8 @@ Delivered:
   - `/import`: file picker or drop, hashing, and Web Audio decoding. Import stores
     nothing. The file goes to OPFS (or an in-tab fallback) only when a durable reference
     to it exists: after a library save succeeds, or with a downloaded profile. So no
-    stored blob is ever unreachable. Deleting a file record in `/library` also removes
-    its local copy. A newer file choice aborts the import in flight at its next stage.
+    stored blob is ever unreachable. Deleting a file record in `/library` removes its
+    local copy first, and keeps the record if that fails. A newer file choice aborts the import in flight at its next stage.
     The profile's id is made on the device, so saving it twice writes one library row. It shows the measured features, then a per-field review with
     low-confidence suggestions left unticked. The resulting profile carries the PV-1
     badge, can be saved to the library (file metadata and the profile only, through

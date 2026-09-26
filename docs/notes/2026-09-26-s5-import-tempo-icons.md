@@ -183,3 +183,13 @@ S5 per SPEC §3. The methods are listed in SPEC §3 S5 "Delivered".
   1/N, so ordinary 5.1 (1/6) fell under it and read one channel. The floor is now half of
   1/N: 0.25 for stereo as before, and about 0.083 for 5.1. A six-channel test reads the
   mix; it fails on the old floor.
+- **Twelfth review.**
+  - **A BPM change mid-beat** re-read the beat in progress at the new tempo. At 120 BPM
+    with 16ths through 0.25 s, a switch to 240 BPM treated 0.25 s as the next beat. The
+    cursor now carries the length of the beat in progress, so that beat finishes at its
+    own tempo and the new BPM applies from the next downbeat. A test pins the times; it
+    fails on the old scheduler.
+  - **OPFS removal errors were swallowed.** `removeLocalAudio` now ignores only a missing
+    OPFS and not-found, and rethrows anything else. `/library` removes the local copy
+    before the row, so a failure keeps the record and its hash for a retry. A test with
+    a locked entry expects the rejection; it fails on the old code.
