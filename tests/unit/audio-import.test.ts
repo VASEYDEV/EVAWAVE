@@ -46,13 +46,9 @@ function recorder() {
   return { requests, fetchMock };
 }
 
-const nodeDeps = (store: Map<string, Blob>): ImportDeps => ({
+const nodeDeps = (): ImportDeps => ({
   decode: async (bytes) => decodeWav(bytes),
   digest: sha256Hex,
-  store: async (sha, blob) => {
-    store.set(sha, blob);
-    return "memory";
-  },
   now: () => "2026-09-26T12:00:00.000Z",
 });
 
@@ -75,13 +71,12 @@ describe("audio import (§1.7)", () => {
   it("yields a reviewed audio-analysis StyleProfile, and no request carries audio", async () => {
     const { requests, fetchMock } = recorder();
     vi.stubGlobal("fetch", fetchMock);
-    const store = new Map<string, Blob>();
 
-    // Import: hash, store locally, decode, analyse, draft. No network at all.
-    const imported = await importAudio(file, nodeDeps(store));
+    // Import: hash, decode, analyse, draft. No network at all, and nothing stored: the screen
+    // keeps the blob only when a profile is created from it.
+    const imported = await importAudio(file, nodeDeps());
     expect(requests).toEqual([]);
-    expect(store.get(imported.asset.sha256)).toBe(file);
-    expect(imported.asset).toEqual(expect.objectContaining({ kind: "audio", filename: "desert-loop.wav", bytes: wav.byteLength, localOnly: true, storedIn: "memory" }));
+    expect(imported.asset).toEqual({ kind: "audio", filename: "desert-loop.wav", mime: "audio/wav", bytes: wav.byteLength, sha256: await sha256Hex(wav), localOnly: true });
     expect(imported.patch.status).toBe("proposed");
 
     // Review: accept every op, then apply to the profile base.
@@ -122,25 +117,27 @@ describe("audio import (§1.7)", () => {
 });
 
 describe("import order", () => {
-  it("stores nothing when the file cannot be decoded, so no orphan is left on the device", async () => {
-    const store = new Map<string, Blob>();
+  it("rejects a file that cannot be decoded before any analysis", async () => {
+    const now = vi.fn(() => "2026-09-26T12:00:00.000Z");
     const deps: ImportDeps = {
-      ...nodeDeps(store),
+      ...nodeDeps(),
+      now,
       decode: async () => {
         throw new WavError("not a RIFF/WAVE file");
       },
     };
     await expect(importAudio(new File([new Uint8Array([1, 2, 3])], "broken.wav"), deps)).rejects.toThrow(WavError);
-    expect(store.size).toBe(0);
+    expect(now).not.toHaveBeenCalled();
   });
 });
 
 describe("a superseded import", () => {
-  it("stops before analysis and stores nothing once a newer choice aborts it", async () => {
-    const store = new Map<string, Blob>();
+  it("stops before analysis once a newer choice aborts it", async () => {
     const controller = new AbortController();
+    const now = vi.fn(() => "2026-09-26T12:00:00.000Z");
     const deps: ImportDeps = {
-      ...nodeDeps(store),
+      ...nodeDeps(),
+      now,
       decode: async (bytes) => {
         // The person picks another file while this one decodes.
         controller.abort();
@@ -148,7 +145,7 @@ describe("a superseded import", () => {
       },
     };
     await expect(importAudio(file, deps, controller.signal)).rejects.toThrow(/abort/i);
-    expect(store.size).toBe(0);
+    expect(now).not.toHaveBeenCalled();
   });
 });
 

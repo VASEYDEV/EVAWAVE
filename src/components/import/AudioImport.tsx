@@ -11,7 +11,7 @@ import { applyReviewedPatch, audioProfileBase, AUDIO_DRAFT_MODEL, reviewPatch } 
 import type { StyleProfile } from "@/core/musicspec/ir/types";
 import { lintStyleProfile, lowConfidenceOps } from "@/core/musicspec/lint";
 import { catalog } from "@/data/taxonomy";
-import { browserImportDeps } from "@/lib/audio/browser";
+import { browserImportDeps, storeInOpfs } from "@/lib/audio/browser";
 import { importAudio, type ImportResult } from "@/lib/audio/import";
 import { createLibraryClient } from "@/lib/library/client";
 import { saveImport } from "@/lib/library/repository";
@@ -47,7 +47,8 @@ export function AudioImport() {
   const [name, setName] = useState("");
   const [profile, setProfile] = useState<StyleProfile | null>(null);
   const [dragging, setDragging] = useState(false);
-  // A newer file choice aborts the import in flight, so it neither lands nor stores anything.
+  const [source, setSource] = useState<File | null>(null);
+  // A newer file choice aborts the import in flight, so its analysis never lands.
   const inFlight = useRef<AbortController | null>(null);
 
   const lowConfidence = useMemo(() => new Set(result ? lowConfidenceOps(result.patch, "").map((r) => Number(r.path.split("/").pop())) : []), [result]);
@@ -59,6 +60,7 @@ export function AudioImport() {
     inFlight.current = controller;
     setResult(null);
     setProfile(null);
+    setSource(null);
     setStatus(`Analysing ${file.name} on this device…`);
     // Let the status paint before the analysis takes the main thread.
     await new Promise((resolve) => setTimeout(resolve, 0));
@@ -66,9 +68,10 @@ export function AudioImport() {
       const imported = await importAudio(file, { ...browserImportDeps, lineageNames: catalog.lineageNames }, controller.signal);
       if (controller.signal.aborted) return;
       setResult(imported);
+      setSource(file);
       setAccepted(new Set(imported.patch.ops.filter((o) => o.confidence >= 0.5).map((o) => o.path)));
       setName(file.name.replace(/\.[^.]+$/, ""));
-      setStatus(`Analysed ${file.name}. Stored ${imported.asset.storedIn === "opfs" ? "in this browser's private storage" : "in memory for this tab only"}. Review the proposed fields below.`);
+      setStatus(`Analysed ${file.name} on this device. Review the proposed fields below; nothing is kept until you create a profile.`);
     } catch (error) {
       if (controller.signal.aborted) return;
       setStatus(`Could not analyse ${file.name}: ${error instanceof Error ? error.message : "unknown error"}. Try a WAV, MP3, AAC or FLAC file.`);
@@ -81,10 +84,15 @@ export function AudioImport() {
     void handle(event.dataTransfer.files[0]);
   };
 
-  const createProfile = () => {
-    if (!result) return;
+  const createProfile = async () => {
+    if (!result || !source) return;
+    const controller = inFlight.current;
     const reviewed = reviewPatch(result.patch, accepted);
     const { doc } = applyReviewedPatch(audioProfileBase(), reviewed);
+    // The blob is kept on the device only now, when the person keeps a profile from it (§1.7,
+    // A6), so abandoned, failed or superseded imports leave nothing in storage.
+    const storedIn = await storeInOpfs(result.asset.sha256, source);
+    if (controller?.signal.aborted) return;
     setProfile({
       id: `local-${result.asset.sha256.slice(0, 12)}`,
       ownerId: "local",
@@ -97,7 +105,9 @@ export function AudioImport() {
       createdAt: result.analysedOn,
       updatedAt: result.analysedOn,
     });
-    setStatus(`Style profile created from ${reviewed.acceptedPaths.length} accepted field(s).`);
+    setStatus(
+      `Style profile created from ${reviewed.acceptedPaths.length} accepted field(s). The audio stays ${storedIn === "opfs" ? "in this browser's private storage" : "in memory for this tab only"}.`,
+    );
   };
 
   const save = async () => {
@@ -221,7 +231,7 @@ export function AudioImport() {
           <div className="add-row">
             <label htmlFor={nameId}>Profile name</label>
             <input id={nameId} type="text" value={name} onChange={(e) => setName(e.target.value)} />
-            <button type="button" onClick={createProfile}>
+            <button type="button" onClick={() => void createProfile()}>
               Create style profile
             </button>
           </div>

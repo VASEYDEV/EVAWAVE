@@ -1,8 +1,10 @@
 /**
  * Audio import to a draft StyleProfile patch (docs/SPEC.md §1.7). Everything runs on the
- * device: the file is hashed, decoded and analysed here, and kept in local storage only once
- * that succeeds. Only metadata and features ever leave (A6). The steps that touch the platform are injected, so
- * tests can run the same pipeline and prove no request carries audio.
+ * device: the file is hashed, decoded and analysed here, and only metadata and features ever
+ * leave (A6). Import itself stores nothing. The screen keeps the blob on the device when the
+ * person creates a profile from it, so an abandoned, failed or superseded import leaves
+ * nothing behind. The steps that touch the platform are injected, so tests can run the same
+ * pipeline and prove no request carries audio.
  */
 import { analyseAudio } from "@/core/musicspec/analysis/features";
 import type { PcmAudio } from "@/core/musicspec/analysis/wav";
@@ -10,12 +12,10 @@ import { draftFromAudio } from "@/core/musicspec/intake";
 import type { AudioFeatures, IRPatch } from "@/core/musicspec/ir/types";
 
 export interface ImportDeps {
-  /** Decodes the file's bytes to mono PCM (Web Audio in the browser). */
+  /** Decodes the file's bytes to PCM, keeping the channels (Web Audio in the browser). */
   decode(bytes: ArrayBuffer): Promise<PcmAudio>;
   /** Hex sha256 of the bytes, for dedupe and as the local key. */
   digest(bytes: ArrayBuffer): Promise<string>;
-  /** Keeps the blob on the device (OPFS); resolves to where it went. */
-  store(sha256: string, file: Blob): Promise<"opfs" | "memory">;
   /** The time the analysis ran, ISO 8601; the core never reads the clock. */
   now(): string;
   lineageNames?: readonly string[];
@@ -28,7 +28,6 @@ export interface ImportedAsset {
   bytes: number;
   sha256: string;
   localOnly: true;
-  storedIn: "opfs" | "memory";
 }
 
 export interface ImportResult {
@@ -39,9 +38,8 @@ export interface ImportResult {
 }
 
 /**
- * Hashes, decodes and analyses `file`, then keeps it on the device and drafts the patch.
- * Aborting `signal` (a newer file choice) stops it before analysis and before anything is
- * stored; the promise then rejects with the signal's reason.
+ * Hashes, decodes and analyses `file` and drafts the patch. Aborting `signal` (a newer file
+ * choice) stops it before analysis; the promise then rejects with the signal's reason.
  */
 export async function importAudio(file: File, deps: ImportDeps, signal?: AbortSignal): Promise<ImportResult> {
   const bytes = await file.arrayBuffer();
@@ -49,14 +47,10 @@ export async function importAudio(file: File, deps: ImportDeps, signal?: AbortSi
   const pcm = await deps.decode(bytes);
   signal?.throwIfAborted();
   const features = analyseAudio(pcm.samples, pcm.sampleRate, pcm.channelData);
-  // Kept only once it decoded and analysed and is still wanted, so a corrupt, unsupported
-  // or superseded file leaves nothing behind in the device's storage.
-  signal?.throwIfAborted();
-  const storedIn = await deps.store(sha256, file);
   const analysedOn = deps.now();
   const patch = draftFromAudio(features, { createdAt: analysedOn, sourceRef: sha256 }, deps.lineageNames ?? []);
   return {
-    asset: { kind: "audio", filename: file.name, mime: file.type || "application/octet-stream", bytes: bytes.byteLength, sha256, localOnly: true, storedIn },
+    asset: { kind: "audio", filename: file.name, mime: file.type || "application/octet-stream", bytes: bytes.byteLength, sha256, localOnly: true },
     features,
     patch,
     analysedOn,

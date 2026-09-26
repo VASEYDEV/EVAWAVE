@@ -1,3 +1,5 @@
+import { createHash } from "node:crypto";
+
 import AxeBuilder from "@axe-core/playwright";
 import { expect, test } from "@playwright/test";
 
@@ -28,9 +30,25 @@ test("imports a WAV into a reviewed audio-analysis style profile, sending no aud
   await expect(page.getByLabel("Accept /D6/tempo")).toBeChecked();
   await expect(page.getByLabel("Accept /D6/key")).toBeChecked();
 
+  // Import alone keeps nothing; creating the profile keeps the blob in OPFS under its sha256.
+  const sha256 = createHash("sha256").update(wav).digest("hex");
+  const kept = () =>
+    page.evaluate(async (name) => {
+      try {
+        const dir = await (await navigator.storage.getDirectory()).getDirectoryHandle("audio");
+        await dir.getFileHandle(name);
+        return true;
+      } catch {
+        return false;
+      }
+    }, sha256);
+  expect(await kept()).toBe(false);
+
   await page.getByRole("button", { name: "Create style profile" }).click();
   await expect(page.getByTestId("provenance")).toHaveText("audio-analysis");
   await expect(page.getByTestId("profile-tempo")).toHaveText("140 BPM (analysis)");
+  await expect(page.getByRole("status")).toContainText("The audio stays in this browser's private storage.");
+  expect(await kept()).toBe(true);
 
   const results = await new AxeBuilder({ page }).withTags(TAGS).analyze();
   expect(results.violations.map((v) => v.id)).toEqual([]);
