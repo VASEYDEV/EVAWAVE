@@ -270,6 +270,28 @@ S5 per SPEC §3. The methods are listed in SPEC §3 S5 "Delivered".
   - **Quad weights.** Four channels now weigh L R Ls Rs as 1, 1, 1.41, 1.41. That is Web
     Audio's quad layout and libebur128's default map for four channels. The layout test
     covers quad.
+- **Twenty-third review.** Each fix ships with a test that fails on the old code, or under
+  a mutation.
+  - **Filenames over 255 characters.** A scripted or virtual-filesystem `File` could carry
+    a longer name, and every library save then failed the `files.filename` check.
+    `recordFilename` now cuts names to `FILENAME_MAX` (255), keeping a short extension.
+    It counts code points, as Postgres does, so no emoji is split. The RLS suite ties the
+    constant to the migration: 255 is accepted through `save_import`, and 256 is refused.
+  - **The tap reset timed from the last kept tap.** A discarded tap 1.9 s after the last
+    kept one cleared the display 100 ms later. `lastTapAt` returns the latest tap, kept
+    or discarded. `tapsExpired`, the reset in `tap` and the display timer in
+    `TempoTools` all run from it. Timing `tapsExpired` from the kept tap fails the test.
+  - **The owner of a save.** If another tab switched accounts between `getSession()` and
+    the RPC, the rows went to the new account but the blob went under the old one.
+    `save_import` now returns the owner the rows were written for. It is named `owner`,
+    because a `returns table` column called `owner_id` would clash with the upsert's
+    conflict target. `keepAudioFor(ownerId)` keeps the audio only when that owner is the
+    account whose turn the save holds. Otherwise the status says the audio was not kept.
+    Tests: the RLS suite checks that the returned owner is the caller, and a unit test
+    checks that a mismatched owner stores nothing. Making it store anyway fails that test.
+  - **Listed, not fixed (CLAUDE.md §1.1):** `profileName` (S4's limit, reused here)
+    slices UTF-16 units, so a name with an emoji straddling character 200 could end in a
+    lone surrogate. Counting code points, as `recordFilename` does, is the follow-up.
 
 ## Decisions
 

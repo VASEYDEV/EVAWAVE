@@ -16,7 +16,8 @@ project is configured, the library and sign-in pages say so and nothing else cha
    `node scripts/build-genre-seed.mjs` from `src/data/taxonomy/genres.json`, and running
    it again updates the records. `20260926000200_save_import.sql` adds
    `public.save_import`, which saves an audio import's file metadata and style profile
-   in one transaction under RLS (security invoker; `authenticated` only).
+   in one transaction under RLS (security invoker; `authenticated` only) and returns the
+   file id, the profile id and the owner the rows were written for.
 3. Optional: regenerate the typed schema with
    `supabase gen types typescript --project-id <ref>`. Compare it with
    `src/lib/library/schema.ts`; the RLS test pins the column lists.

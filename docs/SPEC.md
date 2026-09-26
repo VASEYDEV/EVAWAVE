@@ -147,7 +147,7 @@ engine). Udio: none.
   auditions as 70); subdivision click off, 8ths or 16ths; volume.
 - **Tap tempo**: BPM = 60,000 ÷ the mean interval across the **last 4 taps** (3
   intervals). A tap whose interval is more than ±25 % from the running mean is discarded.
-  2 s without a tap resets. The display shows live BPM with the half- and double-time
+  2 s without a tap, kept or discarded, resets. The display shows live BPM with the half- and double-time
   candidates. **Assign** writes the rounded integer to `D6.tempo.bpm` with
   `source: 'tap'`.
 - Bar math updates immediately (§2.5).
@@ -1551,6 +1551,9 @@ Delivered:
     A downloaded profile cites the audio by its sha256. Saving goes
     through `public.save_import`, which writes the file metadata and the profile in one
     transaction under RLS, so saving twice writes one row and a failure leaves neither.
+    It returns the owner the rows were written for, and the audio is kept only when that
+    is the account whose turn the save holds. Filenames are cut to the library's 255
+    characters, counted as code points and keeping the extension.
     Deleting a file record in `/library` removes its local copy first, keeping the record
     if that fails, and restores the copy if deleting the record then fails. Deletes of the
     same file never overlap: a second in the same tab joins the first, and tabs take turns
