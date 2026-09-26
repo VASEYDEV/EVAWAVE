@@ -112,7 +112,7 @@ export function SectionsModule() {
   const labelId = useId();
   const sections = spec.D7.sections;
   return (
-    <Module number={9} title="Sections" owns="D7 sections: bars, scope, cues, dynamics, pocket">
+    <Module number={9} icon="sections" title="Sections" owns="D7 sections: bars, scope, cues, dynamics, pocket">
       <datalist id="cue-refs">
         {cueRefOptions(catalog).map((o) => (
           <option key={o.value} value={o.value}>
@@ -196,7 +196,7 @@ export function TransitionsModule() {
   const base = `/D7/sections/${index}`;
   const lock = spec.D6.meterLock;
   return (
-    <Module number={8} title="Transitions" owns="D7 block rule, pickups, silence drops, contrast phrases">
+    <Module number={8} icon="transitions" title="Transitions" owns="D7 block rule, pickups, silence drops, contrast phrases">
       <OptionalBlock
         label="State a block transition rule"
         present={Boolean(spec.D7.blockRule)}

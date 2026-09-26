@@ -1,0 +1,6 @@
+<!-- EVAWAVE module icon "textures" (provisional). Generated from assets/icons/modules.json; do not edit. -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400" fill="none" stroke="currentColor" stroke-width="22" stroke-linecap="round" stroke-linejoin="round">
+  <path d="M50 140 C100 100 150 180 200 140 S300 100 350 140"/>
+  <path d="M50 210 C100 170 150 250 200 210 S300 170 350 210"/>
+  <path d="M50 280 C100 240 150 320 200 280 S300 240 350 280"/>
+</svg>

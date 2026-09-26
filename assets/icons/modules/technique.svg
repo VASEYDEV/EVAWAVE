@@ -1,0 +1,7 @@
+<!-- EVAWAVE module icon "technique" (provisional). Generated from assets/icons/modules.json; do not edit. -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400" fill="none" stroke="currentColor" stroke-width="22" stroke-linecap="round" stroke-linejoin="round">
+  <ellipse cx="130" cy="290" rx="38" ry="28"/>
+  <ellipse cx="280" cy="260" rx="38" ry="28"/>
+  <path d="M168 290 V130 M318 260 V100"/>
+  <path d="M110 110 C170 40 270 40 330 80"/>
+</svg>

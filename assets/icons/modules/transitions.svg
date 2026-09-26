@@ -1,0 +1,6 @@
+<!-- EVAWAVE module icon "transitions" (provisional). Generated from assets/icons/modules.json; do not edit. -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400" fill="none" stroke="currentColor" stroke-width="22" stroke-linecap="round" stroke-linejoin="round">
+  <path d="M60 320 L260 120"/>
+  <path d="M190 120 H260 V190"/>
+  <path d="M320 80 V320"/>
+</svg>

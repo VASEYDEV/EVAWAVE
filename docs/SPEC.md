@@ -147,9 +147,9 @@ engine). Udio: none.
   auditions as 70); subdivision click off, 8ths or 16ths; volume.
 - **Tap tempo**: BPM = 60,000 ÷ the mean interval across the **last 4 taps** (3
   intervals). A tap whose interval is more than ±25 % from the running mean is discarded.
-  2 s without a tap resets. The display shows live BPM with the half- and double-time
+  2 s without a tap, kept or discarded, resets. The display shows live BPM with the half- and double-time
   candidates. **Assign** writes the rounded integer to `D6.tempo.bpm` with
-  `source: 'tap'`.
+  `source: 'tap'`, when it is inside the tempo field's 20–300 BPM.
 - Bar math updates immediately (§2.5).
 
 ### 1.9 Module iconography
@@ -212,8 +212,47 @@ end-to-end Jinn rebuild through the UI with an A/B Suno render.
   rhythm key lists zar/ayyub and malfuf as 2/4, so `src/data/taxonomy/rhythms.json` records
   them as `meter: '2/4'` with the seed's `fourFourSafe: true`, and ML-2 blocks them under a
   4/4 lock on the meter check. `fourFourSafe` still decides for a 4/4 rhythm.
-- **Tagging model** for audio import (§1.7 step 3).
-- **iOS PWA storage**: OPFS quota and eviction for reference audio.
+- **Tagging model** for audio import (§1.7 step 3). v1 ships the null tagger (`tags: []`).
+- **Share-sheet import** (§1.7 step 1) needs a PWA manifest with `share_target`. The PWA
+  tooling is not set up (A15), so S5 ships file picker and drag and drop only.
+- ~~**Analysis off the main thread.**~~ Resolved in S5. Analysis runs in a Web Worker.
+  Turbopack (Next 16.3.6) copies a `new URL("./x.ts", import.meta.url)` worker as a raw
+  asset instead of bundling it, so `scripts/build-analysis-worker.mjs` bundles it into
+  `public/workers/analysis.worker.js` (generated, with `--check`). Revisit when Turbopack
+  bundles workers.
+- **Loudness at rates other than 48 kHz** uses the RBJ equivalents of the K-weighting
+  filters, as pyloudnorm does: within 0.2 LU of the 48 kHz reference in the tests.
+- **iOS PWA storage**: OPFS quota and eviction for reference audio. Browsers without OPFS
+  `createWritable` keep the blob in the tab's memory; the import says which.
+- **Import size.** Web Audio decodes the whole file before analysis, every channel at once,
+  at a fixed 48 kHz: an offline context resamples, where a live one would decode at the
+  device's rate (192 kHz on some audio interfaces). A 3-minute stereo track is about 69 MB
+  of decoded samples plus a 35 MB mono mix. Analysis adds about 21 MB of peak memory on
+  top (measured in Node; it was about 220 MB before the frame pass stopped keeping
+  spectra). Imports refuse files over 100 MiB before reading them: about 9.9 minutes of
+  16-bit 44.1 kHz stereo WAV, 6 minutes at 24-bit 48 kHz. They also refuse recordings over
+  10 minutes by the duration a media element reads from the metadata, because the encoded
+  size says little about the decoded size (a 100 MiB MP3 can hold 109 minutes). The
+  decode's peak memory is capped at about 346 MB (`IMPORT_MAX_DECODE_BYTES`, ten minutes of
+  stereo with its mono mix), counting every buffer live at the peak. While decoding, those
+  are the encoded file, which the decoder takes without a copy, and every decoded channel;
+  afterwards, the channels and, for more than one, their mix (`importLimitSeconds`). Mono
+  and stereo keep ten minutes at any size the byte cap allows; 5.1 runs to about 257
+  seconds and 7.1 to 200, less for a large file. Hashing copies the file once, briefly, at
+  most 210 MB. The channel count comes from the
+  container header (`analysis/channels.ts`: WAV, RF64, BW64, AIFF, FLAC, Ogg Opus, Vorbis
+  and FLAC, MP3, ADTS, MP4 with AAC, ALAC, Opus, FLAC or PCM, CAF, Matroska and WebM).
+  When the header does not say, the import assumes 32 channels, the most a Web Audio buffer
+  holds (Chromium refuses 33), so such a recording takes up to about 54 seconds. A recording
+  whose metadata gives no finite duration is refused, since nothing else bounds its decode.
+  Imports decode one at a time: Web Audio's decode takes no abort, so a newer file choice
+  waits for a superseded read and decode to settle before it reads. A streaming decoder
+  (WebCodecs) would lift the caps.
+- **Compound meters.** The analysis cannot name 6/8 or 12/8. Autocorrelation at 43 frames per
+  second is too spiky for the 3-against-6-beat comparison that would tell 3/4 from a 6/8
+  bar; two variants were tried and both misread plain meters. Intake therefore proposes 3/4
+  unticked, noting 6/8. Beat-synchronous accent analysis (beat-phase tracking) is the
+  upgrade.
 - **Lockup**: `EVAWAVE` vs `EVA/WAVE`.
 
 ---
@@ -911,13 +950,20 @@ export interface StyleProfile {
   ownerId: string;
   name: string;
   provenance: Provenance;
-  spec: Partial<Pick<MusicSpec, 'D1' | 'D2' | 'D3' | 'D4' | 'D5' | 'D6' | 'D8' | 'D9'>>;
+  spec: StyleProfileSpec;
   features?: AudioFeatures;                         // present when provenance.kind is 'audio-analysis'
   genreIds: string[];
   tags: string[];
   createdAt: string;
   updatedAt: string;
 }
+
+// Whole D1–D5, D8 and D9 modules, and only the D6 fields the profile sets: an audio-analysis
+// profile holds just the traits the person accepted, so a rejected tempo, meter or key is
+// absent rather than a default (120 BPM, 4/4, C Ionian).
+export type StyleProfileSpec = Partial<Pick<MusicSpec, 'D1' | 'D2' | 'D3' | 'D4' | 'D5' | 'D8' | 'D9'>> & {
+  D6?: Partial<Omit<TheoryProfile, 'meterLock'>> & { meterLock?: Partial<MeterLock> };
+};
 
 export interface ReferenceAsset {
   id: string;
@@ -1207,7 +1253,7 @@ engine: `engine-unknown` covers no profile, `engine-halted` covers a stub (Udio,
 | OV-1 | A `TargetOverride` whose `basedOnCompiledHash` is stale | warn | S2 |
 | PT-1 | A patch op with `confidence < 0.5` | info (low-confidence in the diff) | S5 |
 | PT-2 | A patch op targeting `references` or `patches` | block | S5 |
-| PV-1 | An audio-analysis StyleProfile with `features.bpm.confidence < 0.6` | info (low-confidence badge until a human edits tempo) | S5 |
+| PV-1 | An audio-analysis StyleProfile with `features.bpm.confidence < 0.6` and an analysed tempo | info (low-confidence badge until a human edits tempo) | S5 |
 
 LN-1 reads a curated name denylist (data). Fixtures and tests use invented names only.
 
@@ -1479,3 +1525,106 @@ Delivered:
 Acceptance: an imported WAV yields a StyleProfile with `provenance.kind =
 'audio-analysis'`, reviewed as a patch diff. The tap tempo vectors pass. Every module
 header shows its hue and icon.
+
+Delivered:
+
+- **Analysis** (`src/core/musicspec/analysis/`), pure and deterministic:
+  - tempo: spectral-flux onsets with autocorrelation over 60–200 BPM and a 120 BPM
+    log-normal prior, the value folded by octaves into 60–200 BPM (a 58 BPM pulse reads
+    116, with 58 as its half-time candidate). The sub-frame fit applies only at a local
+    autocorrelation peak and stays inside the search, so a beatless swell cannot push the
+    lag to zero or below. A tempo needs evidence of a beat: an onset envelope that moves
+    (a spread of at least 5, which a steady tone, fade or held chord never reaches) and a
+    raw autocorrelation peak within two lags of the winner (a swell has none). Otherwise
+    no tempo is proposed. Confidence is capped by that peak's strength (full at 0.5), so a
+    beat buried in noise, or noise itself, starts unticked;
+  - meter: an accent envelope at 4-beat against 3-beat lags. A three-beat grouping may be
+    half a 6/8 bar counted in eighths, so intake proposes 3/4 at no more than 0.4
+    confidence (unticked) and names 6/8;
+  - key: chroma against the Krumhansl–Kessler profiles;
+  - loudness: BS.1770 K-weighting per channel, summed with the channel weights (1.41 on
+    quad, 5.0 and 5.1 surrounds and 7.1 side surrounds, LFE left out), with gating, and the
+    loudness range from 3 s windows gated per EBU Tech 3342;
+  - energy per 4 bars of the detected meter, sections by energy change, and spectral
+    descriptors;
+  - a WAV decoder and encoder.
+
+  Memory stays bounded: the frame pass keeps running sums, not spectra, and loudness
+  keeps one energy sum per 100 ms. In the browser the analysis runs in a Web Worker
+  (`public/workers/analysis.worker.js`, bundled from `src/lib/audio/analysis.worker.ts`),
+  which a newer file choice terminates. Tempo, key and spectrum read the mono mix unless phase
+  cancellation took most of its energy (under half the 1/N of the channels' mean energy
+  that an average of N uncorrelated channels keeps); then they read the loudest channel.
+
+  Vectors: a −20 dBFS 1 kHz sine at 48 kHz reads −23.01 LUFS; click tracks give their
+  tempo within 1.5 BPM and their 4/4 or 3/4 accents; triads give their key.
+- **Intake** (`intake.ts`):
+  - `draftFromAudio` maps features to a proposed `IRPatch`: tempo, meter, key, mood words
+    at 0.4 confidence (PT-1), and measured character.
+  - `reviewPatch` and `applyReviewedPatch` apply accepted paths only. A proposed or
+    rejected patch changes nothing, and protected roots are refused (PT-2).
+  - A profile starts from the default D1–D6, D8 and D9.
+- **Tempo** (`tempo.ts`): tap tempo is the mean of the last 3 intervals, and nothing
+  reads (or can be assigned) until 4 taps are in. An interval more than ±25 % off the
+  running mean is discarded, and a 2 s gap resets. A second discard in a row starts a
+  new sequence from that tap, so a tempo change or a late tap recovers without waiting
+  for the reset. So does a move to double time, whose every other tap lands on the old
+  grid: a tap after a discard that fits the old grid, but keeps the discarded tap's
+  new, off-grid interval, starts again from the discarded tap. Metronome clicks come from a 25 ms tick with 100 ms lookahead,
+  accenting beat 1, or beats 1 and 3 in half-time mode, with optional 8th or 16th
+  clicks, counted in note values against the meter's beat unit (16ths are 2 per beat in
+  6/8, and 8ths there are the beat itself). The cursor is anchored to its beat, so changing the subdivision or meter while
+  it runs keeps the beat grid in phase; a tempo change takes effect at the next beat to
+  sound, even one whose downbeat the lookahead has already scheduled, since a settings
+  change drops the clicks queued on the old settings and schedules again;
+  clicks missed during a stalled tick are skipped, not played in a burst; and a second
+  start while one is pending joins it.
+  The controls sit in module 1 and `Assign` writes the rounded BPM with `source: 'tap'`.
+- **Lint:** PT-1 and PT-2 are spec-level rules and also run per patch
+  (`lowConfidenceOps`, `protectedOps`). PV-1 is `lintStyleProfile`.
+- **App:**
+  - `/import`: file picker or drop (files up to 100 MiB), hashing, Web Audio decoding,
+    then analysis in the worker. A newer file choice, or leaving the page, aborts the import in flight at its
+    next stage and terminates the worker. It shows the measured features, then a
+    per-field review with low-confidence suggestions left unticked. Create makes the
+    profile in memory, with the PV-1 badge, a device-made id and a name capped at 200
+    characters. The profile holds only the accepted fields: a tempo, meter or key not
+    proposed or not accepted is absent, not a default (`StyleProfileSpec`, §2.2). The
+    profile follows the review and the name after Create, keeping its id
+    (`profileFromReview`), so Save and Download send what the page shows.
+    Recordings over 10 minutes by their metadata, of a length the metadata does not give,
+    or past the decode memory budget for the channel count their header declares, are
+    refused before they are read. Decoding runs
+    at a fixed 48 kHz. Import, Create and Download store nothing: the file goes to OPFS (or an
+    in-tab fallback) only after a library save succeeds, because a library record is the
+    one reference the app can later remove it by, so no stored blob is ever unreachable.
+    A downloaded profile cites the audio by its sha256. Saving goes
+    through `public.save_import`, which writes the file metadata and the profile in one
+    transaction under RLS, so saving twice writes one row and a failure leaves neither.
+    It returns the owner the rows were written for, and the audio is kept only when that
+    is the account whose turn the save holds. Filenames are cut to the library's 255
+    characters, counted as code points and keeping the extension, and a MIME type over
+    120 characters becomes `application/octet-stream`. When a record is deleted, or
+    OPFS takes a file, other tabs are told (BroadcastChannel) to drop any in-memory copy
+    they hold. Each `/library` load also removes this device's copies whose record was
+    deleted elsewhere, in OPFS or in this tab's memory. It checks each one first, holding
+    its turn, through `public.file_record`. That call returns the caller's id, so a check
+    that ran as another account keeps the copy.
+    Deleting a file record in `/library` removes its local copy first, keeping the record
+    if that fails, and restores the copy if deleting the record then fails, saying so if
+    it can only be put back in this tab. Deletes of the
+    same file never overlap: a second in the same tab joins the first, and tabs take turns
+    on a Web Lock. A browser without Web Locks keeps no audio on the device, since a save
+    and a delete in two tabs could then leave a copy with no record. Local copies
+    are kept per account, under `audio/<owner>/<sha256>`, so two accounts on one browser
+    that save the same file each keep their own copy.
+  - Module hues as `--mod-*` tokens. Provisional icons come from
+    `assets/icons/modules.json`, with standalone SVGs generated by
+    `scripts/build-module-icons.mjs`.
+- **Tests:**
+  - `tests/unit/audio-import.test.ts` records every fetch through import, review and a
+    real Supabase client's save. Import makes no request. The save sends two JSON rows
+    that carry no audio, in any encoding or alignment.
+  - E2e on the phone viewport covers the WAV import, tap tempo with a controlled clock,
+    and hue and icon on every module. There is also a no-sideways-scroll check on every
+    page.

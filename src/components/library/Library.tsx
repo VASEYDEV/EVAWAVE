@@ -7,6 +7,7 @@
 import { useEffect, useId, useMemo, useState } from "react";
 
 import type { MusicSpec } from "@/core/musicspec/ir/types";
+import { deleteWithLocalAudio, reconcileLocalAudio } from "@/lib/audio/browser";
 import { createLibraryClient } from "@/lib/library/client";
 import {
   createStyleProfile,
@@ -14,6 +15,7 @@ import {
   deleteFile,
   deleteStyleProfile,
   deleteTag,
+  hasFileRecord,
   loadLibrary,
   profileSpecFrom,
   setLink,
@@ -68,6 +70,13 @@ export function Library() {
     loadLibrary(client).then(
       (loaded) => {
         if (live) setData(loaded);
+        // Housekeeping: drop this device's copies whose record was deleted on another device.
+        // A failure leaves them for the next visit.
+        const known = new Set(loaded.files.map((f) => f.asset.sha256));
+        void client.auth
+          .getSession()
+          .then(({ data: { session } }) => (session ? reconcileLocalAudio(session.user.id, known, (sha256) => hasFileRecord(client, session.user.id, sha256)) : undefined))
+          .catch(() => undefined);
       },
       (error: unknown) => {
         if (live) setStatus(error instanceof Error ? error.message : "Could not load the library.");
@@ -141,7 +150,7 @@ export function Library() {
 
       <section className="panel" aria-labelledby="files-heading">
         <h3 id="files-heading">Files</h3>
-        <p className="hint">Metadata only: audio and images stay on this device (A6). Audio import arrives in S5.</p>
+        <p className="hint">Metadata only: audio and images stay on this device (A6). Deleting a record also removes its audio from this device.</p>
         {data?.files.length ? (
           <ul className="library-list">
             {data.files.map(({ asset, genreIds, tagIds }) => (
@@ -152,7 +161,13 @@ export function Library() {
                 </p>
                 <Links legend={`${asset.filename}: genres`} options={genreOptions} selected={genreIds} onToggle={(g, on) => void run("Update genres", () => setLink(client, "file_genres", asset.id, g, on))} />
                 <Links legend={`${asset.filename}: tags`} options={tagOptions} selected={tagIds} onToggle={(t, on) => void run("Update tags", () => setLink(client, "file_tags", asset.id, t, on))} />
-                <button type="button" className="danger" onClick={() => void run("Delete file record", () => deleteFile(client, asset.id))}>
+                <button
+                  type="button"
+                  className="danger"
+                  onClick={() =>
+                    void run("Delete file record", () => deleteWithLocalAudio({ ownerId: asset.ownerId, sha256: asset.sha256 }, () => deleteFile(client, asset.id)))
+                  }
+                >
                   Delete {asset.filename}
                 </button>
               </li>

@@ -1,0 +1,5 @@
+<!-- EVAWAVE module icon "intake" (provisional). Generated from assets/icons/modules.json; do not edit. -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400" fill="none" stroke="currentColor" stroke-width="22" stroke-linecap="round" stroke-linejoin="round">
+  <path d="M40 200 L80 200 L100 140 L130 270 L160 110 L190 290 L220 170 L240 200"/>
+  <path d="M340 80 H290 V320 H340"/>
+</svg>

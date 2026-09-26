@@ -101,10 +101,62 @@ export function toTag(row: TagRow): Tag {
   return { id: row.id, ownerId: row.owner_id, label: row.label, ...(row.colour ? { colour: row.colour } : {}) };
 }
 
+/** `style_profiles.name` holds 1–200 characters (the check in the library migration). */
+export const PROFILE_NAME_MAX = 200;
+
+/**
+ * A profile name the library accepts: the typed name, else the fallback, else "audio", cut
+ * to the limit in code points, as Postgres counts them, so no emoji is split into a lone
+ * surrogate.
+ */
+export function profileName(typed: string, fallback: string): string {
+  return Array.from(typed.trim() || fallback.trim() || "audio")
+    .slice(0, PROFILE_NAME_MAX)
+    .join("")
+    .trim();
+}
+
+/** `files.filename` holds 1–255 characters (the check in the library migration). */
+export const FILENAME_MAX = 255;
+
+/**
+ * A filename the library accepts: cut to FILENAME_MAX characters, counted as code points the
+ * way Postgres counts them (so no emoji is split), keeping a short extension; "audio" when the
+ * name is empty.
+ */
+export function recordFilename(name: string): string {
+  const chars = Array.from(name);
+  if (!chars.length) return "audio";
+  if (chars.length <= FILENAME_MAX) return name;
+  const dot = name.lastIndexOf(".");
+  const extension = dot > 0 ? Array.from(name.slice(dot)) : [];
+  const kept = extension.length <= 16 ? extension : [];
+  return [...chars.slice(0, FILENAME_MAX - kept.length), ...kept].join("");
+}
+
+/** `files.mime` holds 1–120 characters (the check in the library migration). */
+export const MIME_MAX = 120;
+
+/** A MIME type the library accepts: the file's own when it fits, else the generic binary type. */
+export function recordMime(type: string): string {
+  const trimmed = type.trim();
+  return trimmed && Array.from(trimmed).length <= MIME_MAX ? trimmed : "application/octet-stream";
+}
+
 /** The insert payload for a new style profile. The owner comes from the session (auth.uid()). */
 export function styleProfileInsert(profile: Pick<StyleProfile, "name" | "provenance" | "spec" | "features">): Pick<StyleProfileRow, "name" | "provenance" | "spec"> & { features?: AudioFeatures } {
   return { name: profile.name, provenance: profile.provenance, spec: profile.spec, ...(profile.features ? { features: profile.features } : {}) };
 }
+
+/**
+ * Arguments of `public.save_import` (supabase/migrations/20260926000200_save_import.sql): file
+ * metadata and the profile that cites it, never the audio. The profile `id` is made on the
+ * device when the profile is created, so saving it twice writes one row.
+ */
+export type SaveImportArgs = {
+  file: { filename: string; mime: string; bytes: number; sha256: string; features: AudioFeatures };
+  profile: { id: string; name: string; spec: StyleProfile["spec"]; analysedOn: string; model: string };
+};
 
 type LinkRow<K extends string> = { [P in K]: string } & { owner_id: string };
 type Table<Row, Insert> = { Row: Row; Insert: Insert; Update: Partial<Insert>; Relationships: [] };
@@ -118,7 +170,7 @@ export type Database = {
   public: {
     Tables: {
       genres: Table<GenreRow, never>;
-      style_profiles: Table<StyleProfileRow, { name: string; provenance: Provenance; spec?: StyleProfile["spec"]; features?: AudioFeatures | null }>;
+      style_profiles: Table<StyleProfileRow, { id?: string; name: string; provenance: Provenance; spec?: StyleProfile["spec"]; features?: AudioFeatures | null }>;
       files: Table<FileRow, { kind: FileRow["kind"]; filename: string; mime: string; bytes: number; sha256: string; features?: AudioFeatures | null; palette?: PaletteSwatch[] | null }>;
       tags: Table<TagRow, { label: string; colour?: string | null }>;
       style_profile_genres: Table<LinkRow<"profile_id" | "genre_id">, { profile_id: string; genre_id: string }>;
@@ -127,7 +179,10 @@ export type Database = {
       file_tags: Table<LinkRow<"file_id" | "tag_id">, { file_id: string; tag_id: string }>;
     };
     Views: { [_ in never]: never };
-    Functions: { [_ in never]: never };
+    Functions: {
+      save_import: { Args: SaveImportArgs; Returns: { file_id: string; profile_id: string; owner: string }[] };
+      file_record: { Args: { sha256: string }; Returns: { present: boolean; owner: string }[] };
+    };
     Enums: { [_ in never]: never };
     CompositeTypes: { [_ in never]: never };
   };

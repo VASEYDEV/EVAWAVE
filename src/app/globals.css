@@ -433,3 +433,137 @@ meter {
   border-radius: 50%;
   border: 1px solid var(--border);
 }
+
+/* Module hues (docs/SPEC.md §1.9): oklch(78% 0.14 H), one per module; Negative Space +
+ * Output is neutral. Used for the icon stroke, the header rule and the open glow. */
+:root {
+  --mod-form: oklch(78% 0.14 190);
+  --mod-key: oklch(78% 0.14 300);
+  --mod-drums: oklch(78% 0.14 60);
+  --mod-bundle: oklch(78% 0.14 35);
+  --mod-instruments: oklch(78% 0.14 340);
+  --mod-technique: oklch(78% 0.14 250);
+  --mod-textures: oklch(78% 0.14 270);
+  --mod-transitions: oklch(78% 0.14 120);
+  --mod-sections: oklch(78% 0.14 215);
+  --mod-mood: oklch(78% 0.14 20);
+  --mod-output: oklch(78% 0 0);
+  --mod-library: oklch(78% 0.14 160);
+  --mod-intake: oklch(78% 0.14 95);
+}
+
+.module {
+  border-top: 3px solid var(--hue, var(--border));
+}
+
+.module-icon {
+  width: 1.75rem;
+  height: 1.75rem;
+  flex: none;
+  color: var(--hue, var(--accent));
+}
+
+.module details[open] > summary .module-icon {
+  filter: drop-shadow(0 0 6px var(--hue, var(--accent)));
+}
+
+.page-icon {
+  width: 2rem;
+  height: 2rem;
+  color: var(--hue, var(--accent));
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.dropzone {
+  display: grid;
+  gap: 0.5rem;
+  padding: 1rem;
+  border: 2px dashed var(--hue, var(--border));
+  border-radius: var(--radius);
+}
+
+.dropzone.dragging {
+  background: var(--surface-2);
+}
+
+.features {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: 0.25rem 1rem;
+  margin: 0;
+}
+
+.features dt {
+  color: var(--text-muted);
+}
+
+.features dd {
+  margin: 0;
+}
+
+.review {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: var(--gap);
+}
+
+.review-item {
+  border-top: 1px solid var(--border);
+  padding-top: 0.75rem;
+  display: grid;
+  gap: 0.5rem;
+}
+
+.review-item dd {
+  overflow-wrap: anywhere;
+}
+
+.badge {
+  color: var(--warn);
+  font-size: 0.85rem;
+}
+
+.page h2 {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.tap {
+  min-width: 6rem;
+  font-weight: 600;
+}
+
+/* Grid children may shrink below their content's min-content width, so a wide table or
+ * long token scrolls inside its own box instead of widening the page on a phone. */
+.page > *,
+.import,
+.import > *,
+.library > *,
+.panel,
+.module-body > * {
+  min-width: 0;
+}
+
+.import {
+  display: grid;
+  gap: var(--gap);
+}
+
+
+.dropzone input[type="file"] {
+  width: 100%;
+}

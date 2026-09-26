@@ -40,6 +40,15 @@ Nothing in the app is usable yet. What exists today:
   level security keeps each user to their own rows, and a test proves it against the real
   migrations. It needs a Supabase project: see
   [`docs/runbooks/supabase.md`](docs/runbooks/supabase.md).
+- Audio import, from S5, at `/import`. A reference track is analysed on this device, in a
+  background worker so the page stays responsive:
+  tempo, meter, key, BS.1770 loudness, energy and spectrum. EVAWAVE proposes a style
+  profile field by field, you accept what you want, and the profile is saved to the
+  library or downloaded. The audio never leaves the device, and a test proves no request
+  carries it.
+- Tap tempo (the mean of the last four taps, with outliers dropped) and a Web Audio
+  metronome with half-time accents and subdivisions, in the composer's first module.
+- A hue and a provisional monoline icon for every module (`assets/icons/`).
 - An instrument bank of 336 records: the 24 curated Jinn records plus 312 generated
   deterministically from the seed (General MIDI programs and percussion, drum machines,
   world sets).

@@ -5,7 +5,7 @@ import { describe, expect, it } from "vitest";
 
 import type { MusicSpec } from "@/core/musicspec/ir/types";
 import { profileSpecFrom } from "@/lib/library/repository";
-import { toReferenceAsset, toStyleProfile, toTag, type FileRow, type StyleProfileRow } from "@/lib/library/schema";
+import { FILENAME_MAX, MIME_MAX, PROFILE_NAME_MAX, profileName, recordFilename, recordMime, toReferenceAsset, toStyleProfile, toTag, type FileRow, type StyleProfileRow } from "@/lib/library/schema";
 
 const spec = JSON.parse(readFileSync(fileURLToPath(new URL("../fixtures/jinn-v1.2.spec.json", import.meta.url)), "utf8")) as MusicSpec;
 
@@ -46,5 +46,42 @@ describe("library mappers", () => {
 
   it("maps a tag, dropping a null colour", () => {
     expect(toTag({ id: "t1", owner_id: "u1", label: "dark", colour: null, created_at: "x" })).toEqual({ id: "t1", ownerId: "u1", label: "dark" });
+  });
+});
+
+describe("profile names", () => {
+  it("keeps names inside the library's 200-character limit, from the typed name or the filename", () => {
+    expect(profileName("  Desert loop  ", "desert-loop.wav")).toBe("Desert loop");
+    expect(profileName("   ", "desert-loop.wav")).toBe("desert-loop.wav");
+    // A nameless file and no typed name still give the library a name.
+    expect(profileName("", "  ")).toBe("audio");
+    expect(profileName("x".repeat(250), "a.wav")).toHaveLength(PROFILE_NAME_MAX);
+    expect(profileName("", `${"y".repeat(240)}.wav`)).toHaveLength(PROFILE_NAME_MAX);
+    // An emoji straddling the limit is kept whole or dropped, never split.
+    const straddling = profileName(`${"x".repeat(PROFILE_NAME_MAX - 1)}🎵🎵`, "a.wav");
+    expect(Array.from(straddling)).toHaveLength(PROFILE_NAME_MAX);
+    expect(straddling.isWellFormed()).toBe(true);
+    expect(straddling.endsWith("🎵")).toBe(true);
+  });
+
+  it("keeps a MIME type the library accepts, else the generic binary type", () => {
+    expect(recordMime("audio/wav")).toBe("audio/wav");
+    expect(recordMime("")).toBe("application/octet-stream");
+    expect(recordMime(`audio/${"x".repeat(MIME_MAX)}`)).toBe("application/octet-stream");
+    expect(recordMime("a".repeat(MIME_MAX))).toHaveLength(MIME_MAX);
+  });
+
+  it("cuts filenames to the library's 255 characters, counted as Postgres counts them", () => {
+    expect(recordFilename("desert-loop.wav")).toBe("desert-loop.wav");
+    expect(recordFilename("")).toBe("audio");
+    const long = recordFilename(`${"z".repeat(300)}.wav`);
+    expect(long).toHaveLength(FILENAME_MAX);
+    expect(long.endsWith(".wav")).toBe(true);
+    // Emoji are one code point but two UTF-16 units: none is split, and none is counted twice.
+    const emoji = recordFilename(`${"🎵".repeat(300)}.flac`);
+    expect(Array.from(emoji)).toHaveLength(FILENAME_MAX);
+    expect(emoji.isWellFormed()).toBe(true);
+    expect(emoji.endsWith(".flac")).toBe(true);
+    expect(Array.from(recordFilename("🎵".repeat(FILENAME_MAX)))).toHaveLength(FILENAME_MAX);
   });
 });

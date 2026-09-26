@@ -1,0 +1,7 @@
+<!-- EVAWAVE module icon "drums" (provisional). Generated from assets/icons/modules.json; do not edit. -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400" fill="none" stroke="currentColor" stroke-width="22" stroke-linecap="round" stroke-linejoin="round">
+  <path d="M70 70 H330 V330 H70 Z M135 70 V330 M200 70 V330 M265 70 V330 M70 135 H330 M70 200 H330 M70 265 H330"/>
+  <circle cx="102" cy="102" r="12"/>
+  <circle cx="232" cy="167" r="12"/>
+  <circle cx="167" cy="297" r="12"/>
+</svg>

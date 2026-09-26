@@ -7,7 +7,7 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 
 import type { MusicSpec, Provenance, ReferenceAsset, StyleProfile, Tag } from "@/core/musicspec/ir/types";
 
-import { toReferenceAsset, toStyleProfile, toTag, type Database } from "./schema";
+import { toReferenceAsset, toStyleProfile, toTag, type Database, type SaveImportArgs } from "./schema";
 
 export type LibraryClient = SupabaseClient<Database>;
 
@@ -34,9 +34,9 @@ export class LibraryError extends Error {
   override name = "LibraryError";
 }
 
-function check<T>(result: { data: T | null; error: { message: string } | null }, what: string): T {
+function check<T>(result: { data: T; error: { message: string } | null }, what: string): NonNullable<T> {
   if (result.error) throw new LibraryError(`${what}: ${result.error.message}`);
-  if (result.data === null) throw new LibraryError(`${what}: no data`);
+  if (result.data === null || result.data === undefined) throw new LibraryError(`${what}: no data`);
   return result.data;
 }
 
@@ -99,8 +99,25 @@ export async function deleteTag(client: LibraryClient, id: string): Promise<void
   check(await client.from("tags").delete().eq("id", id).select("id"), "delete tag");
 }
 
+/**
+ * True unless `ownerId` definitely has no file record for `sha256`. The check runs through
+ * `public.file_record`, which answers under RLS for whoever the call runs as and says who that
+ * was: when another tab has switched accounts, it is not `ownerId`, the answer says nothing
+ * about `ownerId`'s records, and this returns true so the caller keeps the copy.
+ */
+export async function hasFileRecord(client: LibraryClient, ownerId: string, sha256: string): Promise<boolean> {
+  const { present, owner } = check(await client.rpc("file_record", { sha256 }).single(), "check file record");
+  return present || owner !== ownerId;
+}
+
+/**
+ * Deletes one file record, and rejects unless exactly that row went. RLS hides other owners'
+ * rows, so after the signed-in account changes, a delete of a row loaded earlier succeeds
+ * with no rows; the caller must see that as a failure, to keep (or restore) the local audio.
+ */
 export async function deleteFile(client: LibraryClient, id: string): Promise<void> {
-  check(await client.from("files").delete().eq("id", id).select("id"), "delete file");
+  const deleted = check(await client.from("files").delete().eq("id", id).select("id"), "delete file");
+  if (deleted.length !== 1) throw new LibraryError("delete file: no such record for this account; reload the library");
 }
 
 type LinkTable = "style_profile_genres" | "style_profile_tags" | "file_genres" | "file_tags";
@@ -122,4 +139,30 @@ export async function setLink(client: LibraryClient, table: LinkTable, ownerKey:
   } else {
     check(await client.from(table).delete().eq(a, ownerKey).eq(b, otherKey).select(), `unlink ${table}`);
   }
+}
+
+/** File metadata and an audio-analysis profile from an import (docs/SPEC.md §1.7). Never the audio. */
+export type ImportRecord = SaveImportArgs;
+
+/**
+ * Saves an import in one transaction through `public.save_import`: the file's metadata
+ * (upserted by sha256, so a re-import reuses the row) and the style profile that cites it
+ * (upserted by its device-made id, so a repeated save writes one row). A failure part-way
+ * leaves neither row, and RLS keeps another owner's id from being reused. Only this JSON is
+ * sent; the blob stays on the device (A6).
+ */
+export async function saveImport(client: LibraryClient, record: ImportRecord): Promise<{ fileId: string; profileId: string; ownerId: string }> {
+  const saved = check(await client.rpc("save_import", record).single(), "save import");
+  return { fileId: saved.file_id, profileId: saved.profile_id, ownerId: saved.owner };
+}
+
+/**
+ * Saves an import, then keeps its audio on the device with `store`. The saved file row is the
+ * durable reference the local copy needs (and /library's delete removes both), so nothing is
+ * stored when the save fails. `store` gets the owner the rows were written for, which is the
+ * account the call ran as, not the one read before it. Resolves to where the audio went.
+ */
+export async function saveImportAndKeepAudio<Where>(client: LibraryClient, record: ImportRecord, audio: Blob, store: (saved: { ownerId: string; sha256: string }, blob: Blob) => Promise<Where>): Promise<Where> {
+  const { ownerId } = await saveImport(client, record);
+  return store({ ownerId, sha256: record.file.sha256 }, audio);
 }
