@@ -6,9 +6,7 @@ import type {
   BlockTransitionRule,
   Catalog,
   ContrastPhrase,
-  CoverageItem,
-  CoverageReport,
-  Dimension,
+  DynamicMark,
   EngineProfile,
   InstrumentUse,
   MeterLock,
@@ -21,9 +19,11 @@ import type {
   SectionKind,
   Signature,
   Tempo,
+  Transition,
   TransitionKind,
 } from "../ir/types";
-import { byWeight, capitalize, joinAnd } from "../text";
+import { ALIAS_SUBSTITUTED, type Rendering } from "../coverage";
+import { byWeight, capitalize, joinAnd, lowerFirst } from "../text";
 
 export interface SerializeContext {
   spec: MusicSpec;
@@ -150,22 +150,45 @@ export function phraseLabel(phrases: readonly number[]): string {
   return phrases.length === 1 ? `phrase ${phrases[0]}` : `phrases ${joinAnd(phrases.map(String))}`;
 }
 
-interface Clause {
+export interface Clause {
   text: string;
   /** Generated labelled clauses (phrase-limited cues, contrast) are set off with "; ". */
   setOff: boolean;
 }
 
+/** Which generated clauses `sectionClauses` adds after the cues. All default to true (Suno). */
+export interface ClauseOptions {
+  contrast?: boolean;
+  transition?: boolean;
+  restatement?: boolean;
+}
+
+/** A transition's wording: its note, else the kind's phrase ("filter sweep closing"). */
+export function transitionText(transition: Transition): string {
+  return transition.kind === "none" ? "" : (transition.note ?? TRANSITION_PHRASE[transition.kind]);
+}
+
+/** Section dynamics as English style words (Eleven styles must be English). */
+export const DYNAMIC_WORD: Readonly<Record<DynamicMark, string>> = {
+  pp: "very soft",
+  p: "soft",
+  mp: "moderately soft",
+  mf: "moderately loud",
+  f: "loud",
+  ff: "very loud",
+};
+
 /**
  * The section's clause list in cue order (docs/SPEC.md §2.4). The pocket renders only where
  * its cue sits. A contrast phrase with no cue is appended, so its return rule is never lost.
  */
-export function sectionClauses(section: Section, ctx: SerializeContext): Clause[] {
+export function sectionClauses(section: Section, ctx: SerializeContext, options: ClauseOptions = {}): Clause[] {
+  const { contrast: withContrast = true, transition: withTransition = true, restatement: withRestatement = true } = options;
   const clauses: Clause[] = [];
   let contrastRendered = false;
   for (const cue of section.cues) {
     if (cue.slot === "contrast") {
-      if (section.contrast && !contrastRendered) {
+      if (withContrast && section.contrast && !contrastRendered) {
         clauses.push({ text: contrastClause(section.contrast, ctx.catalog), setOff: true });
         contrastRendered = true;
       }
@@ -177,13 +200,13 @@ export function sectionClauses(section: Section, ctx: SerializeContext): Clause[
       clauses.push({ text: limited ? `${phraseLabel(cue.phrases ?? [])}: ${cue.text}` : cue.text, setOff: limited });
     }
   }
-  if (section.contrast && !contrastRendered) clauses.push({ text: contrastClause(section.contrast, ctx.catalog), setOff: true });
+  if (withContrast && section.contrast && !contrastRendered) clauses.push({ text: contrastClause(section.contrast, ctx.catalog), setOff: true });
   const transition = section.transitionOut;
-  if (transition.kind !== "none" && transition.kind !== "silence" && !transition.bracket) {
-    clauses.push({ text: transition.note ?? TRANSITION_PHRASE[transition.kind], setOff: false });
+  if (withTransition && transition.kind !== "none" && transition.kind !== "silence" && !transition.bracket) {
+    clauses.push({ text: transitionText(transition), setOff: false });
   }
   const lock = ctx.spec.D6.meterLock;
-  if (lock.enabled && lock.restatement === "style-and-sections") {
+  if (withRestatement && lock.enabled && lock.restatement === "style-and-sections") {
     clauses.push({ text: `strict ${lock.signature}`, setOff: false });
   }
   return clauses;
@@ -204,10 +227,19 @@ export function pickupText(pickup: PickupBar): string {
   return `${BEATS_WORD[pickup.beats]}-beat pickup bar – ${pickup.content}, back to ${pickup.returnTo}`;
 }
 
+/**
+ * An inline pickup direction for engines without pickup brackets: "two-beat pickup: snare
+ * roll, riser", or the content alone when the pickup is not announced.
+ */
+export function pickupDirection(pickup: PickupBar): string {
+  if (pickup.announce === false) return lowerFirst(pickup.content);
+  return `${BEATS_WORD[pickup.beats]?.toLowerCase() ?? pickup.beats}-beat pickup: ${pickup.content}`;
+}
+
 export function transitionBracketText(section: Section): string | undefined {
   const transition = section.transitionOut;
   if (!transition.bracket || transition.kind === "none" || transition.kind === "silence") return undefined;
-  return capitalize(transition.note ?? TRANSITION_PHRASE[transition.kind]);
+  return capitalize(transitionText(transition));
 }
 
 /** "Risers and filter sweeps at 8 and 16 bars". */
@@ -232,7 +264,8 @@ export function keyText(ctx: SerializeContext): string {
  * tempo; key; drums; regional instruments; other instruments; synths; textures and mix;
  * block transitions; section clauses; lineage traits; mood; inline negation.
  */
-export function styleSentences(ctx: SerializeContext): string[] {
+export function styleSentences(ctx: SerializeContext, options: StyleOptions = {}): string[] {
+  const { sectionClauses: withSectionClauses = true, positionedSynths = true, negation = true } = options;
   const { spec, catalog } = ctx;
   const sentences: string[] = [];
   const lock = spec.D6.meterLock;
@@ -265,6 +298,7 @@ export function styleSentences(ctx: SerializeContext): string[] {
   const seenRoles = new Set<string>();
   const synths: string[] = [];
   for (const use of spec.D5.synthRoles) {
+    if (!positionedSynths && use.position.sectionIds.length > 0) continue;
     if (seenRoles.has(use.synthRoleId)) continue;
     seenRoles.add(use.synthRoleId);
     synths.push(use.proseOverride ?? catalog.synthRoles[use.synthRoleId]?.promptPhrase ?? use.synthRoleId);
@@ -277,8 +311,10 @@ export function styleSentences(ctx: SerializeContext): string[] {
 
   if (spec.D7.blockRule) sentences.push(`${blockRuleText(spec.D7.blockRule)}.`);
 
-  for (const section of spec.D7.sections) {
-    if (section.styleClause) sentences.push(`${sectionHead(section)}: ${section.styleClause}.`);
+  if (withSectionClauses) {
+    for (const section of spec.D7.sections) {
+      if (section.styleClause) sentences.push(`${sectionHead(section)}: ${section.styleClause}.`);
+    }
   }
 
   const traits = byWeight(spec.D4.traits).map((entry) => entry.value.trait);
@@ -287,8 +323,29 @@ export function styleSentences(ctx: SerializeContext): string[] {
   const moods = byWeight(spec.D2.moods).map((entry) => entry.value);
   if (moods.length) sentences.push(`${capitalize(moods.join(", "))}.`);
 
-  if (spec.D8.instrumental) sentences.push("No vocals, no lyrics.");
+  if (negation && spec.D8.instrumental) sentences.push("No vocals, no lyrics.");
   return sentences;
+}
+
+/** Which parts `styleSentences` includes. All default to true (Suno Style). */
+export interface StyleOptions {
+  /** `Section.styleClause` sentences. Eleven moves them into their own chunks. */
+  sectionClauses?: boolean;
+  /** Synth roles positioned in sections. Eleven words them in those chunks only. */
+  positionedSynths?: boolean;
+  /** The closing "No vocals, no lyrics." */
+  negation?: boolean;
+}
+
+/** Negative-space terms in class order, for engines without an exclude field. */
+export function negativeTerms(ctx: SerializeContext): string[] {
+  return negativeSpace(ctx).flatMap((entry) => entry.terms);
+}
+
+/** The inline negative sentence that ends Flow's Sound and Eleven's prompt: "Avoid: a, b." */
+export function inlineNegativeSentence(ctx: SerializeContext): string | undefined {
+  const terms = negativeTerms(ctx);
+  return terms.length ? `Avoid: ${terms.join(", ")}.` : undefined;
 }
 
 /**
@@ -303,33 +360,19 @@ export function negativeSpace(ctx: SerializeContext): NegativeSpace[] {
   return NEGATIVE_CLASS_ORDER.flatMap((cls) => entries.filter((entry) => entry.class === cls));
 }
 
-/** Dimension-level coverage from the profile's `supports` map, plus alias substitutions. */
-export function dimensionCoverage(ctx: SerializeContext, present: readonly Dimension[], extra: CoverageItem[] = []): CoverageReport {
-  const items: CoverageItem[] = present.map((dimension) => {
-    const support = ctx.profile.supports[dimension];
-    const detail = ctx.profile.supportsNotes?.[dimension];
-    if (support === "native") return { path: `/${dimension}`, dimension, state: "expressed" };
-    if (support === "approximate") return { path: `/${dimension}`, dimension, state: "approximated", ...(detail ? { detail } : {}) };
-    return { path: `/${dimension}`, dimension, state: "dropped", reason: "unsupported-dimension" };
-  });
-  items.push(...extra);
-  const expressed = items.filter((item) => item.state === "expressed").length;
-  return { engine: ctx.profile.id, items, score: items.length ? expressed / items.length : 1 };
+/** Coverage overrides for every palette instrument whose wording came from an engine alias. */
+export function aliasCoverage(ctx: SerializeContext): Record<string, Rendering> {
+  return Object.fromEntries(
+    ctx.spec.D5.instruments.flatMap((entry, i) => (instrumentWording(entry.value, ctx).aliased ? [[`/D5/instruments/${i}`, ALIAS_SUBSTITUTED]] : [])),
+  );
 }
 
-/** The dimensions that carry content in this spec. */
-export function presentDimensions(spec: MusicSpec): Dimension[] {
-  const present: Dimension[] = [];
-  if (spec.D1.formPhrase || spec.D1.stack.length) present.push("D1");
-  if (spec.D2.moods.length) present.push("D2");
-  if (spec.D3.techniques.length || spec.D7.sections.length) present.push("D3");
-  if (spec.D4.traits.length) present.push("D4");
-  const d5 = spec.D5;
-  if (d5.instruments.length || d5.bundles.length || d5.synthRoles.length || d5.textures.length || d5.drums.patternIds.length || d5.drums.proseOverride) present.push("D5");
-  present.push("D6");
-  if (spec.D7.sections.length) present.push("D7");
-  present.push("D8");
-  if (spec.D9.character.length || spec.D9.techniqueIds.length) present.push("D9");
-  if (spec.D10.negativeSpace.length || spec.D10.title || spec.D6.meterLock.enabled) present.push("D10");
-  return present;
+/** Every string inside a JSON value run through `scrub`, structure unchanged. */
+export function scrubDeep<T>(value: T, scrub: (text: string) => string): T {
+  if (typeof value === "string") return scrub(value) as T;
+  if (Array.isArray(value)) return value.map((item: unknown) => scrubDeep(item, scrub)) as T;
+  if (typeof value === "object" && value !== null) {
+    return Object.fromEntries(Object.entries(value).map(([key, item]) => [key, scrubDeep(item, scrub)])) as T;
+  }
+  return value;
 }

@@ -2,14 +2,16 @@
  * Shared inputs for the lint rules (docs/SPEC.md §2.7). Each rule is a pure function of a
  * `LintContext`; nothing here reads the clock or the network.
  */
-import type { Catalog, CompiledPayload, EngineProfile, LintResult, LintRuleId, MusicSpec, Rhythm } from "../ir/types";
+import type { Catalog, CompiledPayload, ElevenCompositionPlan, EngineProfile, LintResult, LintRuleId, MusicSpec, Rhythm, TargetOverride } from "../ir/types";
 
 export interface LintContext {
   spec: MusicSpec;
   profile: EngineProfile;
   catalog: Catalog;
-  /** The compiled payload for `profile`, when payload-level rules (BG, BT, LN) should run. */
+  /** The compiled payload for `profile`, when payload-level rules (BG, BT, CV, LN, OV) should run. */
   payload?: CompiledPayload;
+  /** The song's target overrides (they live on `Song` and `Variant`), for LN-1 and OV-1. */
+  overrides?: readonly TargetOverride[];
 }
 
 export interface LintRule {
@@ -117,6 +119,12 @@ export function payloadTexts(payload: CompiledPayload | undefined): [string, str
     if (typeof value === "object") return [[id, JSON.stringify(value)] as [string, string]];
     return [];
   });
+}
+
+/** The Eleven composition plan in a payload, if it carries one. */
+export function compositionPlanOf(payload: CompiledPayload | undefined): ElevenCompositionPlan | undefined {
+  const plan = payload?.fields.composition_plan;
+  return typeof plan === "object" && plan !== null && Array.isArray(plan.chunks) ? plan : undefined;
 }
 
 export function result(ruleId: LintRuleId, severity: LintResult["severity"], path: string, message: string, extra: Partial<LintResult> = {}): LintResult {

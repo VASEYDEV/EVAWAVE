@@ -7,6 +7,11 @@ export function capitalize(text: string): string {
   return text.length === 0 ? text : text.charAt(0).toUpperCase() + text.slice(1);
 }
 
+/** Lower-cases the first character when the next one is lower-case: "Timpani roll" → "timpani roll", "D minor" unchanged. */
+export function lowerFirst(text: string): string {
+  return /^\p{Lu}\p{Ll}/u.test(text) ? text.charAt(0).toLowerCase() + text.slice(1) : text;
+}
+
 /** "a", "a and b", "a, b and c". */
 export function joinAnd(items: readonly string[]): string {
   if (items.length <= 1) return items[0] ?? "";

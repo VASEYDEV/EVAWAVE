@@ -1,5 +1,8 @@
-/** BG-2: a text field over its house soft limit, or over a house budget (per field or total). */
-import { payloadTexts, result, type LintRule } from "../context";
+/**
+ * BG-2: a text field over its house soft limit, or over a house budget: per field, the
+ * pasted total, or (Eleven) positive styles per plan chunk.
+ */
+import { compositionPlanOf, payloadTexts, result, type LintRule } from "../context";
 
 export const BG2: LintRule = {
   id: "BG-2",
@@ -19,6 +22,14 @@ export const BG2: LintRule = {
     for (const [key, cap] of Object.entries(budgets)) {
       const [owner, target] = key.split(".");
       if (owner !== engine || !target) continue;
+      if (target === "styles_per_chunk") {
+        compositionPlanOf(payload)?.chunks.forEach((chunk, i) => {
+          if (chunk.positive_styles.length > cap) {
+            out.push(result("BG-2", "warn", `${key}/${i}`, `chunk ${i + 1} has ${chunk.positive_styles.length} positive styles, over the house budget of ${cap}`, { engine }));
+          }
+        });
+        continue;
+      }
       const pasted = ctx.profile.fields.filter((f) => f.kind === "text" && f.id !== "title").map((f) => texts.get(f.id) ?? 0);
       const length = target === "total" ? pasted.reduce((a, b) => a + b, 0) : texts.get(target);
       if (length !== undefined && length > cap) out.push(result("BG-2", "warn", key, `${length} characters, over the house budget of ${cap}`, { engine }));

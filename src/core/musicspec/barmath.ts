@@ -100,3 +100,44 @@ export function computeBarMath(tempo: Pick<Tempo, "bpm">, signature: Signature, 
     sectionStarts,
   };
 }
+
+/** A time range in seconds from the start of the song. */
+export interface TimeRange {
+  start: number;
+  end: number;
+}
+
+export interface SectionTiming {
+  section: Section;
+  /** A start-position silence drop, before the pickup. */
+  silenceBefore?: TimeRange;
+  pickup?: TimeRange;
+  body: TimeRange;
+  /** An end-position silence drop, after the body. */
+  silenceAfter?: TimeRange;
+}
+
+/**
+ * Where each part of each section sits in time, in the order the engines hear it: a
+ * start-position silence, the pickup, the section's own bars, then an end-position silence.
+ * The last range ends at `computeBarMath(...).runtimeSec`.
+ */
+export function sectionTimeline(tempo: Pick<Tempo, "bpm">, signature: Signature, structure: Pick<Structure, "sections">): SectionTiming[] {
+  const timeline: SectionTiming[] = [];
+  let t = 0;
+  const range = (sec: number): TimeRange => {
+    const r = { start: t, end: t + sec };
+    t = r.end;
+    return r;
+  };
+  for (const section of structure.sections) {
+    const span = sectionSpan(section, tempo.bpm, signature);
+    const timing: SectionTiming = { section, body: { start: 0, end: 0 } };
+    if (section.silenceAfter?.position === "start") timing.silenceBefore = range(span.silenceSec);
+    if (section.pickupBefore) timing.pickup = range(span.pickupSec);
+    timing.body = range(span.bodySec);
+    if (section.silenceAfter?.position === "end") timing.silenceAfter = range(span.silenceSec);
+    timeline.push(timing);
+  }
+  return timeline;
+}

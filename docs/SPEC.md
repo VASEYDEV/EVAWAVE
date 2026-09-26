@@ -190,9 +190,18 @@ end-to-end Jinn rebuild through the UI with an A/B Suno render.
 ### 1.11 Open items
 
 - **Flow**: character limits on Sound and Lyrics; whether Lyrics accepts section tags with
-  Instrumental ON; Length units and maximum; whether BPM is a hard lock.
+  Instrumental ON; Length units and maximum (S2 writes whole seconds; the Jinn v1.2 runtime
+  is 194 s, over the press figure of 3 min); whether BPM is a hard lock; the Producer
+  command grammar (S2 writes descriptive numbered lines, §2.6).
 - **Eleven**: web-app field set and limits; `force_instrumental` name on v2; whether
-  chunks under 3,000 ms are rejected or clamped.
+  chunks under 3,000 ms are rejected or clamped; whether long sentence-length style
+  qualities read as well as short ones (S2 sends the first chunk's palette as sentences).
+- **Inline negatives** (Flow Sound, Eleven prompt): whether an "Avoid: …" sentence
+  suppresses the listed terms or primes them. Take logs decide; coverage already reports
+  Flow's negative space as `approximated`.
+- **Techniques** (`D3.techniques`, section `scope.techniqueIds`, `D9.techniqueIds`) are not
+  rendered by any v1 serializer. Coverage reports them `dropped`, and a cue or
+  `phraseOverride` carries the wording today.
 - **Compound meters**: `beatsPerBar` is the signature's numerator, and `bpm` counts that
   unit (6/8 = six eighth-note beats). If BPM should mean the felt pulse in x/8, it is a
   one-table change. Not on the critical path (the lock is 4/4).
@@ -539,6 +548,7 @@ export interface OutputIntent {
   houseBudgets: Record<string, number>;             // '<engine>.<field>' or '<engine>.total' → soft cap
   negativeSpace: NegativeSpace[];                   // serialized in class order: vocals, meter drift, genre bleed, instrument ambiguity, custom
   title?: string;
+  acknowledgedDrops?: string[];                     // '<engine>:<path>' coverage items the user accepted as dropped (CV-2)
 }
 
 // ─── References and intake patches ────────────────────────────────────────────
@@ -1038,8 +1048,17 @@ Every container has a default, so an empty spec is valid.
   `alias-substituted`.
 - **Lineage pass.** Every compiled field runs through the lineage scrub against
   `Catalog.lineageNames` before it is returned. LN-1 blocks a listed name in any prose
-  field, cue, note or patch op value, and in any compiled payload. Target overrides live on
-  `Song` and `Variant`; S2 checks them where they are created.
+  field, cue, note, passthrough lyric, patch op value or target override, and in any
+  compiled payload. Overrides live on `Song` and `Variant`, so the caller passes them to
+  `lint(…, { overrides })`. The scrub also runs on passthrough lyrics. LN-1 blocks there,
+  so the change is never silent.
+- **Coverage.** Every compile returns a path-level `CoverageReport` (`coverage/`). The
+  items are the IR paths that carry content: dimensions, palette entries, each section,
+  its dynamics, pickup, contrast, silence and transition, the block rule, tempo, meter
+  lock, key, vocals, lyrics, negative space, title and techniques. Each engine renders a
+  primitive as `expressed`, `approximated` or `dropped` (the §2.6 table). A dimension the
+  profile marks `none` drops every item in it. Blueprint-only content (`notes`,
+  `harmony`) and `references` are never items. The score is expressed / total.
 
 ### 2.5 Bar math
 
@@ -1091,6 +1110,57 @@ a single space.
 | Reference | Never serialized. Resolved StyleProfile traits flow through D1–D9 | Same. `AudioRefChunk` is unused in v1 | Same |
 | Weighted&lt;T&gt; | Orders terms within a field | Orders `positive_styles` | Orders Sound |
 
+`compile(spec, engineId, catalog)` resolves the installed profile and returns
+`{ ok: true, payload }` or `{ ok: false, error: CompileError }`. It never throws for an
+engine: `engine-unknown` covers no profile, `engine-halted` covers a stub (Udio, A12), and
+`profile-invalid` covers a profile with no matching serializer.
+
+**ElevenLabs specifics (S2).**
+
+- Chunk text starts `[<label>]`, and a contrast chunk starts
+  `[<label> – <word> contrast]`. Next comes the user's lyric lines for that section, or
+  `{instrumental break}`, then inline directions in order:
+  - the transition (lower-cased);
+  - `{silence}`;
+  - the next section's pickup: `{two-beat pickup: <content>}`, or the content alone when
+    `announce` is false.
+
+  A contrast chunk ends with `{<returnRule>}`.
+- `duration_ms` is rounded on the cumulative timeline, so chunk durations sum exactly to
+  `music_length_ms`, which is the rounded bar-math runtime. Folded pickups and silences
+  add their time to the chunk that carries them.
+- The first chunk's `positive_styles` open with the Style sentences as qualities. They
+  leave out section clauses, positioned synth roles and the closing negation. Every
+  chunk then lists its section's qualities:
+  - the dynamics word (`pp` "very soft" … `ff` "very loud");
+  - the cues in order;
+  - the synth roles positioned there;
+  - its `styleClause`;
+  - with `style-and-sections`, `strict <signature>`.
+
+  A contrast chunk lists the dynamics word, "<word> contrast" and the changes.
+- Every chunk's `negative_styles` carry the negative space in class order. An open pocket
+  with no lyrics adds "lead vocals". Passthrough lyrics split on `[Header]` lines, and each
+  block goes to the first unused section whose label or bracket head matches it. Lines
+  that match no section are left out, and coverage reports them.
+- `prompt` is the Style sentences plus "Avoid: <negative terms>." `model_id` is
+  `music_v2`.
+
+**Flow specifics (S2).**
+
+- Sound is the Style sentences plus "Avoid: <negative terms>."
+- Lyrics are empty for an instrumental. Otherwise they are the passthrough lyrics,
+  unchanged.
+- BPM is `D6.tempo.bpm`. Length is the bar-math runtime in whole seconds.
+- The Producer script is numbered lines timed by bar math (`m:ss`, or "at m:ss" when a
+  range rounds to one second). Per section, in order:
+  - a start-position silence;
+  - `Pickup into <label>, <range>: <pickup text>.`;
+  - `<label>, <range> (<n> bars), <dynamics word>: <cue clauses>.`;
+  - `<label> contrast, <range>: <contrast clause>.`;
+  - `End of <label>, at <time>: <transition>.`;
+  - `Silence after <label>, <range>: drop to silence for <n> beats.`
+
 ### 2.7 Lint rules
 
 | Id | Rule | Severity | Session |
@@ -1110,12 +1180,12 @@ a single space.
 | RB-2 | A section `modeId` outside every used bundle's modes with no cross flag | warn | S1 |
 | RB-3 | A mode or instrument `approximate`/`unreliable` for the active target | warn with substitute | S1 |
 | TQ-1 | A `meterRisk` technique under meter lock | warn | S1 |
-| LN-1 | An artist or producer name in any prose field, cue, patch value or override | block | S1 |
-| BG-1 | Text field over `hardLimit`, or number field outside `min`/`max` | block | S1 |
-| BG-2 | Field over `softLimit` or a `houseBudgets` entry | warn | S1 |
+| LN-1 | An artist or producer name in any prose field, cue, note, passthrough lyric, patch value or override (S2), or in a payload | block | S1 |
+| BG-1 | Text field over `hardLimit`, number field outside `min`/`max`, or (S2) an Eleven plan over 30 chunks | block | S1 |
+| BG-2 | Field over `softLimit` or a `houseBudgets` entry: per field, `<engine>.total`, or (S2) `eleven.styles_per_chunk` | warn | S1 |
 | BT-1 | An `EngineProfile.bannedTerms` hit in a payload | warn | S1 |
-| CV-1 | Coverage score < 0.8 for the active target | warn | S2 |
-| CV-2 | A `dropped` item in D6 or D7 without acknowledgement | block export | S2 |
+| CV-1 | Coverage score < 0.8 for the active target (`D10.activeTarget`) | warn | S2 |
+| CV-2 | A `dropped` item in D6 or D7 not listed in `D10.acknowledgedDrops` as `<engine>:<path>` | block export | S2 |
 | OV-1 | A `TargetOverride` whose `basedOnCompiledHash` is stale | warn | S2 |
 | PT-1 | A patch op with `confidence < 0.5` | info (low-confidence in the diff) | S5 |
 | PT-2 | A patch op targeting `references` or `patches` | block | S5 |
@@ -1209,7 +1279,7 @@ Every other type in §2.2 is carried over as written.
 | --- | --- | --- |
 | `Instrumentation` (was `InstrumentationDelta`) | Renamed; gains `instruments`, `drums`, `textures` | It is now the whole D5 container, not a delta onto one |
 | `Vocals` (was `VocalsDelta`) | Renamed; gains `voice` | Whole D8 container; scope's Sections module has a voice spec |
-| `OutputIntent` (was `OutputIntentDelta`) | Renamed; gains `title` | Whole D10 container; the Suno, Flow and Eleven profiles have a title field fed by D10 |
+| `OutputIntent` (was `OutputIntentDelta`) | Renamed; gains `title` and `acknowledgedDrops` | Whole D10 container; the Suno and Flow profiles have a title field fed by D10. CV-2 needs somewhere to record a drop the user accepted |
 | `Section` | `drumState`, `bassState`, `leadNote`, `textureNote` fold into `cues` (slots `drums`, `bass`, `lead`, `texture`); gains `styleClause` and `notes` | The delta's §9 compile could not be produced from those fields; ordered cues reproduce Jinn v1.2 exactly. `notes` hold the blueprint's word-MIDI lines, which lint must read (the v1.1 "two cycles per bar") but no engine receives |
 | `BundleUse` | Gains `label` and `rhythmIds` | The Style clause names the bundle's instruments and its 4/4 rhythms |
 | `PickupBar` | Gains `announce` | Jinn v1.2 renders one pickup announced and one as content only |
@@ -1297,6 +1367,20 @@ Acceptance:
 - Eleven: chunk durations sum to `music_length_ms`; the contrast phrase is its own chunk;
   pickups and silence fold inline. Flow: BPM numeric; one Producer line per section plus
   the contrast and pickup lines; negative space reported `approximated`.
+
+Delivered:
+
+- `serialize/eleven.ts`, `serialize/flow.ts` and `serialize/index.ts` (`compile`,
+  `CompileResult`), with `coverage/`.
+- `sectionTimeline` in `barmath.ts`.
+- CV-1, CV-2 and OV-1.
+- Extensions: BG-1 for the chunk limit, BG-2 for styles per chunk, and LN-1 for lyrics
+  and overrides.
+- `OutputIntent.acknowledgedDrops`.
+
+Jinn v1.2 scores 0.76 on Suno, which warns CV-1 while Suno is active. Its dynamics are
+approximated. It scores 0.84 on Eleven and 0.49 on Flow, where most structure is
+approximated through the Producer script. No target blocks.
 
 ### S3: Composer UI
 

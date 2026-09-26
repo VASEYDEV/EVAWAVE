@@ -1,4 +1,8 @@
-/** LN-1: an artist or producer name in the spec's prose, a patch value or a compiled payload. */
+/**
+ * LN-1: an artist or producer name in the spec's prose, passthrough lyrics, a patch value, a
+ * target override or a compiled payload. Serializers scrub names from every field, so a hit
+ * on passthrough lyrics is how the user learns their text was changed.
+ */
 import { findNames } from "../../lineage";
 import { payloadTexts, proseEntries, result, type LintRule } from "../context";
 
@@ -24,9 +28,14 @@ export const LN1: LintRule = {
         ),
       ),
     );
+    const lyrics = ctx.spec.D8.lyricsPassthrough ?? "";
+    const lyricHits = findNames(lyrics, names).map(() => result("LN-1", "block", "/D8/lyricsPassthrough", "lyrics name an artist or producer; the compile removes the name"));
+    const overrideHits = (ctx.overrides ?? []).flatMap((override, i) =>
+      findNames(override.text, names).map(() => result("LN-1", "block", `overrides/${i}`, "override names an artist or producer", { engine: override.engine })),
+    );
     const payloadHits = payloadTexts(ctx.payload).flatMap(([field, text]) =>
       findNames(text, names).map(() => result("LN-1", "block", `${ctx.profile.id}.${field}`, "compiled payload names an artist or producer", { engine: ctx.profile.id })),
     );
-    return [...specHits, ...patchHits, ...payloadHits];
+    return [...specHits, ...lyricHits, ...patchHits, ...overrideHits, ...payloadHits];
   },
 };
