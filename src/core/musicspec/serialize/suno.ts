@@ -2,16 +2,15 @@
  * Suno v6 serializer (docs/SPEC.md §2.6): Style, Exclude Styles, Lyrics and Title, with the
  * Instrumental toggle. Pure: the same spec, profile and catalog always give the same bytes.
  */
-import type { Catalog, CompiledPayload, CoverageItem, EngineProfile, MusicSpec } from "../ir/types";
+import { coverageReport } from "../coverage";
+import type { Catalog, CompiledPayload, EngineProfile, MusicSpec } from "../ir/types";
 import { scrubNames } from "../lineage";
 import { hash53 } from "../text";
 import {
-  dimensionCoverage,
-  instrumentWording,
+  aliasCoverage,
   joinClauses,
   negativeSpace,
   pickupText,
-  presentDimensions,
   sectionClauses,
   sectionHead,
   styleSentences,
@@ -50,18 +49,12 @@ export function compileSuno(spec: MusicSpec, profile: EngineProfile, catalog: Ca
   const fields = { style, exclude, lyrics, title };
   const toggles = { instrumental: spec.D8.instrumental && !spec.D8.lyricsPassthrough };
 
-  const aliasItems: CoverageItem[] = spec.D5.instruments.flatMap((entry, i) =>
-    instrumentWording(entry.value, ctx).aliased
-      ? [{ path: `/D5/instruments/${i}`, dimension: "D5" as const, state: "approximated" as const, reason: "alias-substituted" as const }]
-      : [],
-  );
-
   return {
     engine: "suno",
     profileVersion: profile.version,
     fields,
     toggles,
-    coverage: dimensionCoverage(ctx, presentDimensions(spec), aliasItems),
+    coverage: coverageReport(spec, profile, aliasCoverage(ctx)),
     hash: hash53(JSON.stringify({ fields, toggles })),
   };
 }

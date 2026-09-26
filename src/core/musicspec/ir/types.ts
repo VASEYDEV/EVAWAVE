@@ -311,6 +311,7 @@ export interface OutputIntent {
   houseBudgets: Record<string, number>;             // '<engine>.<field>' or '<engine>.total' → soft cap
   negativeSpace: NegativeSpace[];                   // serialized in class order: vocals, meter drift, genre bleed, instrument ambiguity, custom
   title?: string;
+  acknowledgedDrops?: string[];                     // '<engine>:<path>' coverage items the user accepted as dropped (CV-2)
 }
 
 // ─── References and intake patches ────────────────────────────────────────────

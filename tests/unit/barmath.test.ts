@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { barSec, barsToMs, barsToSec, beatsPerBar, beatsToSec, computeBarMath, sectionSpan } from "@/core/musicspec/barmath";
+import { barSec, barsToMs, barsToSec, beatsPerBar, beatsToSec, computeBarMath, sectionSpan, sectionTimeline } from "@/core/musicspec/barmath";
 import { defaultSection } from "@/core/musicspec/ir/defaults";
 import type { Signature } from "@/core/musicspec/ir/types";
 
@@ -58,5 +58,22 @@ describe("bar math", () => {
     expect(() => barSec(Number.NaN)).toThrow(RangeError);
     expect(() => barsToSec(-1, 120)).toThrow(RangeError);
     expect(() => beatsToSec(-1, 120)).toThrow(RangeError);
+  });
+});
+
+describe("sectionTimeline", () => {
+  it("orders silence, pickup, body and silence, and ends at the runtime", () => {
+    const sections = [
+      { ...defaultSection("a", "intro", "A"), silenceAfter: { beats: 2, position: "start" as const } },
+      { ...defaultSection("b", "hook", "B"), pickupBefore: { beats: 2 as const, content: "roll", returnTo: "4/4" as const }, silenceAfter: { beats: 1, position: "end" as const } },
+    ];
+    const timeline = sectionTimeline({ bpm: 120 }, "4/4", { sections });
+    const beat = 0.5;
+    expect(timeline[0]?.silenceBefore).toEqual({ start: 0, end: 2 * beat });
+    expect(timeline[0]?.body).toEqual({ start: 2 * beat, end: 2 * beat + 16 });
+    expect(timeline[1]?.pickup).toEqual({ start: 17, end: 18 });
+    expect(timeline[1]?.body).toEqual({ start: 18, end: 34 });
+    expect(timeline[1]?.silenceAfter).toEqual({ start: 34, end: 34.5 });
+    expect(computeBarMath({ bpm: 120 }, "4/4", { sections }).runtimeSec).toBe(34.5);
   });
 });
