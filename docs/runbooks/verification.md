@@ -25,25 +25,27 @@ current LTS line). Local and CI verification never diverge.
      `AGENTS.md`, `next dev` writes into `CLAUDE.md`; ADR 0003), `.env.example`,
      `package.json` and `package-lock.json`.
    - No unfilled template placeholders: a closed double-brace token in non-code text
-     files outside `docs/legal/`. Code, the lockfile and GitHub Actions expressions are
+     files outside `docs/legal/` and `docs/archive/`. Code, the lockfile and GitHub Actions expressions are
      excluded. Bare double braces in prose are not placeholders.
    - `CLAUDE.md` stays under 200 lines.
    - No env files are committed (except `.env.example`), and the repo's own files contain
      no private-key material.
 2. **Lint:** `eslint` is invoked directly with `--max-warnings=0`. Next.js 16 removed
-   `next lint`. This step enforces the `src/core/**` import boundary (BUILD-BRIEF §2).
+   `next lint`. This step enforces the `src/core/**` import boundary (SPEC §1.2, A1). `docs/archive/**`
+   is ignored (ADR 0004).
 3. **Typecheck:** `next typegen && tsc --noEmit`. `next-env.d.ts` and route types are
    generated, not committed.
 4. **Unit:** `vitest run` over `tests/**/*.test.ts`.
    `tests/unit/import-boundary.test.ts` proves the boundary rule rejects deliberate
-   violations under the real ESLint config.
+   violations under the real ESLint config. `tests/unit/spec.test.ts` type-checks the IR v1
+   block in `docs/SPEC.md` standalone and ties its worked example to the Jinn v1.2 file.
 5. **Build:** `next build` (Turbopack).
 6. **Client bundle:** `scripts/check-client-bundle.sh` fails if any server-only variable
    name from `.env.example` appears in `.next/static`.
 7. **Audit:** `npm audit --audit-level=critical`. Criticals block merge (§6); exceptions
    go in `SECURITY.md`.
 
-Integration tests join the gate when the first ones land (S7, Supabase RLS with two test
+Integration tests join the gate when the first ones land (S4, Supabase RLS with two test
 users).
 
 ## Known toolchain constraints (2026-09-23)

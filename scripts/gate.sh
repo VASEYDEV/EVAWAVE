@@ -32,12 +32,13 @@ for f in "${required[@]}"; do
 done
 
 # Unfilled template placeholders (bootstrap protocol): a closed double-brace token such as
-# the starter kit's own, in non-code text files. Excluded: docs/legal/, this script, code
+# the starter kit's own, in non-code text files. Excluded: docs/legal/, docs/archive/
+# (superseded and legacy reference, ADR 0004), this script, code
 # (JSX object literals look like tokens), the lockfile, and GitHub Actions expressions
 # (always "$" + double brace). Bare double braces in prose, such as the verbatim brief quoting
 # this very check, are not placeholders. -I skips binary files.
 placeholder='(^|[^$])\{\{[[:space:]]*[A-Za-z_][A-Za-z0-9_.-]*[[:space:]]*\}\}'
-collect_files . ':!docs/legal/**' ':!scripts/gate.sh' ':!src/**' ':!tests/**' \
+collect_files . ':!docs/legal/**' ':!docs/archive/**' ':!scripts/gate.sh' ':!src/**' ':!tests/**' \
   ':!*.ts' ':!*.tsx' ':!*.mts' ':!*.cts' ':!*.js' ':!*.mjs' ':!*.cjs' ':!package-lock.json'
 if (( ${#FILES[@]} )) && grep -nIE -- "$placeholder" "${FILES[@]}"; then
   echo "Unfilled template placeholders found (see lines above)"

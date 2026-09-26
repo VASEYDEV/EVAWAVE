@@ -87,6 +87,8 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Superseded docs and legacy compiler reference: never linted (ADR 0004).
+    "docs/archive/**",
   ]),
 ]);
 

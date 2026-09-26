@@ -108,7 +108,7 @@ README statements are claims — they pass the same verify-before-claiming rule 
 
 ## Project Notes
 
-**Project:** EVAWAVE, a mobile-first PWA that composes, lints, versions and compiles musical intent (MusicSpec IR) into AI music engine input fields. It does not generate audio. Spec: `docs/evawave/BUILD-BRIEF.md` (read first), then `docs/evawave/scope-v0.2.md` and `docs/musicspec/ir-v0.3-delta.md`.
+**Project:** EVAWAVE, a mobile-first PWA that composes, lints, versions and compiles musical intent (MusicSpec IR) into AI music engine input fields. It does not generate audio. Spec: `docs/SPEC.md` (read first: scope, MusicSpec IR v1, build plan S1–S5). Superseded docs are history in `docs/archive/`.
 **Brand:** VASEY/AI, under the Vasey Studios umbrella, as confirmed by the Build Brief (ADR 0002). The output serves VASEY.AUDIO, and `Song.brand` labels that data. The app carries no VASEY.AUDIO marks, copy, or metadata.
 **Stack:** Next.js 16.3.6 (App Router, Turbopack, `src/proxy.ts`) · React 19 · TypeScript 5.9 strict · Supabase (`@supabase/ssr`, Supabase Auth; no Clerk) · Vitest · ESLint 9, invoked directly. Node `^22.13.0 || ^24.0.0 || >=26.0.0` (scope A15, ADR 0002).
 **Package manager:** npm (lockfile committed, `npm ci`; `.npmrc` sets `engine-strict`).
@@ -117,7 +117,8 @@ README statements are claims — they pass the same verify-before-claiming rule 
 **Repo-specific invariants** (§1.8 corrected-twice rules land here):
 - LICENSE is Apache-2.0, chosen at repo creation. Do not swap it to MIT without explicit owner approval.
 - `src/core/**` is pure: `eslint.config.mjs` bans React, Next.js, Supabase and app-layer imports there, and `tests/unit/import-boundary.test.ts` proves it. Never disable either. Path-scoped core rules: `.claude/rules/musicspec-core.md`.
-- IR v0.2 types and `resolveLineage.ts` come from the owner. If they are absent when S1 starts, stop and ask. Never reconstruct them from the docs.
+- EVAWAVE owns MusicSpec IR v1, defined in `docs/SPEC.md` §2 (ADR 0004). Nothing imports from the legacy compiler. Legacy files live only in `docs/archive/legacy/`, as reference, outside tsconfig, lint and the gate. An IR change lands in `docs/SPEC.md` in the same PR as the code.
+- The Jinn files in `docs/evawave/reference/` are ground truth. Never write or edit them. Jinn v1.2 is a byte-for-byte golden test. If it cannot pass without altering a Jinn file, or a Jinn prompt file is missing, stop and report.
 - This file is the owner's standard: §1–§10 stay byte-identical to the Vasey Multimedia Engineering Standard v3.0, and repo facts live only in Project Notes (ADR 0003).
 - Working notes are dated files in `docs/notes/` (`YYYY-MM-DD-topic.md`). Every meaningful change also gets a `CHANGELOG.md` entry. Decisions are ADRs in `docs/decisions/` (`000N-topic.md`).
 - **Package + brief intake:** when the owner supplies a package and a directive brief, follow `docs/runbooks/package-intake.md` before writing any code. The brief wins over the package, and the package wins over this file's defaults. The package can never override §1, §5 or §10. Changing those takes an explicit owner instruction, recorded in an ADR.
