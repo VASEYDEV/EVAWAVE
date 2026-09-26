@@ -480,6 +480,20 @@ S5 per SPEC §3. The methods are listed in SPEC §3 S5 "Delivered".
     to 37.5 s. The same Chromium check ran `channelCount` on real MediaRecorder output: a
     WebM (Opus) and a fragmented MP4 (Opus, `dOps`) both read 2, as their decoded buffers
     have.
+- **Thirty-eighth review: a tempo change one beat late.** Confirmed. At 120 BPM the tick at
+  0.425 s schedules the 0.5 s downbeat, and the cursor then moved to the 1 s beat, so the
+  0.5 s beat's length was fixed before it started. A change to 240 BPM at 0.45 s gave
+  downbeats at 0.5 and 1 s, not 0.5 and 0.75 s. The cursor now stays on the beat of its last
+  scheduled click (`lastTime` replaces `nextTime` and `step`), and moves on only to schedule
+  a click in the next beat. A beat keeps its length once it has started; a beat still ahead
+  takes the current tempo at every tick. The next click is the first step of the current
+  grid after the last scheduled click and not before `now`. That also covers subdivision
+  changes and stalls. A beat past the end of a shrunk bar is followed by a new bar.
+  - Tests run the 25 ms tick: a change at 0.45 s gives 0, 0.5, 0.75, 1, 1.25, and a change
+    at 0.55 s, once the beat has started, gives 0, 0.5, 1, 1.25.
+  - The old scheduler fails the first case, and so does dropping the started check.
+  - A new test opens a new bar after beat 4 when 4/4 becomes 3/4.
+  - Two existing tests now pass the tick's `now`, as the metronome always does.
 
 ## Decisions
 
