@@ -345,6 +345,10 @@ S5 per SPEC §3. The methods are listed in SPEC §3 S5 "Delivered".
     newest-import guard as its success message. No automated test: the repo has no
     component test harness, and the e2e cannot reach a failing save without a live
     Supabase session.
+- **Twenty-eighth review: half-time accents outside 4/4.** The beat-3 accent was gated to
+  4/4, so the "Half-time accents (1 and 3)" control did nothing more than beat 1 in 3/4
+  or 6/8, against its label and SPEC §1.8. It now accents beat 3 wherever the meter has
+  one; 2/4 has none. A test covers 3/4, 6/8 and 2/4 and fails on the old code.
 
 ## Decisions
 
