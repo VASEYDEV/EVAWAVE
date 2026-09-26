@@ -24,7 +24,7 @@ pnpm-debug.log*
 dist/
 build/
 out/
-coverage/
+/coverage/
 .next/
 .vercel/
 
