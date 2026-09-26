@@ -1,0 +1,66 @@
+/**
+ * The metronome (docs/SPEC.md §1.8): a Web Audio lookahead scheduler. A 25 ms timer asks the
+ * pure `scheduleClicks` for the clicks due in the next 100 ms and schedules them on the
+ * audio clock, so timing stays sample-accurate even when the main thread is busy.
+ */
+import { METRONOME_LOOKAHEAD_SEC, METRONOME_TICK_MS, scheduleClicks, type Click, type MetronomeCursor, type MetronomeSettings } from "@/core/musicspec/tempo";
+
+const PITCH: Record<Click["accent"], number> = { bar: 1600, beat: 1000, sub: 700 };
+const LEVEL: Record<Click["accent"], number> = { bar: 1, beat: 0.6, sub: 0.3 };
+
+export class Metronome {
+  private context: AudioContext | null = null;
+  private timer: ReturnType<typeof setInterval> | null = null;
+  private cursor: MetronomeCursor = { nextTime: 0, beat: 0, step: 0 };
+
+  constructor(
+    private settings: MetronomeSettings,
+    private volume = 0.5,
+  ) {}
+
+  get running(): boolean {
+    return this.timer !== null;
+  }
+
+  update(settings: MetronomeSettings, volume: number): void {
+    this.settings = settings;
+    this.volume = volume;
+  }
+
+  async start(): Promise<void> {
+    if (this.running) return;
+    this.context = new AudioContext();
+    await this.context.resume();
+    this.cursor = { nextTime: this.context.currentTime + 0.05, beat: 0, step: 0 };
+    this.timer = setInterval(() => this.tick(), METRONOME_TICK_MS);
+    this.tick();
+  }
+
+  async stop(): Promise<void> {
+    if (this.timer !== null) clearInterval(this.timer);
+    this.timer = null;
+    const context = this.context;
+    this.context = null;
+    await context?.close();
+  }
+
+  private tick(): void {
+    const context = this.context;
+    if (!context) return;
+    const { clicks, cursor } = scheduleClicks(this.cursor, context.currentTime + METRONOME_LOOKAHEAD_SEC, this.settings);
+    this.cursor = cursor;
+    for (const click of clicks) this.play(context, click);
+  }
+
+  private play(context: AudioContext, click: Click): void {
+    const osc = context.createOscillator();
+    const gain = context.createGain();
+    osc.frequency.value = PITCH[click.accent];
+    const peak = Math.max(0.0001, this.volume * LEVEL[click.accent]);
+    gain.gain.setValueAtTime(peak, click.time);
+    gain.gain.exponentialRampToValueAtTime(0.0001, click.time + 0.03);
+    osc.connect(gain).connect(context.destination);
+    osc.start(click.time);
+    osc.stop(click.time + 0.04);
+  }
+}

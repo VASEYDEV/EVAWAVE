@@ -5,7 +5,7 @@
  */
 import type { SupabaseClient } from "@supabase/supabase-js";
 
-import type { MusicSpec, Provenance, ReferenceAsset, StyleProfile, Tag } from "@/core/musicspec/ir/types";
+import type { AudioFeatures, MusicSpec, Provenance, ReferenceAsset, StyleProfile, Tag } from "@/core/musicspec/ir/types";
 
 import { toReferenceAsset, toStyleProfile, toTag, type Database } from "./schema";
 
@@ -34,9 +34,9 @@ export class LibraryError extends Error {
   override name = "LibraryError";
 }
 
-function check<T>(result: { data: T | null; error: { message: string } | null }, what: string): T {
+function check<T>(result: { data: T; error: { message: string } | null }, what: string): NonNullable<T> {
   if (result.error) throw new LibraryError(`${what}: ${result.error.message}`);
-  if (result.data === null) throw new LibraryError(`${what}: no data`);
+  if (result.data === null || result.data === undefined) throw new LibraryError(`${what}: no data`);
   return result.data;
 }
 
@@ -122,4 +122,36 @@ export async function setLink(client: LibraryClient, table: LinkTable, ownerKey:
   } else {
     check(await client.from(table).delete().eq(a, ownerKey).eq(b, otherKey).select(), `unlink ${table}`);
   }
+}
+
+/** File metadata and an audio-analysis profile from an import (docs/SPEC.md §1.7). Never the audio. */
+export interface ImportRecord {
+  file: { filename: string; mime: string; bytes: number; sha256: string; features: AudioFeatures };
+  profile: { name: string; spec: StyleProfile["spec"]; analysedOn: string; model: string };
+}
+
+/**
+ * Saves an import: the file's metadata (upserted by sha256, so a re-import reuses the row),
+ * then the style profile that cites it. Only these JSON rows are sent; the blob stays on the
+ * device (A6).
+ */
+export async function saveImport(client: LibraryClient, record: ImportRecord): Promise<{ fileId: string; profileId: string }> {
+  const file = check(
+    await client
+      .from("files")
+      .upsert({ kind: "audio", ...record.file }, { onConflict: "owner_id,sha256" })
+      .select("id")
+      .single(),
+    "save file metadata",
+  );
+  const provenance: Provenance = { kind: "audio-analysis", sourceRef: file.id, analysedOn: record.profile.analysedOn, model: record.profile.model };
+  const profile = check(
+    await client
+      .from("style_profiles")
+      .insert({ name: record.profile.name, spec: record.profile.spec, provenance, features: record.file.features })
+      .select("id")
+      .single(),
+    "save style profile",
+  );
+  return { fileId: file.id, profileId: profile.id };
 }

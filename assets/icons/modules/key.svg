@@ -1,0 +1,7 @@
+<!-- EVAWAVE module icon "key" (provisional). Generated from assets/icons/modules.json; do not edit. -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400" fill="none" stroke="currentColor" stroke-width="22" stroke-linecap="round" stroke-linejoin="round">
+  <circle cx="130" cy="200" r="60"/>
+  <path d="M190 200 H330"/>
+  <path d="M270 200 V250"/>
+  <path d="M310 200 C310 230 330 240 330 265"/>
+</svg>

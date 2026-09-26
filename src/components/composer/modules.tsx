@@ -12,6 +12,7 @@ import { formatPointer } from "@/core/musicspec/patch";
 
 import { CheckboxField, CheckboxList, IdPicker, LinesField, NumberField, OptionalBlock, SelectField, TextField } from "./fields";
 import { Module } from "./Module";
+import { TempoTools } from "./TempoTools";
 import {
   bundleOptions,
   drumPatternOptions,
@@ -121,7 +122,7 @@ export function EngineFormModule() {
   const lock = spec.D6.meterLock;
   const math = computeBarMath(spec.D6.tempo, lock.signature, spec.D7);
   return (
-    <Module number={1} title="Engine + Form" owns="Target, D1, D6 tempo and meter lock, runtime" open>
+    <Module number={1} icon="form" title="Engine + Form" owns="Target, D1, D6 tempo and meter lock, runtime" open>
       <TargetSwitcher />
       <TextField path="/D1/formPhrase" label="Form phrase" hint="The genre and form clause, for example 'Egyptian Atlanta trap beat'." />
       <div className="list" data-ir-path="/D1/stack">
@@ -139,6 +140,7 @@ export function EngineFormModule() {
         </button>
       </div>
       <NumberField path="/D6/tempo/bpm" label="Tempo (BPM)" min={20} max={300} extra={[op("set", "/D6/tempo/source", "manual")]} />
+      <TempoTools />
       <fieldset className="group">
         <legend>Meter lock</legend>
         <CheckboxField path="/D6/meterLock/enabled" label="Lock the meter" />
@@ -160,7 +162,7 @@ export function EngineFormModule() {
 export function KeyModeModule() {
   const { spec, catalog } = useComposer();
   return (
-    <Module number={2} title="Key + Mode" owns="D6 key and harmony">
+    <Module number={2} icon="key" title="Key + Mode" owns="D6 key and harmony">
       <SelectField path="/D6/key/tonic" label="Tonic" options={PITCH_CLASSES} />
       <SelectField path="/D6/key/modeId" label="Mode" options={modeOptions(catalog, spec.D10.activeTarget)} hint="Flags show modes the target engine renders only approximately." />
       <TextField path="/D6/key/phraseOverride" label="Key wording" optional hint="Replaces the generated key text, for example 'D Hijaz maqam, dark minor'." />
@@ -174,7 +176,7 @@ const GRID_PIECES = ["kick", "808", "snare", "clap", "rim", "hat-closed", "hat-o
 export function DrumGrammarModule() {
   const { spec, catalog } = useComposer();
   return (
-    <Module number={3} title="Drum Grammar" owns="D5 drums">
+    <Module number={3} icon="drums" title="Drum Grammar" owns="D5 drums">
       <IdPicker path="/D5/drums/patternIds" label="Drum patterns" options={drumPatternOptions(catalog)} hint="The first pattern is the core; its prose is used unless you override it." />
       <TextField path="/D5/drums/label" label="Drums label" optional />
       <TextField path="/D5/drums/proseOverride" label="Drums wording" optional multiline />
@@ -223,7 +225,7 @@ export function RegionalBundleModule() {
   const addId = useId();
   const options = bundleOptions(catalog);
   return (
-    <Module number={4} title="Regional Bundle" owns="D5 bundles">
+    <Module number={4} icon="bundle" title="Regional Bundle" owns="D5 bundles">
       {spec.D5.bundles.map((use, i) => {
         const record = catalog.bundles[use.bundleId];
         const base = `/D5/bundles/${i}`;
@@ -285,7 +287,7 @@ export function InstrumentsModule() {
   const matches = q ? instrumentOptions(catalog).filter((o) => !used.has(o.value) && o.label.toLowerCase().includes(q)).slice(0, 12) : [];
   const sectionOptions = spec.D7.sections.map((s) => ({ value: s.id, label: s.label }));
   return (
-    <Module number={5} title="Instruments + Synth Roles" owns="D5 instruments, synth roles, section cap">
+    <Module number={5} icon="instruments" title="Instruments + Synth Roles" owns="D5 instruments, synth roles, section cap">
       <h3>Palette</h3>
       {spec.D5.instruments.map((use, i) => {
         const name = catalog.instruments[use.value.instrumentId]?.name ?? use.value.instrumentId;
@@ -371,7 +373,7 @@ export function TechniqueModule() {
   const targetId = useId();
   const palette = spec.D5.instruments.map((u) => ({ value: u.value.instrumentId, label: catalog.instruments[u.value.instrumentId]?.name ?? u.value.instrumentId }));
   return (
-    <Module number={6} title="Expression + Technique" owns="D3 techniques, section technique scope">
+    <Module number={6} icon="technique" title="Expression + Technique" owns="D3 techniques, section technique scope">
       {spec.D3.techniques.map((use, i) => {
         const name = catalog.techniques[use.techniqueId]?.name ?? use.techniqueId;
         const on = use.target.kind === "song" ? "the whole song" : (catalog.instruments[use.target.instrumentId]?.name ?? use.target.instrumentId);
@@ -425,7 +427,7 @@ export function TechniqueModule() {
 export function TexturesModule() {
   const { spec, catalog } = useComposer();
   return (
-    <Module number={7} title="Textures" owns="D5 textures, D9 production">
+    <Module number={7} icon="textures" title="Textures" owns="D5 textures, D9 production">
       <WeightedStrings path="/D5/textures" noun="Texture" items={spec.D5.textures} />
       <LinesField path="/D9/character" label="Production character" />
       <IdPicker path="/D9/techniqueIds" label="Production techniques" options={techniqueOptions(catalog)} />
@@ -436,7 +438,7 @@ export function TexturesModule() {
 export function MoodModule() {
   const { spec, edit } = useComposer();
   return (
-    <Module number={10} title="Mood + Imagery" owns="D2, D4">
+    <Module number={10} icon="mood" title="Mood + Imagery" owns="D2, D4">
       <WeightedStrings path="/D2/moods" noun="Mood" items={spec.D2.moods} />
       <LinesField path="/D2/imagery" label="Imagery" hint="Drafting notes; not emitted by Suno. One per line." />
       <h3>Era and lineage traits</h3>
@@ -496,7 +498,7 @@ function HouseBudgets() {
 export function OutputModule() {
   const { spec, edit } = useComposer();
   return (
-    <Module number={11} title="Negative Space + Output" owns="D8, D10">
+    <Module number={11} icon="output" title="Negative Space + Output" owns="D8, D10">
       <h3>Negative space</h3>
       {spec.D10.negativeSpace.map((entry, i) => (
         <fieldset className="group" key={i} data-ir-path={`/D10/negativeSpace/${i}`}>

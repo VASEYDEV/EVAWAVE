@@ -33,6 +33,9 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
                 <Link href="/">Composer</Link>
               </li>
               <li>
+                <Link href="/import">Import</Link>
+              </li>
+              <li>
                 <Link href="/library">Library</Link>
               </li>
             </ul>

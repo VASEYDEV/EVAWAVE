@@ -1,0 +1,6 @@
+<!-- EVAWAVE module icon "form" (provisional). Generated from assets/icons/modules.json; do not edit. -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400" fill="none" stroke="currentColor" stroke-width="22" stroke-linecap="round" stroke-linejoin="round">
+  <rect x="60" y="60" width="280" height="280" rx="24"/>
+  <path d="M150 300 L185 110 L215 110 L250 300 Z"/>
+  <path d="M200 280 L255 150"/>
+</svg>
