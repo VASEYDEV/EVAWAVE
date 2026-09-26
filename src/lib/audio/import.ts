@@ -42,13 +42,26 @@ export const DECODE_SAMPLE_RATE = 48000;
  */
 export const IMPORT_MAX_CHANNEL_SECONDS = 2 * IMPORT_MAX_SECONDS;
 
-/** The channels an import assumes when the file's header does not say: 7.1. */
-export const IMPORT_ASSUMED_CHANNELS = 8;
+/**
+ * The channels an import assumes when the file's header does not say: the most a Web Audio
+ * buffer holds, so the bound holds whatever the file carries (Chromium refuses a 33-channel
+ * AudioBuffer; 32 is also the spec's minimum). Such a recording runs to 37.5 seconds.
+ */
+export const IMPORT_ASSUMED_CHANNELS = 32;
 
-const minutes = (seconds: number) => {
-  const value = Number((seconds / 60).toFixed(1));
-  return `${value} minute${value === 1 ? "" : "s"}`;
+/** A length for a message: seconds under a minute and a half, minutes above. */
+const span = (seconds: number) => {
+  const [value, unit] = seconds < 90 ? [Number(seconds.toFixed(1)), "second"] : [Number((seconds / 60).toFixed(1)), "minute"];
+  return `${value} ${unit}${value === 1 ? "" : "s"}`;
 };
+
+/** The duration probe could not tell how long the recording is; nothing was read or decoded. */
+export class ImportLengthUnknownError extends Error {
+  constructor() {
+    super("This file does not say how long it is, so it cannot be imported safely; export it again as WAV, FLAC, MP3 or M4A and try that.");
+    this.name = "ImportLengthUnknownError";
+  }
+}
 
 /**
  * The recording is longer than an import decodes: IMPORT_MAX_SECONDS, or less for a file with
@@ -59,9 +72,9 @@ export class ImportTooLongError extends Error {
   constructor(seconds: number, limitSeconds = IMPORT_MAX_SECONDS, channels?: number | "unknown") {
     super(
       channels === "unknown"
-        ? `This recording runs ${minutes(seconds)}, and its file does not say how many channels it has; imports take such recordings up to ${minutes(limitSeconds)} for now.`
+        ? `This recording runs ${span(seconds)}, and its file does not say how many channels it has; imports take such recordings up to ${span(limitSeconds)} for now.`
         : channels !== undefined
-          ? `This recording has ${channels} channels and runs ${minutes(seconds)}; imports take ${channels}-channel recordings up to ${minutes(limitSeconds)} for now.`
+          ? `This recording has ${channels} channels and runs ${span(seconds)}; imports take ${channels}-channel recordings up to ${span(limitSeconds)} for now.`
           : `This recording is ${Math.round(seconds / 60)} minutes long; imports take recordings up to ${IMPORT_MAX_SECONDS / 60} minutes for now.`,
     );
     this.name = "ImportTooLongError";
@@ -83,9 +96,10 @@ export interface ImportDeps {
   digest(bytes: ArrayBuffer): Promise<string>;
   /**
    * The recording's duration in seconds, from its metadata, without reading the file into
-   * memory; undefined when it cannot tell. The browser asks a media element.
+   * memory; undefined when it cannot tell, which refuses the import, since nothing else bounds
+   * the decode. The browser asks a media element.
    */
-  probeDuration?(file: File): Promise<number | undefined>;
+  probeDuration(file: File): Promise<number | undefined>;
   /**
    * Runs the analysis. The browser runs it in a worker that an abort terminates; without this
    * it runs here, synchronously (Node and the tests).
@@ -121,16 +135,17 @@ export async function importAudio(file: File, deps: ImportDeps, signal?: AbortSi
   // An import superseded before it starts never reads the file: it can be large.
   signal?.throwIfAborted();
   if (file.size > IMPORT_MAX_BYTES) throw new ImportTooLargeError(file.size);
-  const seconds = await deps.probeDuration?.(file);
+  const seconds = await deps.probeDuration(file);
   signal?.throwIfAborted();
-  if (seconds !== undefined) {
-    if (seconds > IMPORT_MAX_SECONDS) throw new ImportTooLongError(seconds);
-    // Web Audio decodes every channel at once, so the channel count bounds the length too.
-    const channels = await channelCount(headerReader(file), file.size);
-    signal?.throwIfAborted();
-    const limit = IMPORT_MAX_CHANNEL_SECONDS / (channels ?? IMPORT_ASSUMED_CHANNELS);
-    if (seconds > limit) throw new ImportTooLongError(seconds, limit, channels ?? "unknown");
-  }
+  // The encoded size says little about the decoded size, so a recording of unknown length
+  // could decode to any size.
+  if (seconds === undefined || !Number.isFinite(seconds)) throw new ImportLengthUnknownError();
+  if (seconds > IMPORT_MAX_SECONDS) throw new ImportTooLongError(seconds);
+  // Web Audio decodes every channel at once, so the channel count bounds the length too.
+  const channels = await channelCount(headerReader(file), file.size);
+  signal?.throwIfAborted();
+  const limit = IMPORT_MAX_CHANNEL_SECONDS / (channels ?? IMPORT_ASSUMED_CHANNELS);
+  if (seconds > limit) throw new ImportTooLongError(seconds, limit, channels ?? "unknown");
   const bytes = await file.arrayBuffer();
   signal?.throwIfAborted();
   const sha256 = await deps.digest(bytes);

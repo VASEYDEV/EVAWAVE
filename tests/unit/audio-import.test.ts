@@ -12,6 +12,7 @@ import {
   IMPORT_MAX_CHANNEL_SECONDS,
   IMPORT_MAX_SECONDS,
   importAudio,
+  ImportLengthUnknownError,
   ImportTooLargeError,
   ImportTooLongError,
   profileFromReview,
@@ -61,6 +62,8 @@ function recorder() {
 
 const nodeDeps = (): ImportDeps => ({
   decode: async (bytes) => decodeWav(bytes),
+  // The fixture's length, as a media element reads it from the metadata.
+  probeDuration: async () => 12,
   digest: sha256Hex,
   now: () => "2026-09-26T12:00:00.000Z",
 });
@@ -237,12 +240,17 @@ describe("a superseded import", () => {
     const readOver = vi.spyOn(over, "arrayBuffer");
     await expect(importAudio(over, withLength(IMPORT_MAX_SECONDS + 1))).rejects.toBeInstanceOf(ImportTooLongError);
     expect(readOver).not.toHaveBeenCalled();
-    // At the limit, or when the metadata cannot tell, the import goes ahead.
-    for (const seconds of [IMPORT_MAX_SECONDS, undefined]) {
-      const ok = fresh();
-      const read = vi.spyOn(ok, "arrayBuffer");
-      await importAudio(ok, withLength(seconds));
-      expect(read).toHaveBeenCalledTimes(1);
+    // At the limit, the import goes ahead.
+    const ok = fresh();
+    const read = vi.spyOn(ok, "arrayBuffer");
+    await importAudio(ok, withLength(IMPORT_MAX_SECONDS));
+    expect(read).toHaveBeenCalledTimes(1);
+    // When the metadata cannot tell, nothing bounds the decode, so the import is refused.
+    for (const seconds of [undefined, Number.POSITIVE_INFINITY, Number.NaN]) {
+      const unknown = fresh();
+      const readUnknown = vi.spyOn(unknown, "arrayBuffer");
+      await expect(importAudio(unknown, withLength(seconds))).rejects.toBeInstanceOf(ImportLengthUnknownError);
+      expect(readUnknown).not.toHaveBeenCalled();
     }
   });
 
@@ -283,15 +291,15 @@ describe("a superseded import", () => {
     expect(result.asset.bytes).toBe(44 + pcm.byteLength);
   });
 
-  it("assumes 7.1 when the header does not say how many channels a recording has", async () => {
+  it("assumes the most channels Web Audio decodes when the header does not say how many a recording has", async () => {
     const limit = IMPORT_MAX_CHANNEL_SECONDS / IMPORT_ASSUMED_CHANNELS;
-    expect(limit).toBe(150);
+    expect(limit).toBe(37.5);
     // Bytes no header reader knows, which the injected decoder reads as the mono WAV.
     const opaque = () => new File([new Uint8Array(64).fill(7)], "field-recording.bin");
     const deps = (seconds: number): ImportDeps => ({ ...nodeDeps(), decode: async () => decodeWav(wav), probeDuration: async () => seconds });
     const refused = importAudio(opaque(), deps(limit + 30));
     await expect(refused).rejects.toThrow(
-      "This recording runs 3 minutes, and its file does not say how many channels it has; imports take such recordings up to 2.5 minutes for now.",
+      "This recording runs 67.5 seconds, and its file does not say how many channels it has; imports take such recordings up to 37.5 seconds for now.",
     );
     await expect(importAudio(opaque(), deps(limit))).resolves.toMatchObject({ asset: { filename: "field-recording.bin" } });
   });

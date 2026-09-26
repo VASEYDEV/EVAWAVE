@@ -11,7 +11,7 @@ import { AUDIO_DRAFT_MODEL } from "@/core/musicspec/intake";
 import { lintStyleProfile, lowConfidenceOps } from "@/core/musicspec/lint";
 import { catalog } from "@/data/taxonomy";
 import { browserImportDeps, inTurnForLocalAudio, keepAudioFor } from "@/lib/audio/browser";
-import { importAudio, ImportTooLargeError, ImportTooLongError, profileFromReview, type ImportResult } from "@/lib/audio/import";
+import { importAudio, ImportLengthUnknownError, ImportTooLargeError, ImportTooLongError, profileFromReview, type ImportResult } from "@/lib/audio/import";
 import { createLibraryClient } from "@/lib/library/client";
 import { saveImportAndKeepAudio } from "@/lib/library/repository";
 import { PROFILE_NAME_MAX, recordFilename, recordMime } from "@/lib/library/schema";
@@ -84,7 +84,7 @@ export function AudioImport() {
     } catch (error) {
       if (controller.signal.aborted) return;
       setStatus(
-        error instanceof ImportTooLargeError || error instanceof ImportTooLongError
+        error instanceof ImportTooLargeError || error instanceof ImportTooLongError || error instanceof ImportLengthUnknownError
           ? `Could not analyse ${file.name}: ${error.message}`
           : `Could not analyse ${file.name}: ${error instanceof Error ? error.message : "unknown error"}. Try a WAV, MP3, AAC or FLAC file.`,
       );
