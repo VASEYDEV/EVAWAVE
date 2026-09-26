@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
-# Verification gate (CLAUDE.md §3): repo standards, then lint · typecheck · unit · build,
-# then the client-bundle secret check (§5) and npm audit (§6, criticals block).
+# Verification gate (CLAUDE.md §3): repo standards, then lint · typecheck · unit · build ·
+# e2e (Playwright on the production build), then the client-bundle secret check (§5) and
+# npm audit (§6, criticals block).
 # CI runs this same script after `npm ci`, so local and CI verification never diverge.
 # Integration tests join when the first ones land (S7, Supabase RLS).
 # Written for bash 3.2 (macOS default): no mapfile, no empty-array expansion under set -u.
@@ -81,8 +82,9 @@ step "lint" npm run -s lint
 step "typecheck" npm run -s typecheck
 step "unit" npm test --silent
 step "build" npm run -s build
+step "e2e" npx playwright test
 step "client bundle" bash scripts/check-client-bundle.sh
 step "audit (criticals block)" npm audit --audit-level=critical
 
 echo
-echo "GATE: PASS (standards · lint · typecheck · unit · build · client bundle · audit)"
+echo "GATE: PASS (standards · lint · typecheck · unit · build · e2e · client bundle · audit)"

@@ -199,6 +199,9 @@ end-to-end Jinn rebuild through the UI with an A/B Suno render.
 - **Inline negatives** (Flow Sound, Eleven prompt): whether an "Avoid: …" sentence
   suppresses the listed terms or primes them. Take logs decide; coverage already reports
   Flow's negative space as `approximated`.
+- **Seed curation.** The seed's §4–§7 and kit sections are prose, not records. They wait
+  for curation batches (seed §10). Generated world instruments carry `family: 'other'`
+  unless the seed lists them under percussion.
 - **Techniques** (`D3.techniques`, section `scope.techniqueIds`, `D9.techniqueIds`) are not
   rendered by any v1 serializer. Coverage reports them `dropped`, and a cue or
   `phraseOverride` carries the wording today.
@@ -1037,6 +1040,21 @@ Every container has a default, so an empty spec is valid.
   (or the kind's phrase). Without `bracket` it is the bracket's last clause; with `bracket`
   it is its own bracket after the section. With `restatement: 'style-and-sections'`, each
   section bracket ends with the clause `strict <signature>`.
+- **Edits and undo.** Every composer edit is a list of `PatchOp`s addressed by RFC 6901
+  pointers (`patch.ts`):
+  - `set` creates or replaces, and `-` appends.
+  - `merge` shallow-merges an object.
+  - `append` concatenates onto an array.
+  - `remove` deletes.
+
+  Application is copy-on-write. Each op returns an inverse (`set` or `remove`) that
+  restores exactly what it changed. When an op created intermediate objects, the inverse
+  removes the outermost one. The history (`history.ts`) is an append-only tree:
+  - Undo applies the cursor node's inverse and moves to its parent.
+  - Redo applies a child's ops. By default it takes the newest child.
+  - An edit after an undo adds a sibling, so every branch stays reachable (`jumpTo`).
+  - Consecutive typing into one field folds into one node until another edit, an undo or
+    a redo seals it.
 - **Patches.** A patch applies only through the review diff, and a `proposed` patch never
   touches the working spec. Ops apply only at exactly accepted paths. Patches may not edit
   `references` or `patches` (PT-2). The lineage pass runs on every op value before it is
@@ -1397,6 +1415,24 @@ approximated through the Producer script. No target blocks.
 Acceptance: Playwright on a mobile viewport builds Hook B from §2.8 through the UI, and
 the compiled bracket matches. Undo walks every edit back to the empty spec, and redo
 restores it. An edit after an undo keeps the undone branch reachable.
+
+Delivered:
+
+- **Composer** (`src/components/composer/`). The eleven modules, with every control
+  naming its IR path in `data-ir-path`. Budget meters, the lint panel, the coverage
+  report, the export pane and the history panel with branches. Ctrl/Cmd+Z works outside
+  text entry. The export pane covers per-engine files per §1.5, the MusicSpec JSON and the
+  word-MIDI blueprint (`blueprint.ts`).
+- **Core:** `patch.ts` and `history.ts` (§2.4).
+- **Instrument bank.** `scripts/build-instrument-bank.mjs` generates
+  `src/data/taxonomy/instruments/` from the seed's enumerable sections: §1 GM programs,
+  §2 GM percussion, §8.2 drum machines and §9 world sets. That is 312 records beside the 24
+  curated ones. `manifest.json` records the seed's sha256, every merge into an existing
+  record and the sections left for curation, with the reason: §3, §4–§6 (prose lists),
+  §7 (SynthRole), §8.1, §8.3 and the GM2 kits (DrumPattern).
+- **Verification:** `tests/e2e/composer.spec.ts` (Pixel 7 viewport) and
+  `tests/e2e/a11y.spec.ts`, an axe scan for WCAG 2.2 A and AA with every module open. The
+  gate runs both on the production build.
 
 ### S4: Supabase library with RLS
 

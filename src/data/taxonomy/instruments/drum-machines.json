@@ -1,0 +1,490 @@
+[
+  {
+    "id": "808-analog-drum-kit",
+    "name": "808 analog drum kit",
+    "family": "electronic",
+    "region": null,
+    "register": [],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [
+      "bitcrush",
+      "sample-rate reduce",
+      "tape saturation",
+      "vinyl crackle",
+      "gated reverb",
+      "sidechain pump",
+      "transient shaping",
+      "pitch-down",
+      "layering",
+      "chopping",
+      "filtering"
+    ],
+    "idiomaticRoles": [
+      "rhythm"
+    ],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "Boomy tuned sub kick with long decay, snappy short snare, dry clap, ticking hats, cowbell, congas, maracas (seed §8.2).",
+    "promptPhrase": "808 analog drum kit",
+    "commonNames": [
+      "808",
+      "TR-808"
+    ]
+  },
+  {
+    "id": "909-analog-sample-hybrid-kit",
+    "name": "909 analog/sample hybrid kit",
+    "family": "electronic",
+    "region": null,
+    "register": [],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [
+      "bitcrush",
+      "sample-rate reduce",
+      "tape saturation",
+      "vinyl crackle",
+      "gated reverb",
+      "sidechain pump",
+      "transient shaping",
+      "pitch-down",
+      "layering",
+      "chopping",
+      "filtering"
+    ],
+    "idiomaticRoles": [
+      "rhythm"
+    ],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "Punchy clicky kick, cracking snare, sizzling open hat, crash (seed §8.2).",
+    "promptPhrase": "909 analog/sample hybrid kit",
+    "commonNames": [
+      "909",
+      "TR-909"
+    ]
+  },
+  {
+    "id": "707-digital-kit",
+    "name": "707 digital kit",
+    "family": "electronic",
+    "region": null,
+    "register": [],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [
+      "bitcrush",
+      "sample-rate reduce",
+      "tape saturation",
+      "vinyl crackle",
+      "gated reverb",
+      "sidechain pump",
+      "transient shaping",
+      "pitch-down",
+      "layering",
+      "chopping",
+      "filtering"
+    ],
+    "idiomaticRoles": [
+      "rhythm"
+    ],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "Thin crisp digital kick/snare, Latin toms (seed §8.2).",
+    "promptPhrase": "707 digital kit",
+    "commonNames": [
+      "707",
+      "727"
+    ]
+  },
+  {
+    "id": "606-analog-kit",
+    "name": "606 analog kit",
+    "family": "electronic",
+    "region": null,
+    "register": [],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [
+      "bitcrush",
+      "sample-rate reduce",
+      "tape saturation",
+      "vinyl crackle",
+      "gated reverb",
+      "sidechain pump",
+      "transient shaping",
+      "pitch-down",
+      "layering",
+      "chopping",
+      "filtering"
+    ],
+    "idiomaticRoles": [
+      "rhythm"
+    ],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "Small tight analog kit, clicky hats (seed §8.2).",
+    "promptPhrase": "606 analog kit",
+    "commonNames": [
+      "606"
+    ]
+  },
+  {
+    "id": "cr-78-kit",
+    "name": "CR-78 kit",
+    "family": "electronic",
+    "region": null,
+    "register": [],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [
+      "bitcrush",
+      "sample-rate reduce",
+      "tape saturation",
+      "vinyl crackle",
+      "gated reverb",
+      "sidechain pump",
+      "transient shaping",
+      "pitch-down",
+      "layering",
+      "chopping",
+      "filtering"
+    ],
+    "idiomaticRoles": [
+      "rhythm"
+    ],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "Soft vintage analog rhythm-box kit (seed §8.2).",
+    "promptPhrase": "CR-78 kit",
+    "commonNames": [
+      "CR-78"
+    ]
+  },
+  {
+    "id": "8-bit-digitized-drum-kit-gated",
+    "name": "8-bit digitized drum kit, gated",
+    "family": "electronic",
+    "region": null,
+    "register": [],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [
+      "bitcrush",
+      "sample-rate reduce",
+      "tape saturation",
+      "vinyl crackle",
+      "gated reverb",
+      "sidechain pump",
+      "transient shaping",
+      "pitch-down",
+      "layering",
+      "chopping",
+      "filtering"
+    ],
+    "idiomaticRoles": [
+      "rhythm"
+    ],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "Early digital sampled drums, gated reverb, crunchy (seed §8.2).",
+    "promptPhrase": "8-bit digitized drum kit, gated",
+    "commonNames": [
+      "LinnDrum",
+      "LM-1",
+      "DMX"
+    ]
+  },
+  {
+    "id": "12-bit-gritty-sampled-kit",
+    "name": "12-bit gritty sampled kit",
+    "family": "electronic",
+    "region": null,
+    "register": [],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [
+      "bitcrush",
+      "sample-rate reduce",
+      "tape saturation",
+      "vinyl crackle",
+      "gated reverb",
+      "sidechain pump",
+      "transient shaping",
+      "pitch-down",
+      "layering",
+      "chopping",
+      "filtering"
+    ],
+    "idiomaticRoles": [
+      "rhythm"
+    ],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "26 kHz 12-bit sampled drums, dusty, filtered, punchy (seed §8.2).",
+    "promptPhrase": "12-bit gritty sampled kit",
+    "commonNames": [
+      "SP-1200"
+    ]
+  },
+  {
+    "id": "12-bit-mpc-style-sampled-kit-with-swing",
+    "name": "12-bit MPC-style sampled kit with swing",
+    "family": "electronic",
+    "region": null,
+    "register": [],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [
+      "bitcrush",
+      "sample-rate reduce",
+      "tape saturation",
+      "vinyl crackle",
+      "gated reverb",
+      "sidechain pump",
+      "transient shaping",
+      "pitch-down",
+      "layering",
+      "chopping",
+      "filtering"
+    ],
+    "idiomaticRoles": [
+      "rhythm"
+    ],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "Warm sampled drums, swung 16ths, soft transients (seed §8.2).",
+    "promptPhrase": "12-bit MPC-style sampled kit with swing",
+    "commonNames": [
+      "MPC60"
+    ]
+  },
+  {
+    "id": "16-bit-mpc-style-kit",
+    "name": "16-bit MPC-style kit",
+    "family": "electronic",
+    "region": null,
+    "register": [],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [
+      "bitcrush",
+      "sample-rate reduce",
+      "tape saturation",
+      "vinyl crackle",
+      "gated reverb",
+      "sidechain pump",
+      "transient shaping",
+      "pitch-down",
+      "layering",
+      "chopping",
+      "filtering"
+    ],
+    "idiomaticRoles": [
+      "rhythm"
+    ],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "Cleaner sampled drums, tight (seed §8.2).",
+    "promptPhrase": "16-bit MPC-style kit",
+    "commonNames": [
+      "MPC3000",
+      "MPC2000"
+    ]
+  },
+  {
+    "id": "hexagonal-electronic-tom-kit",
+    "name": "Hexagonal electronic tom kit",
+    "family": "electronic",
+    "region": null,
+    "register": [],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [
+      "bitcrush",
+      "sample-rate reduce",
+      "tape saturation",
+      "vinyl crackle",
+      "gated reverb",
+      "sidechain pump",
+      "transient shaping",
+      "pitch-down",
+      "layering",
+      "chopping",
+      "filtering"
+    ],
+    "idiomaticRoles": [
+      "rhythm"
+    ],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "80s synthesized toms with pitch drop (seed §8.2).",
+    "promptPhrase": "hexagonal electronic tom kit",
+    "commonNames": [
+      "Simmons"
+    ]
+  },
+  {
+    "id": "12-bit-sampler-drums-rack",
+    "name": "12-bit sampler drums (rack)",
+    "family": "electronic",
+    "region": null,
+    "register": [],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [
+      "bitcrush",
+      "sample-rate reduce",
+      "tape saturation",
+      "vinyl crackle",
+      "gated reverb",
+      "sidechain pump",
+      "transient shaping",
+      "pitch-down",
+      "layering",
+      "chopping",
+      "filtering"
+    ],
+    "idiomaticRoles": [
+      "rhythm"
+    ],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "Crunchy aliasing sampler character (seed §8.2).",
+    "promptPhrase": "12-bit sampler drums (rack)",
+    "commonNames": [
+      "S950",
+      "Emulator"
+    ]
+  },
+  {
+    "id": "dusty-chopped-break-kit",
+    "name": "Dusty chopped-break kit",
+    "family": "electronic",
+    "region": null,
+    "register": [],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [
+      "bitcrush",
+      "sample-rate reduce",
+      "tape saturation",
+      "vinyl crackle",
+      "gated reverb",
+      "sidechain pump",
+      "transient shaping",
+      "pitch-down",
+      "layering",
+      "chopping",
+      "filtering"
+    ],
+    "idiomaticRoles": [
+      "rhythm"
+    ],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "Sampled breakbeat slices, vinyl crackle, swung (seed §8.2).",
+    "promptPhrase": "dusty chopped-break kit",
+    "commonNames": [
+      "boom-bap kit"
+    ]
+  },
+  {
+    "id": "processed-modern-hybrid-kit",
+    "name": "Processed modern hybrid kit",
+    "family": "electronic",
+    "region": null,
+    "register": [],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [
+      "bitcrush",
+      "sample-rate reduce",
+      "tape saturation",
+      "vinyl crackle",
+      "gated reverb",
+      "sidechain pump",
+      "transient shaping",
+      "pitch-down",
+      "layering",
+      "chopping",
+      "filtering"
+    ],
+    "idiomaticRoles": [
+      "rhythm"
+    ],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "Acoustic + electronic layers, saturated, sidechained (seed §8.2).",
+    "promptPhrase": "processed modern hybrid kit",
+    "commonNames": [
+      "hybrid kit"
+    ]
+  }
+]

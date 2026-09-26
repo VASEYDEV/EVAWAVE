@@ -1,0 +1,1502 @@
+[
+  {
+    "id": "acoustic-bass-drum",
+    "name": "Acoustic Bass Drum",
+    "family": "percussion",
+    "region": null,
+    "register": [],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [
+      "rhythm"
+    ],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "General MIDI percussion note 35 (GM1, seed §2).",
+    "promptPhrase": "acoustic bass drum",
+    "commonNames": [
+      "Acoustic Bass Drum"
+    ]
+  },
+  {
+    "id": "bass-drum-1",
+    "name": "Bass Drum 1",
+    "family": "percussion",
+    "region": null,
+    "register": [],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [
+      "rhythm"
+    ],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "General MIDI percussion note 36 (GM1, seed §2); kit piece: kick.",
+    "promptPhrase": "bass drum 1",
+    "commonNames": [
+      "Bass Drum 1"
+    ]
+  },
+  {
+    "id": "side-stick",
+    "name": "Side Stick",
+    "family": "percussion",
+    "region": null,
+    "register": [],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [
+      "rhythm"
+    ],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "General MIDI percussion note 37 (GM1, seed §2); kit piece: rim.",
+    "promptPhrase": "side stick",
+    "commonNames": [
+      "Side Stick"
+    ]
+  },
+  {
+    "id": "acoustic-snare",
+    "name": "Acoustic Snare",
+    "family": "percussion",
+    "region": null,
+    "register": [],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [
+      "rhythm"
+    ],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "General MIDI percussion note 38 (GM1, seed §2); kit piece: snare.",
+    "promptPhrase": "acoustic snare",
+    "commonNames": [
+      "Acoustic Snare"
+    ]
+  },
+  {
+    "id": "hand-clap",
+    "name": "Hand Clap",
+    "family": "percussion",
+    "region": null,
+    "register": [],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [
+      "rhythm"
+    ],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "General MIDI percussion note 39 (GM1, seed §2); kit piece: clap.",
+    "promptPhrase": "hand clap",
+    "commonNames": [
+      "Hand Clap"
+    ]
+  },
+  {
+    "id": "electric-snare",
+    "name": "Electric Snare",
+    "family": "percussion",
+    "region": null,
+    "register": [],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [
+      "rhythm"
+    ],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "General MIDI percussion note 40 (GM1, seed §2).",
+    "promptPhrase": "electric snare",
+    "commonNames": [
+      "Electric Snare"
+    ]
+  },
+  {
+    "id": "low-floor-tom",
+    "name": "Low Floor Tom",
+    "family": "percussion",
+    "region": null,
+    "register": [],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [
+      "rhythm"
+    ],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "General MIDI percussion note 41 (GM1, seed §2); kit piece: perc-2.",
+    "promptPhrase": "low floor tom",
+    "commonNames": [
+      "Low Floor Tom"
+    ]
+  },
+  {
+    "id": "closed-hi-hat",
+    "name": "Closed Hi-Hat",
+    "family": "percussion",
+    "region": null,
+    "register": [],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [
+      "rhythm"
+    ],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "General MIDI percussion note 42 (GM1, seed §2); kit piece: hat-closed.",
+    "promptPhrase": "closed hi-hat",
+    "commonNames": [
+      "Closed Hi-Hat"
+    ]
+  },
+  {
+    "id": "high-floor-tom",
+    "name": "High Floor Tom",
+    "family": "percussion",
+    "region": null,
+    "register": [],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [
+      "rhythm"
+    ],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "General MIDI percussion note 43 (GM1, seed §2); kit piece: perc-2.",
+    "promptPhrase": "high floor tom",
+    "commonNames": [
+      "High Floor Tom"
+    ]
+  },
+  {
+    "id": "pedal-hi-hat",
+    "name": "Pedal Hi-Hat",
+    "family": "percussion",
+    "region": null,
+    "register": [],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [
+      "rhythm"
+    ],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "General MIDI percussion note 44 (GM1, seed §2).",
+    "promptPhrase": "pedal hi-hat",
+    "commonNames": [
+      "Pedal Hi-Hat"
+    ]
+  },
+  {
+    "id": "low-tom",
+    "name": "Low Tom",
+    "family": "percussion",
+    "region": null,
+    "register": [],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [
+      "rhythm"
+    ],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "General MIDI percussion note 45 (GM1, seed §2); kit piece: perc-2.",
+    "promptPhrase": "low tom",
+    "commonNames": [
+      "Low Tom"
+    ]
+  },
+  {
+    "id": "open-hi-hat",
+    "name": "Open Hi-Hat",
+    "family": "percussion",
+    "region": null,
+    "register": [],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [
+      "rhythm"
+    ],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "General MIDI percussion note 46 (GM1, seed §2); kit piece: hat-open.",
+    "promptPhrase": "open hi-hat",
+    "commonNames": [
+      "Open Hi-Hat"
+    ]
+  },
+  {
+    "id": "low-mid-tom",
+    "name": "Low-Mid Tom",
+    "family": "percussion",
+    "region": null,
+    "register": [],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [
+      "rhythm"
+    ],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "General MIDI percussion note 47 (GM1, seed §2); kit piece: perc-1.",
+    "promptPhrase": "low-mid tom",
+    "commonNames": [
+      "Low-Mid Tom"
+    ]
+  },
+  {
+    "id": "hi-mid-tom",
+    "name": "Hi-Mid Tom",
+    "family": "percussion",
+    "region": null,
+    "register": [],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [
+      "rhythm"
+    ],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "General MIDI percussion note 48 (GM1, seed §2); kit piece: perc-1.",
+    "promptPhrase": "hi-mid tom",
+    "commonNames": [
+      "Hi-Mid Tom"
+    ]
+  },
+  {
+    "id": "crash-cymbal-1",
+    "name": "Crash Cymbal 1",
+    "family": "percussion",
+    "region": null,
+    "register": [],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [
+      "rhythm"
+    ],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "General MIDI percussion note 49 (GM1, seed §2); kit piece: crash.",
+    "promptPhrase": "crash cymbal 1",
+    "commonNames": [
+      "Crash Cymbal 1"
+    ]
+  },
+  {
+    "id": "high-tom",
+    "name": "High Tom",
+    "family": "percussion",
+    "region": null,
+    "register": [],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [
+      "rhythm"
+    ],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "General MIDI percussion note 50 (GM1, seed §2); kit piece: perc-1.",
+    "promptPhrase": "high tom",
+    "commonNames": [
+      "High Tom"
+    ]
+  },
+  {
+    "id": "ride-cymbal-1",
+    "name": "Ride Cymbal 1",
+    "family": "percussion",
+    "region": null,
+    "register": [],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [
+      "rhythm"
+    ],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "General MIDI percussion note 51 (GM1, seed §2); kit piece: ride.",
+    "promptPhrase": "ride cymbal 1",
+    "commonNames": [
+      "Ride Cymbal 1"
+    ]
+  },
+  {
+    "id": "chinese-cymbal",
+    "name": "Chinese Cymbal",
+    "family": "percussion",
+    "region": null,
+    "register": [],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [
+      "rhythm"
+    ],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "General MIDI percussion note 52 (GM1, seed §2).",
+    "promptPhrase": "chinese cymbal",
+    "commonNames": [
+      "Chinese Cymbal"
+    ]
+  },
+  {
+    "id": "ride-bell",
+    "name": "Ride Bell",
+    "family": "percussion",
+    "region": null,
+    "register": [],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [
+      "rhythm"
+    ],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "General MIDI percussion note 53 (GM1, seed §2).",
+    "promptPhrase": "ride bell",
+    "commonNames": [
+      "Ride Bell"
+    ]
+  },
+  {
+    "id": "tambourine",
+    "name": "Tambourine",
+    "family": "percussion",
+    "region": null,
+    "register": [],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [
+      "rhythm"
+    ],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "General MIDI percussion note 54 (GM1, seed §2).",
+    "promptPhrase": "tambourine",
+    "commonNames": [
+      "Tambourine"
+    ]
+  },
+  {
+    "id": "splash-cymbal",
+    "name": "Splash Cymbal",
+    "family": "percussion",
+    "region": null,
+    "register": [],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [
+      "rhythm"
+    ],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "General MIDI percussion note 55 (GM1, seed §2).",
+    "promptPhrase": "splash cymbal",
+    "commonNames": [
+      "Splash Cymbal"
+    ]
+  },
+  {
+    "id": "cowbell",
+    "name": "Cowbell",
+    "family": "percussion",
+    "region": null,
+    "register": [],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [
+      "rhythm"
+    ],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "General MIDI percussion note 56 (GM1, seed §2).",
+    "promptPhrase": "cowbell",
+    "commonNames": [
+      "Cowbell"
+    ]
+  },
+  {
+    "id": "crash-cymbal-2",
+    "name": "Crash Cymbal 2",
+    "family": "percussion",
+    "region": null,
+    "register": [],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [
+      "rhythm"
+    ],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "General MIDI percussion note 57 (GM1, seed §2); kit piece: crash.",
+    "promptPhrase": "crash cymbal 2",
+    "commonNames": [
+      "Crash Cymbal 2"
+    ]
+  },
+  {
+    "id": "vibraslap",
+    "name": "Vibraslap",
+    "family": "percussion",
+    "region": null,
+    "register": [],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [
+      "rhythm"
+    ],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "General MIDI percussion note 58 (GM1, seed §2).",
+    "promptPhrase": "vibraslap",
+    "commonNames": [
+      "Vibraslap"
+    ]
+  },
+  {
+    "id": "ride-cymbal-2",
+    "name": "Ride Cymbal 2",
+    "family": "percussion",
+    "region": null,
+    "register": [],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [
+      "rhythm"
+    ],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "General MIDI percussion note 59 (GM1, seed §2).",
+    "promptPhrase": "ride cymbal 2",
+    "commonNames": [
+      "Ride Cymbal 2"
+    ]
+  },
+  {
+    "id": "hi-bongo",
+    "name": "Hi Bongo",
+    "family": "percussion",
+    "region": null,
+    "register": [],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [
+      "rhythm"
+    ],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "General MIDI percussion note 60 (GM1, seed §2).",
+    "promptPhrase": "hi bongo",
+    "commonNames": [
+      "Hi Bongo"
+    ]
+  },
+  {
+    "id": "low-bongo",
+    "name": "Low Bongo",
+    "family": "percussion",
+    "region": null,
+    "register": [],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [
+      "rhythm"
+    ],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "General MIDI percussion note 61 (GM1, seed §2).",
+    "promptPhrase": "low bongo",
+    "commonNames": [
+      "Low Bongo"
+    ]
+  },
+  {
+    "id": "mute-hi-conga",
+    "name": "Mute Hi Conga",
+    "family": "percussion",
+    "region": null,
+    "register": [],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [
+      "rhythm"
+    ],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "General MIDI percussion note 62 (GM1, seed §2).",
+    "promptPhrase": "mute hi conga",
+    "commonNames": [
+      "Mute Hi Conga"
+    ]
+  },
+  {
+    "id": "open-hi-conga",
+    "name": "Open Hi Conga",
+    "family": "percussion",
+    "region": null,
+    "register": [],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [
+      "rhythm"
+    ],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "General MIDI percussion note 63 (GM1, seed §2).",
+    "promptPhrase": "open hi conga",
+    "commonNames": [
+      "Open Hi Conga"
+    ]
+  },
+  {
+    "id": "low-conga",
+    "name": "Low Conga",
+    "family": "percussion",
+    "region": null,
+    "register": [],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [
+      "rhythm"
+    ],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "General MIDI percussion note 64 (GM1, seed §2).",
+    "promptPhrase": "low conga",
+    "commonNames": [
+      "Low Conga"
+    ]
+  },
+  {
+    "id": "high-timbale",
+    "name": "High Timbale",
+    "family": "percussion",
+    "region": null,
+    "register": [],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [
+      "rhythm"
+    ],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "General MIDI percussion note 65 (GM1, seed §2).",
+    "promptPhrase": "high timbale",
+    "commonNames": [
+      "High Timbale"
+    ]
+  },
+  {
+    "id": "low-timbale",
+    "name": "Low Timbale",
+    "family": "percussion",
+    "region": null,
+    "register": [],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [
+      "rhythm"
+    ],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "General MIDI percussion note 66 (GM1, seed §2).",
+    "promptPhrase": "low timbale",
+    "commonNames": [
+      "Low Timbale"
+    ]
+  },
+  {
+    "id": "high-agogo",
+    "name": "High Agogo",
+    "family": "percussion",
+    "region": null,
+    "register": [],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [
+      "rhythm"
+    ],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "General MIDI percussion note 67 (GM1, seed §2).",
+    "promptPhrase": "high agogo",
+    "commonNames": [
+      "High Agogo"
+    ]
+  },
+  {
+    "id": "low-agogo",
+    "name": "Low Agogo",
+    "family": "percussion",
+    "region": null,
+    "register": [],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [
+      "rhythm"
+    ],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "General MIDI percussion note 68 (GM1, seed §2).",
+    "promptPhrase": "low agogo",
+    "commonNames": [
+      "Low Agogo"
+    ]
+  },
+  {
+    "id": "cabasa",
+    "name": "Cabasa",
+    "family": "percussion",
+    "region": null,
+    "register": [],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [
+      "rhythm"
+    ],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "General MIDI percussion note 69 (GM1, seed §2).",
+    "promptPhrase": "cabasa",
+    "commonNames": [
+      "Cabasa"
+    ]
+  },
+  {
+    "id": "maracas",
+    "name": "Maracas",
+    "family": "percussion",
+    "region": null,
+    "register": [],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [
+      "rhythm"
+    ],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "General MIDI percussion note 70 (GM1, seed §2).",
+    "promptPhrase": "maracas",
+    "commonNames": [
+      "Maracas"
+    ]
+  },
+  {
+    "id": "short-whistle",
+    "name": "Short Whistle",
+    "family": "percussion",
+    "region": null,
+    "register": [],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [
+      "rhythm"
+    ],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "General MIDI percussion note 71 (GM1, seed §2).",
+    "promptPhrase": "short whistle",
+    "commonNames": [
+      "Short Whistle"
+    ]
+  },
+  {
+    "id": "long-whistle",
+    "name": "Long Whistle",
+    "family": "percussion",
+    "region": null,
+    "register": [],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [
+      "rhythm"
+    ],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "General MIDI percussion note 72 (GM1, seed §2).",
+    "promptPhrase": "long whistle",
+    "commonNames": [
+      "Long Whistle"
+    ]
+  },
+  {
+    "id": "short-guiro",
+    "name": "Short Guiro",
+    "family": "percussion",
+    "region": null,
+    "register": [],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [
+      "rhythm"
+    ],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "General MIDI percussion note 73 (GM1, seed §2).",
+    "promptPhrase": "short guiro",
+    "commonNames": [
+      "Short Guiro"
+    ]
+  },
+  {
+    "id": "long-guiro",
+    "name": "Long Guiro",
+    "family": "percussion",
+    "region": null,
+    "register": [],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [
+      "rhythm"
+    ],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "General MIDI percussion note 74 (GM1, seed §2).",
+    "promptPhrase": "long guiro",
+    "commonNames": [
+      "Long Guiro"
+    ]
+  },
+  {
+    "id": "claves",
+    "name": "Claves",
+    "family": "percussion",
+    "region": null,
+    "register": [],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [
+      "rhythm"
+    ],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "General MIDI percussion note 75 (GM1, seed §2).",
+    "promptPhrase": "claves",
+    "commonNames": [
+      "Claves"
+    ]
+  },
+  {
+    "id": "hi-wood-block",
+    "name": "Hi Wood Block",
+    "family": "percussion",
+    "region": null,
+    "register": [],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [
+      "rhythm"
+    ],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "General MIDI percussion note 76 (GM1, seed §2).",
+    "promptPhrase": "hi wood block",
+    "commonNames": [
+      "Hi Wood Block"
+    ]
+  },
+  {
+    "id": "low-wood-block",
+    "name": "Low Wood Block",
+    "family": "percussion",
+    "region": null,
+    "register": [],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [
+      "rhythm"
+    ],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "General MIDI percussion note 77 (GM1, seed §2).",
+    "promptPhrase": "low wood block",
+    "commonNames": [
+      "Low Wood Block"
+    ]
+  },
+  {
+    "id": "mute-cuica",
+    "name": "Mute Cuica",
+    "family": "percussion",
+    "region": null,
+    "register": [],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [
+      "rhythm"
+    ],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "General MIDI percussion note 78 (GM1, seed §2).",
+    "promptPhrase": "mute cuica",
+    "commonNames": [
+      "Mute Cuica"
+    ]
+  },
+  {
+    "id": "open-cuica",
+    "name": "Open Cuica",
+    "family": "percussion",
+    "region": null,
+    "register": [],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [
+      "rhythm"
+    ],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "General MIDI percussion note 79 (GM1, seed §2).",
+    "promptPhrase": "open cuica",
+    "commonNames": [
+      "Open Cuica"
+    ]
+  },
+  {
+    "id": "mute-triangle",
+    "name": "Mute Triangle",
+    "family": "percussion",
+    "region": null,
+    "register": [],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [
+      "rhythm"
+    ],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "General MIDI percussion note 80 (GM1, seed §2).",
+    "promptPhrase": "mute triangle",
+    "commonNames": [
+      "Mute Triangle"
+    ]
+  },
+  {
+    "id": "open-triangle",
+    "name": "Open Triangle",
+    "family": "percussion",
+    "region": null,
+    "register": [],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [
+      "rhythm"
+    ],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "General MIDI percussion note 81 (GM1, seed §2).",
+    "promptPhrase": "open triangle",
+    "commonNames": [
+      "Open Triangle"
+    ]
+  },
+  {
+    "id": "high-q",
+    "name": "High Q",
+    "family": "percussion",
+    "region": null,
+    "register": [],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [
+      "rhythm"
+    ],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "General MIDI percussion note 27 (GM2, seed §2).",
+    "promptPhrase": "high q",
+    "commonNames": [
+      "High Q"
+    ]
+  },
+  {
+    "id": "slap",
+    "name": "Slap",
+    "family": "percussion",
+    "region": null,
+    "register": [],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [
+      "rhythm"
+    ],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "General MIDI percussion note 28 (GM2, seed §2).",
+    "promptPhrase": "slap",
+    "commonNames": [
+      "Slap"
+    ]
+  },
+  {
+    "id": "scratch-push",
+    "name": "Scratch Push",
+    "family": "percussion",
+    "region": null,
+    "register": [],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [
+      "rhythm"
+    ],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "General MIDI percussion note 29 (GM2, seed §2).",
+    "promptPhrase": "scratch push",
+    "commonNames": [
+      "Scratch Push"
+    ]
+  },
+  {
+    "id": "scratch-pull",
+    "name": "Scratch Pull",
+    "family": "percussion",
+    "region": null,
+    "register": [],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [
+      "rhythm"
+    ],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "General MIDI percussion note 30 (GM2, seed §2).",
+    "promptPhrase": "scratch pull",
+    "commonNames": [
+      "Scratch Pull"
+    ]
+  },
+  {
+    "id": "sticks",
+    "name": "Sticks",
+    "family": "percussion",
+    "region": null,
+    "register": [],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [
+      "rhythm"
+    ],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "General MIDI percussion note 31 (GM2, seed §2).",
+    "promptPhrase": "sticks",
+    "commonNames": [
+      "Sticks"
+    ]
+  },
+  {
+    "id": "square-click",
+    "name": "Square Click",
+    "family": "percussion",
+    "region": null,
+    "register": [],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [
+      "rhythm"
+    ],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "General MIDI percussion note 32 (GM2, seed §2).",
+    "promptPhrase": "square click",
+    "commonNames": [
+      "Square Click"
+    ]
+  },
+  {
+    "id": "metronome-click",
+    "name": "Metronome Click",
+    "family": "percussion",
+    "region": null,
+    "register": [],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [
+      "rhythm"
+    ],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "General MIDI percussion note 33 (GM2, seed §2).",
+    "promptPhrase": "metronome click",
+    "commonNames": [
+      "Metronome Click"
+    ]
+  },
+  {
+    "id": "metronome-bell",
+    "name": "Metronome Bell",
+    "family": "percussion",
+    "region": null,
+    "register": [],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [
+      "rhythm"
+    ],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "General MIDI percussion note 34 (GM2, seed §2).",
+    "promptPhrase": "metronome bell",
+    "commonNames": [
+      "Metronome Bell"
+    ]
+  },
+  {
+    "id": "jingle-bell",
+    "name": "Jingle Bell",
+    "family": "percussion",
+    "region": null,
+    "register": [],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [
+      "rhythm"
+    ],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "General MIDI percussion note 83 (GM2, seed §2).",
+    "promptPhrase": "jingle bell",
+    "commonNames": [
+      "Jingle Bell"
+    ]
+  },
+  {
+    "id": "bell-tree",
+    "name": "Bell Tree",
+    "family": "percussion",
+    "region": null,
+    "register": [],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [
+      "rhythm"
+    ],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "General MIDI percussion note 84 (GM2, seed §2).",
+    "promptPhrase": "bell tree",
+    "commonNames": [
+      "Bell Tree"
+    ]
+  },
+  {
+    "id": "castanets",
+    "name": "Castanets",
+    "family": "percussion",
+    "region": null,
+    "register": [],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [
+      "rhythm"
+    ],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "General MIDI percussion note 85 (GM2, seed §2).",
+    "promptPhrase": "castanets",
+    "commonNames": [
+      "Castanets"
+    ]
+  },
+  {
+    "id": "mute-surdo",
+    "name": "Mute Surdo",
+    "family": "percussion",
+    "region": null,
+    "register": [],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [
+      "rhythm"
+    ],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "General MIDI percussion note 86 (GM2, seed §2).",
+    "promptPhrase": "mute surdo",
+    "commonNames": [
+      "Mute Surdo"
+    ]
+  },
+  {
+    "id": "open-surdo",
+    "name": "Open Surdo",
+    "family": "percussion",
+    "region": null,
+    "register": [],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [
+      "rhythm"
+    ],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "General MIDI percussion note 87 (GM2, seed §2).",
+    "promptPhrase": "open surdo",
+    "commonNames": [
+      "Open Surdo"
+    ]
+  }
+]

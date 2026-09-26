@@ -110,9 +110,9 @@ README statements are claims — they pass the same verify-before-claiming rule 
 
 **Project:** EVAWAVE, a mobile-first PWA that composes, lints, versions and compiles musical intent (MusicSpec IR) into AI music engine input fields. It does not generate audio. Spec: `docs/SPEC.md` (read first: scope, MusicSpec IR v1, build plan S1–S5). Superseded docs are history in `docs/archive/`.
 **Brand:** VASEY/AI, under the Vasey Studios umbrella, as confirmed by the Build Brief (ADR 0002). The output serves VASEY.AUDIO, and `Song.brand` labels that data. The app carries no VASEY.AUDIO marks, copy, or metadata.
-**Stack:** Next.js 16.3.6 (App Router, Turbopack, `src/proxy.ts`) · React 19 · TypeScript 5.9 strict · Supabase (`@supabase/ssr`, Supabase Auth; no Clerk) · Vitest · ESLint 9, invoked directly. Node `^22.13.0 || ^24.0.0 || >=26.0.0` (scope A15, ADR 0002).
+**Stack:** Next.js 16.3.6 (App Router, Turbopack, `src/proxy.ts`) · React 19 · TypeScript 5.9 strict · Supabase (`@supabase/ssr`, Supabase Auth; no Clerk) · Vitest · Playwright (e2e on a mobile viewport, with axe) · ESLint 9, invoked directly. Node `^22.13.0 || ^24.0.0 || >=26.0.0` (scope A15, ADR 0002).
 **Package manager:** npm (lockfile committed, `npm ci`; `.npmrc` sets `engine-strict`).
-**Commands:** dev `npm run dev` · lint `npm run lint` · typecheck `npm run typecheck` · test `npm test` · build `npm run build` · gate `bash scripts/gate.sh`
+**Commands:** dev `npm run dev` · lint `npm run lint` · typecheck `npm run typecheck` · test `npm test` · build `npm run build` · e2e `npx playwright test` (after a build) · gate `bash scripts/gate.sh`
 **Deploy:** Vercel per §9, not configured yet.
 **Repo-specific invariants** (§1.8 corrected-twice rules land here):
 - LICENSE is Apache-2.0, chosen at repo creation. Do not swap it to MIT without explicit owner approval.

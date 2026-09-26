@@ -1,0 +1,248 @@
+{
+  "seed": "docs/evawave/instrument-bank-seed-v0.1.md",
+  "seedSha256": "3517d8913fe7dbcff29900124e6c9f0771b4bd7d3d0ccad1aa4125d890a185dc",
+  "generator": "scripts/build-instrument-bank.mjs",
+  "counts": {
+    "gm-programs.json": 117,
+    "gm-percussion.json": 60,
+    "drum-machines.json": 13,
+    "world.json": 122
+  },
+  "mergedIntoExisting": [
+    {
+      "seed": "GM 48 Timpani",
+      "into": "timpani",
+      "source": "curated"
+    },
+    {
+      "seed": "GM 53 Choir Aahs",
+      "into": "choir-wordless",
+      "source": "curated"
+    },
+    {
+      "seed": "GM 117 Taiko Drum",
+      "into": "taiko",
+      "source": "curated"
+    },
+    {
+      "seed": "GM note 82 Shaker",
+      "into": "shaker",
+      "source": "curated"
+    },
+    {
+      "seed": "§8.2 layered trap kit",
+      "into": "trap-kit",
+      "source": "curated"
+    },
+    {
+      "seed": "Egypt: oud",
+      "into": "oud",
+      "source": "curated"
+    },
+    {
+      "seed": "Egypt: qanun",
+      "into": "qanun",
+      "source": "curated"
+    },
+    {
+      "seed": "Egypt: nay",
+      "into": "nay",
+      "source": "curated"
+    },
+    {
+      "seed": "Egypt: kawala",
+      "into": "kawala",
+      "source": "curated"
+    },
+    {
+      "seed": "Egypt: mizmar",
+      "into": "mizmar",
+      "source": "curated"
+    },
+    {
+      "seed": "Egypt: rababa",
+      "into": "rababa",
+      "source": "curated"
+    },
+    {
+      "seed": "Egypt: kamanja (Egyptian violin)",
+      "into": "kamanja",
+      "source": "curated"
+    },
+    {
+      "seed": "Egypt: unison Egyptian string section",
+      "into": "strings-egyptian",
+      "source": "curated"
+    },
+    {
+      "seed": "Egypt: tanbura lyre",
+      "into": "tanbura",
+      "source": "curated"
+    },
+    {
+      "seed": "Egypt: quarter-tone org keyboard",
+      "into": "org-keyboard",
+      "source": "curated"
+    },
+    {
+      "seed": "Egypt: Egyptian tabla (darbuka)",
+      "into": "tabla-egyptian",
+      "source": "curated"
+    },
+    {
+      "seed": "Egypt: doholla",
+      "into": "doholla",
+      "source": "curated"
+    },
+    {
+      "seed": "Egypt: riq",
+      "into": "riq",
+      "source": "curated"
+    },
+    {
+      "seed": "Egypt: mazhar",
+      "into": "mazhar",
+      "source": "curated"
+    },
+    {
+      "seed": "Egypt: sagat",
+      "into": "sagat",
+      "source": "curated"
+    },
+    {
+      "seed": "Morocco / Maghreb: oud (Maghrebi)",
+      "into": "oud",
+      "source": "curated"
+    },
+    {
+      "seed": "Morocco / Maghreb: darbuka (Maghrebi)",
+      "into": "tabla-egyptian",
+      "source": "curated"
+    },
+    {
+      "seed": "Levant / Turkey / Persia / Caucasus: kanun (Turkish)",
+      "into": "qanun",
+      "source": "curated"
+    },
+    {
+      "seed": "Levant / Turkey / Persia / Caucasus: ney (Turkish)",
+      "into": "nay",
+      "source": "curated"
+    },
+    {
+      "seed": "Levant / Turkey / Persia / Caucasus: daf",
+      "into": "duff",
+      "source": "generated"
+    },
+    {
+      "seed": "Levant / Turkey / Persia / Caucasus: bendir",
+      "into": "bendir",
+      "source": "generated"
+    },
+    {
+      "seed": "East / Southeast Asia: shakuhachi (GM 78)",
+      "into": "shakuhachi",
+      "source": "generated"
+    },
+    {
+      "seed": "East / Southeast Asia: taiko (GM 117) with shime-daiko and ō-daiko",
+      "into": "taiko",
+      "source": "curated"
+    },
+    {
+      "seed": "Sub-Saharan Africa: oud (Sudanese)",
+      "into": "oud",
+      "source": "curated"
+    },
+    {
+      "seed": "Latin America / Caribbean / Brazil: claves (GM 75)",
+      "into": "claves",
+      "source": "generated"
+    },
+    {
+      "seed": "Latin America / Caribbean / Brazil: maracas (GM 70)",
+      "into": "maracas",
+      "source": "generated"
+    },
+    {
+      "seed": "Latin America / Caribbean / Brazil: cabasa (GM 69)",
+      "into": "cabasa",
+      "source": "generated"
+    },
+    {
+      "seed": "Latin America / Caribbean / Brazil: shekere",
+      "into": "shekere",
+      "source": "generated"
+    },
+    {
+      "seed": "Latin America / Caribbean / Brazil: cowbell (GM 56)",
+      "into": "cowbell",
+      "source": "generated"
+    },
+    {
+      "seed": "Latin America / Caribbean / Brazil: agogô (GM 67/68)",
+      "into": "agogo",
+      "source": "generated"
+    },
+    {
+      "seed": "Latin America / Caribbean / Brazil: steelpan (GM 115)",
+      "into": "steel-drums",
+      "source": "generated"
+    },
+    {
+      "seed": "Latin America / Caribbean / Brazil: bandoneón (GM 24)",
+      "into": "bandoneon",
+      "source": "generated"
+    },
+    {
+      "seed": "Latin America / Caribbean / Brazil: accordion (norteño)",
+      "into": "accordion",
+      "source": "generated"
+    },
+    {
+      "seed": "Celtic / European folk: cajón (also §9 Latin)",
+      "into": "cajon",
+      "source": "generated"
+    },
+    {
+      "seed": "Celtic / European folk: accordion (Cajun/zydeco with rubboard)",
+      "into": "accordion",
+      "source": "generated"
+    },
+    {
+      "seed": "Oceania / other: log drums (pate)",
+      "into": "log-drum",
+      "source": "generated"
+    }
+  ],
+  "notGenerated": [
+    {
+      "section": "§2.2 GM2 drum kits",
+      "reason": "Kit presets are DrumPattern records, not instruments."
+    },
+    {
+      "section": "§3 GS and XG variation banks",
+      "reason": "The seed schedules them as a batch import from the published tables."
+    },
+    {
+      "section": "§4 Orchestral and symphonic",
+      "reason": "Prose lists that need curation into records (names lack their family noun, techniques are mixed in)."
+    },
+    {
+      "section": "§5 Concert, brass, marching and big band",
+      "reason": "Prose lists that need curation into records."
+    },
+    {
+      "section": "§6 Contemporary and popular",
+      "reason": "Prose lists that need curation into records (for example '12-string', 'electric humbucker')."
+    },
+    {
+      "section": "§7 Synthesizer archetypes",
+      "reason": "SynthRole records, not instruments."
+    },
+    {
+      "section": "§8.1 Acoustic drum kits and §8.3 genre kits",
+      "reason": "DrumPattern seeds whose grids are filled at curation."
+    }
+  ]
+}

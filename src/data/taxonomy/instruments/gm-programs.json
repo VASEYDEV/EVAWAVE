@@ -1,0 +1,3635 @@
+[
+  {
+    "id": "acoustic-grand-piano",
+    "name": "Acoustic Grand Piano",
+    "family": "keyboard",
+    "region": null,
+    "register": [
+      "low-mid",
+      "mid",
+      "high-mid",
+      "high"
+    ],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [
+      "keys",
+      "pad",
+      "counter",
+      "lead"
+    ],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "General MIDI program 1 (seed §1, Piano).",
+    "promptPhrase": "acoustic grand piano",
+    "commonNames": [
+      "Acoustic Grand Piano"
+    ]
+  },
+  {
+    "id": "bright-acoustic-piano",
+    "name": "Bright Acoustic Piano",
+    "family": "keyboard",
+    "region": null,
+    "register": [
+      "low-mid",
+      "mid",
+      "high-mid",
+      "high"
+    ],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [
+      "keys",
+      "pad",
+      "counter",
+      "lead"
+    ],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "General MIDI program 2 (seed §1, Piano).",
+    "promptPhrase": "bright acoustic piano",
+    "commonNames": [
+      "Bright Acoustic Piano"
+    ]
+  },
+  {
+    "id": "electric-grand-piano",
+    "name": "Electric Grand Piano",
+    "family": "keyboard",
+    "region": null,
+    "register": [
+      "low-mid",
+      "mid",
+      "high-mid",
+      "high"
+    ],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [
+      "keys",
+      "pad",
+      "counter",
+      "lead"
+    ],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "General MIDI program 3 (seed §1, Piano).",
+    "promptPhrase": "electric grand piano",
+    "commonNames": [
+      "Electric Grand Piano"
+    ]
+  },
+  {
+    "id": "honky-tonk-piano",
+    "name": "Honky-tonk Piano",
+    "family": "keyboard",
+    "region": null,
+    "register": [
+      "low-mid",
+      "mid",
+      "high-mid",
+      "high"
+    ],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [
+      "keys",
+      "pad",
+      "counter",
+      "lead"
+    ],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "General MIDI program 4 (seed §1, Piano).",
+    "promptPhrase": "honky-tonk piano",
+    "commonNames": [
+      "Honky-tonk Piano"
+    ]
+  },
+  {
+    "id": "electric-piano-tine",
+    "name": "Tine electric piano",
+    "family": "keyboard",
+    "region": null,
+    "register": [
+      "low-mid",
+      "mid",
+      "high-mid"
+    ],
+    "timbre": [
+      "bell-like",
+      "warm",
+      "mellow",
+      "barky when driven"
+    ],
+    "articulationIds": [],
+    "playStyles": [
+      "clean",
+      "phaser",
+      "tremolo",
+      "overdriven",
+      "chorused"
+    ],
+    "idiomaticRoles": [
+      "keys",
+      "pad",
+      "counter"
+    ],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "flow": "unverified",
+      "eleven": "unverified"
+    },
+    "bundleIds": [],
+    "description": "GM 5 lineage. Hammer-struck tines with electromagnetic pickups; the neo-soul, jazz-funk and lo-fi keys sound. General MIDI program 5 (seed §1, §11).",
+    "promptPhrase": "warm tine electric piano",
+    "commonNames": [
+      "Rhodes",
+      "Fender Rhodes",
+      "Rhodes piano",
+      "EP",
+      "Electric Piano 1 (tine)"
+    ]
+  },
+  {
+    "id": "electric-piano-reed-fm",
+    "name": "Reed and FM electric piano",
+    "family": "keyboard",
+    "region": null,
+    "register": [
+      "low-mid",
+      "mid",
+      "high-mid",
+      "high"
+    ],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [
+      "keys",
+      "pad",
+      "counter",
+      "lead"
+    ],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "General MIDI program 6 (seed §1, Piano).",
+    "promptPhrase": "reed electric piano",
+    "commonNames": [
+      "Wurlitzer",
+      "DX EP",
+      "Electric Piano 2 (FM/reed)"
+    ]
+  },
+  {
+    "id": "harpsichord",
+    "name": "Harpsichord",
+    "family": "keyboard",
+    "region": null,
+    "register": [
+      "low-mid",
+      "mid",
+      "high-mid",
+      "high"
+    ],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [
+      "keys",
+      "pad",
+      "counter",
+      "lead"
+    ],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "General MIDI program 7 (seed §1, Piano).",
+    "promptPhrase": "harpsichord",
+    "commonNames": [
+      "Harpsichord"
+    ]
+  },
+  {
+    "id": "clavinet",
+    "name": "Clavinet",
+    "family": "keyboard",
+    "region": null,
+    "register": [
+      "low-mid",
+      "mid",
+      "high-mid",
+      "high"
+    ],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [
+      "keys",
+      "pad",
+      "counter",
+      "lead"
+    ],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "General MIDI program 8 (seed §1, Piano).",
+    "promptPhrase": "clavinet",
+    "commonNames": [
+      "Clavinet"
+    ]
+  },
+  {
+    "id": "celesta",
+    "name": "Celesta",
+    "family": "percussion",
+    "region": null,
+    "register": [
+      "mid",
+      "high-mid",
+      "high"
+    ],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [
+      "texture",
+      "counter",
+      "lead"
+    ],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "General MIDI program 9 (seed §1, Chromatic percussion).",
+    "promptPhrase": "celesta",
+    "commonNames": [
+      "Celesta"
+    ]
+  },
+  {
+    "id": "glockenspiel",
+    "name": "Glockenspiel",
+    "family": "percussion",
+    "region": null,
+    "register": [
+      "mid",
+      "high-mid",
+      "high"
+    ],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [
+      "texture",
+      "counter",
+      "lead"
+    ],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "General MIDI program 10 (seed §1, Chromatic percussion).",
+    "promptPhrase": "glockenspiel",
+    "commonNames": [
+      "Glockenspiel"
+    ]
+  },
+  {
+    "id": "music-box",
+    "name": "Music Box",
+    "family": "percussion",
+    "region": null,
+    "register": [
+      "mid",
+      "high-mid",
+      "high"
+    ],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [
+      "texture",
+      "counter",
+      "lead"
+    ],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "General MIDI program 11 (seed §1, Chromatic percussion).",
+    "promptPhrase": "music box",
+    "commonNames": [
+      "Music Box"
+    ]
+  },
+  {
+    "id": "vibraphone",
+    "name": "Vibraphone",
+    "family": "percussion",
+    "region": null,
+    "register": [
+      "mid",
+      "high-mid",
+      "high"
+    ],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [
+      "texture",
+      "counter",
+      "lead"
+    ],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "General MIDI program 12 (seed §1, Chromatic percussion).",
+    "promptPhrase": "vibraphone",
+    "commonNames": [
+      "Vibraphone"
+    ]
+  },
+  {
+    "id": "marimba",
+    "name": "Marimba",
+    "family": "percussion",
+    "region": null,
+    "register": [
+      "mid",
+      "high-mid",
+      "high"
+    ],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [
+      "texture",
+      "counter",
+      "lead"
+    ],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "General MIDI program 13 (seed §1, Chromatic percussion).",
+    "promptPhrase": "marimba",
+    "commonNames": [
+      "Marimba"
+    ]
+  },
+  {
+    "id": "xylophone",
+    "name": "Xylophone",
+    "family": "percussion",
+    "region": null,
+    "register": [
+      "mid",
+      "high-mid",
+      "high"
+    ],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [
+      "texture",
+      "counter",
+      "lead"
+    ],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "General MIDI program 14 (seed §1, Chromatic percussion).",
+    "promptPhrase": "xylophone",
+    "commonNames": [
+      "Xylophone"
+    ]
+  },
+  {
+    "id": "tubular-bells",
+    "name": "Tubular Bells",
+    "family": "percussion",
+    "region": null,
+    "register": [
+      "mid",
+      "high-mid",
+      "high"
+    ],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [
+      "texture",
+      "counter",
+      "lead"
+    ],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "General MIDI program 15 (seed §1, Chromatic percussion).",
+    "promptPhrase": "tubular bells",
+    "commonNames": [
+      "Tubular Bells"
+    ]
+  },
+  {
+    "id": "dulcimer-hammered",
+    "name": "Dulcimer (hammered)",
+    "family": "percussion",
+    "region": null,
+    "register": [
+      "mid",
+      "high-mid",
+      "high"
+    ],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [
+      "texture",
+      "counter",
+      "lead"
+    ],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "General MIDI program 16 (seed §1, Chromatic percussion).",
+    "promptPhrase": "hammered dulcimer",
+    "commonNames": [
+      "Dulcimer (hammered)"
+    ]
+  },
+  {
+    "id": "drawbar-organ",
+    "name": "Drawbar Organ",
+    "family": "keyboard",
+    "region": null,
+    "register": [
+      "low-mid",
+      "mid",
+      "high-mid",
+      "high"
+    ],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [
+      "pad",
+      "keys",
+      "lead"
+    ],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "General MIDI program 17 (seed §1, Organ).",
+    "promptPhrase": "drawbar organ",
+    "commonNames": [
+      "Drawbar Organ"
+    ]
+  },
+  {
+    "id": "percussive-organ",
+    "name": "Percussive Organ",
+    "family": "keyboard",
+    "region": null,
+    "register": [
+      "low-mid",
+      "mid",
+      "high-mid",
+      "high"
+    ],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [
+      "pad",
+      "keys",
+      "lead"
+    ],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "General MIDI program 18 (seed §1, Organ).",
+    "promptPhrase": "percussive organ",
+    "commonNames": [
+      "Percussive Organ"
+    ]
+  },
+  {
+    "id": "rock-organ",
+    "name": "Rock Organ",
+    "family": "keyboard",
+    "region": null,
+    "register": [
+      "low-mid",
+      "mid",
+      "high-mid",
+      "high"
+    ],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [
+      "pad",
+      "keys",
+      "lead"
+    ],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "General MIDI program 19 (seed §1, Organ).",
+    "promptPhrase": "rock organ",
+    "commonNames": [
+      "Rock Organ"
+    ]
+  },
+  {
+    "id": "church-organ",
+    "name": "Church Organ",
+    "family": "keyboard",
+    "region": null,
+    "register": [
+      "low-mid",
+      "mid",
+      "high-mid",
+      "high"
+    ],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [
+      "pad",
+      "keys",
+      "lead"
+    ],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "General MIDI program 20 (seed §1, Organ).",
+    "promptPhrase": "church organ",
+    "commonNames": [
+      "Church Organ"
+    ]
+  },
+  {
+    "id": "reed-organ",
+    "name": "Reed Organ",
+    "family": "keyboard",
+    "region": null,
+    "register": [
+      "low-mid",
+      "mid",
+      "high-mid",
+      "high"
+    ],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [
+      "pad",
+      "keys",
+      "lead"
+    ],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "General MIDI program 21 (seed §1, Organ).",
+    "promptPhrase": "reed organ",
+    "commonNames": [
+      "Reed Organ"
+    ]
+  },
+  {
+    "id": "accordion",
+    "name": "Accordion",
+    "family": "keyboard",
+    "region": null,
+    "register": [
+      "low-mid",
+      "mid",
+      "high-mid",
+      "high"
+    ],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [
+      "pad",
+      "keys",
+      "lead"
+    ],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "General MIDI program 22 (seed §1, Organ).",
+    "promptPhrase": "accordion",
+    "commonNames": [
+      "Accordion"
+    ]
+  },
+  {
+    "id": "harmonica",
+    "name": "Harmonica",
+    "family": "wind",
+    "region": null,
+    "register": [
+      "low-mid",
+      "mid",
+      "high-mid",
+      "high"
+    ],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [
+      "pad",
+      "keys",
+      "lead"
+    ],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "General MIDI program 23 (seed §1, Organ).",
+    "promptPhrase": "harmonica",
+    "commonNames": [
+      "Harmonica"
+    ]
+  },
+  {
+    "id": "bandoneon",
+    "name": "Bandoneon",
+    "family": "keyboard",
+    "region": null,
+    "register": [
+      "low-mid",
+      "mid",
+      "high-mid",
+      "high"
+    ],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [
+      "pad",
+      "keys",
+      "lead"
+    ],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "General MIDI program 24 (seed §1, Organ).",
+    "promptPhrase": "bandoneon",
+    "commonNames": [
+      "bandoneon",
+      "Tango Accordion (bandoneon)"
+    ]
+  },
+  {
+    "id": "acoustic-guitar-nylon",
+    "name": "Acoustic Guitar (nylon)",
+    "family": "string",
+    "region": null,
+    "register": [
+      "low-mid",
+      "mid",
+      "high-mid"
+    ],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [
+      "rhythm",
+      "lead",
+      "texture"
+    ],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "General MIDI program 25 (seed §1, Guitar).",
+    "promptPhrase": "nylon acoustic guitar",
+    "commonNames": [
+      "Acoustic Guitar (nylon)"
+    ]
+  },
+  {
+    "id": "acoustic-guitar-steel",
+    "name": "Acoustic Guitar (steel)",
+    "family": "string",
+    "region": null,
+    "register": [
+      "low-mid",
+      "mid",
+      "high-mid"
+    ],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [
+      "rhythm",
+      "lead",
+      "texture"
+    ],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "General MIDI program 26 (seed §1, Guitar).",
+    "promptPhrase": "steel acoustic guitar",
+    "commonNames": [
+      "Acoustic Guitar (steel)"
+    ]
+  },
+  {
+    "id": "electric-guitar-jazz",
+    "name": "Electric Guitar (jazz)",
+    "family": "string",
+    "region": null,
+    "register": [
+      "low-mid",
+      "mid",
+      "high-mid"
+    ],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [
+      "rhythm",
+      "lead",
+      "texture"
+    ],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "General MIDI program 27 (seed §1, Guitar).",
+    "promptPhrase": "jazz electric guitar",
+    "commonNames": [
+      "Electric Guitar (jazz)"
+    ]
+  },
+  {
+    "id": "electric-guitar-clean",
+    "name": "Electric Guitar (clean)",
+    "family": "string",
+    "region": null,
+    "register": [
+      "low-mid",
+      "mid",
+      "high-mid"
+    ],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [
+      "rhythm",
+      "lead",
+      "texture"
+    ],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "General MIDI program 28 (seed §1, Guitar).",
+    "promptPhrase": "clean electric guitar",
+    "commonNames": [
+      "Electric Guitar (clean)"
+    ]
+  },
+  {
+    "id": "electric-guitar-muted",
+    "name": "Electric Guitar (muted)",
+    "family": "string",
+    "region": null,
+    "register": [
+      "low-mid",
+      "mid",
+      "high-mid"
+    ],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [
+      "rhythm",
+      "lead",
+      "texture"
+    ],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "General MIDI program 29 (seed §1, Guitar).",
+    "promptPhrase": "muted electric guitar",
+    "commonNames": [
+      "Electric Guitar (muted)"
+    ]
+  },
+  {
+    "id": "overdriven-guitar",
+    "name": "Overdriven Guitar",
+    "family": "string",
+    "region": null,
+    "register": [
+      "low-mid",
+      "mid",
+      "high-mid"
+    ],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [
+      "rhythm",
+      "lead",
+      "texture"
+    ],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "General MIDI program 30 (seed §1, Guitar).",
+    "promptPhrase": "overdriven guitar",
+    "commonNames": [
+      "Overdriven Guitar"
+    ]
+  },
+  {
+    "id": "distortion-guitar",
+    "name": "Distortion Guitar",
+    "family": "string",
+    "region": null,
+    "register": [
+      "low-mid",
+      "mid",
+      "high-mid"
+    ],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [
+      "rhythm",
+      "lead",
+      "texture"
+    ],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "General MIDI program 31 (seed §1, Guitar).",
+    "promptPhrase": "distortion guitar",
+    "commonNames": [
+      "Distortion Guitar"
+    ]
+  },
+  {
+    "id": "guitar-harmonics",
+    "name": "Guitar Harmonics",
+    "family": "string",
+    "region": null,
+    "register": [
+      "low-mid",
+      "mid",
+      "high-mid"
+    ],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [
+      "rhythm",
+      "lead",
+      "texture"
+    ],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "General MIDI program 32 (seed §1, Guitar).",
+    "promptPhrase": "guitar harmonics",
+    "commonNames": [
+      "Guitar Harmonics"
+    ]
+  },
+  {
+    "id": "acoustic-bass-upright",
+    "name": "Acoustic Bass (upright)",
+    "family": "string",
+    "region": null,
+    "register": [
+      "sub",
+      "bass",
+      "low-mid"
+    ],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [
+      "bass"
+    ],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "General MIDI program 33 (seed §1, Bass).",
+    "promptPhrase": "upright acoustic bass",
+    "commonNames": [
+      "Acoustic Bass (upright)"
+    ]
+  },
+  {
+    "id": "electric-bass-finger",
+    "name": "Electric Bass (finger)",
+    "family": "string",
+    "region": null,
+    "register": [
+      "sub",
+      "bass",
+      "low-mid"
+    ],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [
+      "bass"
+    ],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "General MIDI program 34 (seed §1, Bass).",
+    "promptPhrase": "finger electric bass",
+    "commonNames": [
+      "Electric Bass (finger)"
+    ]
+  },
+  {
+    "id": "electric-bass-pick",
+    "name": "Electric Bass (pick)",
+    "family": "string",
+    "region": null,
+    "register": [
+      "sub",
+      "bass",
+      "low-mid"
+    ],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [
+      "bass"
+    ],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "General MIDI program 35 (seed §1, Bass).",
+    "promptPhrase": "pick electric bass",
+    "commonNames": [
+      "Electric Bass (pick)"
+    ]
+  },
+  {
+    "id": "fretless-bass",
+    "name": "Fretless Bass",
+    "family": "string",
+    "region": null,
+    "register": [
+      "sub",
+      "bass",
+      "low-mid"
+    ],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [
+      "bass"
+    ],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "General MIDI program 36 (seed §1, Bass).",
+    "promptPhrase": "fretless bass",
+    "commonNames": [
+      "Fretless Bass"
+    ]
+  },
+  {
+    "id": "slap-bass-1",
+    "name": "Slap Bass 1",
+    "family": "string",
+    "region": null,
+    "register": [
+      "sub",
+      "bass",
+      "low-mid"
+    ],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [
+      "bass"
+    ],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "General MIDI program 37 (seed §1, Bass).",
+    "promptPhrase": "slap bass",
+    "commonNames": [
+      "Slap Bass 1"
+    ]
+  },
+  {
+    "id": "slap-bass-2",
+    "name": "Slap Bass 2",
+    "family": "string",
+    "region": null,
+    "register": [
+      "sub",
+      "bass",
+      "low-mid"
+    ],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [
+      "bass"
+    ],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "General MIDI program 38 (seed §1, Bass).",
+    "promptPhrase": "slap bass",
+    "commonNames": [
+      "Slap Bass 2"
+    ]
+  },
+  {
+    "id": "synth-bass-1",
+    "name": "Synth Bass 1",
+    "family": "electronic",
+    "region": null,
+    "register": [
+      "sub",
+      "bass",
+      "low-mid"
+    ],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [
+      "bass"
+    ],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "General MIDI program 39 (seed §1, Bass).",
+    "promptPhrase": "synth bass",
+    "commonNames": [
+      "Synth Bass 1"
+    ]
+  },
+  {
+    "id": "synth-bass-2",
+    "name": "Synth Bass 2",
+    "family": "electronic",
+    "region": null,
+    "register": [
+      "sub",
+      "bass",
+      "low-mid"
+    ],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [
+      "bass"
+    ],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "General MIDI program 40 (seed §1, Bass).",
+    "promptPhrase": "synth bass",
+    "commonNames": [
+      "Synth Bass 2"
+    ]
+  },
+  {
+    "id": "violin",
+    "name": "Violin",
+    "family": "string",
+    "region": null,
+    "register": [
+      "sub",
+      "bass",
+      "low-mid",
+      "mid",
+      "high-mid",
+      "high"
+    ],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [
+      "lead",
+      "counter",
+      "pad",
+      "texture"
+    ],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "General MIDI program 41 (seed §1, Strings (solo/section)).",
+    "promptPhrase": "violin",
+    "commonNames": [
+      "Violin"
+    ]
+  },
+  {
+    "id": "viola",
+    "name": "Viola",
+    "family": "string",
+    "region": null,
+    "register": [
+      "sub",
+      "bass",
+      "low-mid",
+      "mid",
+      "high-mid",
+      "high"
+    ],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [
+      "lead",
+      "counter",
+      "pad",
+      "texture"
+    ],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "General MIDI program 42 (seed §1, Strings (solo/section)).",
+    "promptPhrase": "viola",
+    "commonNames": [
+      "Viola"
+    ]
+  },
+  {
+    "id": "cello",
+    "name": "Cello",
+    "family": "string",
+    "region": null,
+    "register": [
+      "sub",
+      "bass",
+      "low-mid",
+      "mid",
+      "high-mid",
+      "high"
+    ],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [
+      "lead",
+      "counter",
+      "pad",
+      "texture"
+    ],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "General MIDI program 43 (seed §1, Strings (solo/section)).",
+    "promptPhrase": "cello",
+    "commonNames": [
+      "Cello"
+    ]
+  },
+  {
+    "id": "contrabass",
+    "name": "Contrabass",
+    "family": "string",
+    "region": null,
+    "register": [
+      "sub",
+      "bass",
+      "low-mid",
+      "mid",
+      "high-mid",
+      "high"
+    ],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [
+      "lead",
+      "counter",
+      "pad",
+      "texture"
+    ],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "General MIDI program 44 (seed §1, Strings (solo/section)).",
+    "promptPhrase": "contrabass",
+    "commonNames": [
+      "Contrabass"
+    ]
+  },
+  {
+    "id": "tremolo-strings",
+    "name": "Tremolo Strings",
+    "family": "string",
+    "region": null,
+    "register": [
+      "sub",
+      "bass",
+      "low-mid",
+      "mid",
+      "high-mid",
+      "high"
+    ],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [
+      "lead",
+      "counter",
+      "pad",
+      "texture"
+    ],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "General MIDI program 45 (seed §1, Strings (solo/section)).",
+    "promptPhrase": "tremolo strings",
+    "commonNames": [
+      "Tremolo Strings"
+    ]
+  },
+  {
+    "id": "pizzicato-strings",
+    "name": "Pizzicato Strings",
+    "family": "string",
+    "region": null,
+    "register": [
+      "sub",
+      "bass",
+      "low-mid",
+      "mid",
+      "high-mid",
+      "high"
+    ],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [
+      "lead",
+      "counter",
+      "pad",
+      "texture"
+    ],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "General MIDI program 46 (seed §1, Strings (solo/section)).",
+    "promptPhrase": "pizzicato strings",
+    "commonNames": [
+      "Pizzicato Strings"
+    ]
+  },
+  {
+    "id": "orchestral-harp",
+    "name": "Orchestral Harp",
+    "family": "string",
+    "region": null,
+    "register": [
+      "sub",
+      "bass",
+      "low-mid",
+      "mid",
+      "high-mid",
+      "high"
+    ],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [
+      "lead",
+      "counter",
+      "pad",
+      "texture"
+    ],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "General MIDI program 47 (seed §1, Strings (solo/section)).",
+    "promptPhrase": "orchestral harp",
+    "commonNames": [
+      "Orchestral Harp"
+    ]
+  },
+  {
+    "id": "string-ensemble-1",
+    "name": "String Ensemble 1",
+    "family": "string",
+    "region": null,
+    "register": [
+      "low-mid",
+      "mid",
+      "high-mid",
+      "high"
+    ],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [
+      "pad",
+      "texture",
+      "stab"
+    ],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "General MIDI program 49 (seed §1, Ensemble).",
+    "promptPhrase": "string ensemble",
+    "commonNames": [
+      "String Ensemble 1"
+    ]
+  },
+  {
+    "id": "string-ensemble-2-slow",
+    "name": "String Ensemble 2 (slow)",
+    "family": "string",
+    "region": null,
+    "register": [
+      "low-mid",
+      "mid",
+      "high-mid",
+      "high"
+    ],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [
+      "pad",
+      "texture",
+      "stab"
+    ],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "General MIDI program 50 (seed §1, Ensemble).",
+    "promptPhrase": "slow string ensemble",
+    "commonNames": [
+      "String Ensemble 2 (slow)"
+    ]
+  },
+  {
+    "id": "synth-strings-1",
+    "name": "Synth Strings 1",
+    "family": "electronic",
+    "region": null,
+    "register": [
+      "low-mid",
+      "mid",
+      "high-mid",
+      "high"
+    ],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [
+      "pad",
+      "texture",
+      "stab"
+    ],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "General MIDI program 51 (seed §1, Ensemble).",
+    "promptPhrase": "synth strings",
+    "commonNames": [
+      "Synth Strings 1"
+    ]
+  },
+  {
+    "id": "synth-strings-2",
+    "name": "Synth Strings 2",
+    "family": "electronic",
+    "region": null,
+    "register": [
+      "low-mid",
+      "mid",
+      "high-mid",
+      "high"
+    ],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [
+      "pad",
+      "texture",
+      "stab"
+    ],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "General MIDI program 52 (seed §1, Ensemble).",
+    "promptPhrase": "synth strings",
+    "commonNames": [
+      "Synth Strings 2"
+    ]
+  },
+  {
+    "id": "voice-oohs",
+    "name": "Voice Oohs",
+    "family": "voice",
+    "region": null,
+    "register": [
+      "low-mid",
+      "mid",
+      "high-mid",
+      "high"
+    ],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [
+      "pad",
+      "texture",
+      "stab"
+    ],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "General MIDI program 54 (seed §1, Ensemble).",
+    "promptPhrase": "voice oohs",
+    "commonNames": [
+      "Voice Oohs"
+    ]
+  },
+  {
+    "id": "synth-voice",
+    "name": "Synth Voice",
+    "family": "electronic",
+    "region": null,
+    "register": [
+      "low-mid",
+      "mid",
+      "high-mid",
+      "high"
+    ],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [
+      "pad",
+      "texture",
+      "stab"
+    ],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "General MIDI program 55 (seed §1, Ensemble).",
+    "promptPhrase": "synth voice",
+    "commonNames": [
+      "Synth Voice"
+    ]
+  },
+  {
+    "id": "orchestra-hit",
+    "name": "Orchestra Hit",
+    "family": "other",
+    "region": null,
+    "register": [
+      "low-mid",
+      "mid",
+      "high-mid",
+      "high"
+    ],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [
+      "stab"
+    ],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "General MIDI program 56 (seed §1, Ensemble).",
+    "promptPhrase": "orchestra hit",
+    "commonNames": [
+      "Orchestra Hit"
+    ]
+  },
+  {
+    "id": "trumpet",
+    "name": "Trumpet",
+    "family": "brass",
+    "region": null,
+    "register": [
+      "bass",
+      "low-mid",
+      "mid",
+      "high-mid"
+    ],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [
+      "lead",
+      "stab",
+      "pad"
+    ],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "General MIDI program 57 (seed §1, Brass).",
+    "promptPhrase": "trumpet",
+    "commonNames": [
+      "Trumpet"
+    ]
+  },
+  {
+    "id": "trombone",
+    "name": "Trombone",
+    "family": "brass",
+    "region": null,
+    "register": [
+      "bass",
+      "low-mid",
+      "mid",
+      "high-mid"
+    ],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [
+      "lead",
+      "stab",
+      "pad"
+    ],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "General MIDI program 58 (seed §1, Brass).",
+    "promptPhrase": "trombone",
+    "commonNames": [
+      "Trombone"
+    ]
+  },
+  {
+    "id": "tuba",
+    "name": "Tuba",
+    "family": "brass",
+    "region": null,
+    "register": [
+      "bass",
+      "low-mid",
+      "mid",
+      "high-mid"
+    ],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [
+      "lead",
+      "stab",
+      "pad"
+    ],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "General MIDI program 59 (seed §1, Brass).",
+    "promptPhrase": "tuba",
+    "commonNames": [
+      "Tuba"
+    ]
+  },
+  {
+    "id": "muted-trumpet",
+    "name": "Muted Trumpet",
+    "family": "brass",
+    "region": null,
+    "register": [
+      "bass",
+      "low-mid",
+      "mid",
+      "high-mid"
+    ],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [
+      "lead",
+      "stab",
+      "pad"
+    ],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "General MIDI program 60 (seed §1, Brass).",
+    "promptPhrase": "muted trumpet",
+    "commonNames": [
+      "Muted Trumpet"
+    ]
+  },
+  {
+    "id": "french-horn",
+    "name": "French Horn",
+    "family": "brass",
+    "region": null,
+    "register": [
+      "bass",
+      "low-mid",
+      "mid",
+      "high-mid"
+    ],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [
+      "lead",
+      "stab",
+      "pad"
+    ],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "General MIDI program 61 (seed §1, Brass).",
+    "promptPhrase": "french horn",
+    "commonNames": [
+      "French Horn"
+    ]
+  },
+  {
+    "id": "brass-section",
+    "name": "Brass Section",
+    "family": "brass",
+    "region": null,
+    "register": [
+      "bass",
+      "low-mid",
+      "mid",
+      "high-mid"
+    ],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [
+      "lead",
+      "stab",
+      "pad"
+    ],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "General MIDI program 62 (seed §1, Brass).",
+    "promptPhrase": "brass section",
+    "commonNames": [
+      "Brass Section"
+    ]
+  },
+  {
+    "id": "synth-brass-1",
+    "name": "Synth Brass 1",
+    "family": "electronic",
+    "region": null,
+    "register": [
+      "bass",
+      "low-mid",
+      "mid",
+      "high-mid"
+    ],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [
+      "lead",
+      "stab",
+      "pad"
+    ],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "General MIDI program 63 (seed §1, Brass).",
+    "promptPhrase": "synth brass",
+    "commonNames": [
+      "Synth Brass 1"
+    ]
+  },
+  {
+    "id": "synth-brass-2",
+    "name": "Synth Brass 2",
+    "family": "electronic",
+    "region": null,
+    "register": [
+      "bass",
+      "low-mid",
+      "mid",
+      "high-mid"
+    ],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [
+      "lead",
+      "stab",
+      "pad"
+    ],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "General MIDI program 64 (seed §1, Brass).",
+    "promptPhrase": "synth brass",
+    "commonNames": [
+      "Synth Brass 2"
+    ]
+  },
+  {
+    "id": "soprano-sax",
+    "name": "Soprano Sax",
+    "family": "wind",
+    "region": null,
+    "register": [
+      "low-mid",
+      "mid",
+      "high-mid",
+      "high"
+    ],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [
+      "lead",
+      "counter",
+      "pad"
+    ],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "General MIDI program 65 (seed §1, Reed).",
+    "promptPhrase": "soprano sax",
+    "commonNames": [
+      "Soprano Sax"
+    ]
+  },
+  {
+    "id": "alto-sax",
+    "name": "Alto Sax",
+    "family": "wind",
+    "region": null,
+    "register": [
+      "low-mid",
+      "mid",
+      "high-mid",
+      "high"
+    ],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [
+      "lead",
+      "counter",
+      "pad"
+    ],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "General MIDI program 66 (seed §1, Reed).",
+    "promptPhrase": "alto sax",
+    "commonNames": [
+      "Alto Sax"
+    ]
+  },
+  {
+    "id": "tenor-sax",
+    "name": "Tenor Sax",
+    "family": "wind",
+    "region": null,
+    "register": [
+      "low-mid",
+      "mid",
+      "high-mid",
+      "high"
+    ],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [
+      "lead",
+      "counter",
+      "pad"
+    ],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "General MIDI program 67 (seed §1, Reed).",
+    "promptPhrase": "tenor sax",
+    "commonNames": [
+      "Tenor Sax"
+    ]
+  },
+  {
+    "id": "baritone-sax",
+    "name": "Baritone Sax",
+    "family": "wind",
+    "region": null,
+    "register": [
+      "low-mid",
+      "mid",
+      "high-mid",
+      "high"
+    ],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [
+      "lead",
+      "counter",
+      "pad"
+    ],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "General MIDI program 68 (seed §1, Reed).",
+    "promptPhrase": "baritone sax",
+    "commonNames": [
+      "Baritone Sax"
+    ]
+  },
+  {
+    "id": "oboe",
+    "name": "Oboe",
+    "family": "wind",
+    "region": null,
+    "register": [
+      "low-mid",
+      "mid",
+      "high-mid",
+      "high"
+    ],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [
+      "lead",
+      "counter",
+      "pad"
+    ],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "General MIDI program 69 (seed §1, Reed).",
+    "promptPhrase": "oboe",
+    "commonNames": [
+      "Oboe"
+    ]
+  },
+  {
+    "id": "english-horn-cor-anglais",
+    "name": "English Horn (cor anglais)",
+    "family": "wind",
+    "region": null,
+    "register": [
+      "low-mid",
+      "mid",
+      "high-mid",
+      "high"
+    ],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [
+      "lead",
+      "counter",
+      "pad"
+    ],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "General MIDI program 70 (seed §1, Reed).",
+    "promptPhrase": "cor anglais english horn",
+    "commonNames": [
+      "English Horn (cor anglais)"
+    ]
+  },
+  {
+    "id": "bassoon",
+    "name": "Bassoon",
+    "family": "wind",
+    "region": null,
+    "register": [
+      "low-mid",
+      "mid",
+      "high-mid",
+      "high"
+    ],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [
+      "lead",
+      "counter",
+      "pad"
+    ],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "General MIDI program 71 (seed §1, Reed).",
+    "promptPhrase": "bassoon",
+    "commonNames": [
+      "Bassoon"
+    ]
+  },
+  {
+    "id": "clarinet",
+    "name": "Clarinet",
+    "family": "wind",
+    "region": null,
+    "register": [
+      "low-mid",
+      "mid",
+      "high-mid",
+      "high"
+    ],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [
+      "lead",
+      "counter",
+      "pad"
+    ],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "General MIDI program 72 (seed §1, Reed).",
+    "promptPhrase": "clarinet",
+    "commonNames": [
+      "Clarinet"
+    ]
+  },
+  {
+    "id": "piccolo",
+    "name": "Piccolo",
+    "family": "wind",
+    "region": null,
+    "register": [
+      "mid",
+      "high-mid",
+      "high"
+    ],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [
+      "lead",
+      "texture"
+    ],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "General MIDI program 73 (seed §1, Pipe).",
+    "promptPhrase": "piccolo",
+    "commonNames": [
+      "Piccolo"
+    ]
+  },
+  {
+    "id": "flute",
+    "name": "Flute",
+    "family": "wind",
+    "region": null,
+    "register": [
+      "mid",
+      "high-mid",
+      "high"
+    ],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [
+      "lead",
+      "texture"
+    ],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "General MIDI program 74 (seed §1, Pipe).",
+    "promptPhrase": "flute",
+    "commonNames": [
+      "Flute"
+    ]
+  },
+  {
+    "id": "recorder",
+    "name": "Recorder",
+    "family": "wind",
+    "region": null,
+    "register": [
+      "mid",
+      "high-mid",
+      "high"
+    ],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [
+      "lead",
+      "texture"
+    ],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "General MIDI program 75 (seed §1, Pipe).",
+    "promptPhrase": "recorder",
+    "commonNames": [
+      "Recorder"
+    ]
+  },
+  {
+    "id": "pan-flute",
+    "name": "Pan Flute",
+    "family": "wind",
+    "region": null,
+    "register": [
+      "mid",
+      "high-mid",
+      "high"
+    ],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [
+      "lead",
+      "texture"
+    ],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "General MIDI program 76 (seed §1, Pipe).",
+    "promptPhrase": "pan flute",
+    "commonNames": [
+      "Pan Flute"
+    ]
+  },
+  {
+    "id": "blown-bottle",
+    "name": "Blown Bottle",
+    "family": "wind",
+    "region": null,
+    "register": [
+      "mid",
+      "high-mid",
+      "high"
+    ],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [
+      "lead",
+      "texture"
+    ],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "General MIDI program 77 (seed §1, Pipe).",
+    "promptPhrase": "blown bottle",
+    "commonNames": [
+      "Blown Bottle"
+    ]
+  },
+  {
+    "id": "shakuhachi",
+    "name": "Shakuhachi",
+    "family": "wind",
+    "region": null,
+    "register": [
+      "mid",
+      "high-mid",
+      "high"
+    ],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [
+      "lead",
+      "texture"
+    ],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "General MIDI program 78 (seed §1, Pipe).",
+    "promptPhrase": "shakuhachi",
+    "commonNames": [
+      "Shakuhachi"
+    ]
+  },
+  {
+    "id": "whistle",
+    "name": "Whistle",
+    "family": "wind",
+    "region": null,
+    "register": [
+      "mid",
+      "high-mid",
+      "high"
+    ],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [
+      "lead",
+      "texture"
+    ],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "General MIDI program 79 (seed §1, Pipe).",
+    "promptPhrase": "whistle",
+    "commonNames": [
+      "Whistle"
+    ]
+  },
+  {
+    "id": "ocarina",
+    "name": "Ocarina",
+    "family": "wind",
+    "region": null,
+    "register": [
+      "mid",
+      "high-mid",
+      "high"
+    ],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [
+      "lead",
+      "texture"
+    ],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "General MIDI program 80 (seed §1, Pipe).",
+    "promptPhrase": "ocarina",
+    "commonNames": [
+      "Ocarina"
+    ]
+  },
+  {
+    "id": "lead-1-square",
+    "name": "Lead 1 (square)",
+    "family": "electronic",
+    "region": null,
+    "register": [
+      "low-mid",
+      "mid",
+      "high-mid",
+      "high"
+    ],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [
+      "lead",
+      "stab"
+    ],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "General MIDI program 81 (seed §1, Synth lead).",
+    "promptPhrase": "square synth lead",
+    "commonNames": [
+      "Lead 1 (square)"
+    ]
+  },
+  {
+    "id": "lead-2-sawtooth",
+    "name": "Lead 2 (sawtooth)",
+    "family": "electronic",
+    "region": null,
+    "register": [
+      "low-mid",
+      "mid",
+      "high-mid",
+      "high"
+    ],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [
+      "lead",
+      "stab"
+    ],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "General MIDI program 82 (seed §1, Synth lead).",
+    "promptPhrase": "sawtooth synth lead",
+    "commonNames": [
+      "Lead 2 (sawtooth)"
+    ]
+  },
+  {
+    "id": "lead-3-calliope",
+    "name": "Lead 3 (calliope)",
+    "family": "electronic",
+    "region": null,
+    "register": [
+      "low-mid",
+      "mid",
+      "high-mid",
+      "high"
+    ],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [
+      "lead",
+      "stab"
+    ],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "General MIDI program 83 (seed §1, Synth lead).",
+    "promptPhrase": "calliope synth lead",
+    "commonNames": [
+      "Lead 3 (calliope)"
+    ]
+  },
+  {
+    "id": "lead-4-chiff",
+    "name": "Lead 4 (chiff)",
+    "family": "electronic",
+    "region": null,
+    "register": [
+      "low-mid",
+      "mid",
+      "high-mid",
+      "high"
+    ],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [
+      "lead",
+      "stab"
+    ],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "General MIDI program 84 (seed §1, Synth lead).",
+    "promptPhrase": "chiff synth lead",
+    "commonNames": [
+      "Lead 4 (chiff)"
+    ]
+  },
+  {
+    "id": "lead-5-charang",
+    "name": "Lead 5 (charang)",
+    "family": "electronic",
+    "region": null,
+    "register": [
+      "low-mid",
+      "mid",
+      "high-mid",
+      "high"
+    ],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [
+      "lead",
+      "stab"
+    ],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "General MIDI program 85 (seed §1, Synth lead).",
+    "promptPhrase": "charang synth lead",
+    "commonNames": [
+      "Lead 5 (charang)"
+    ]
+  },
+  {
+    "id": "lead-6-voice",
+    "name": "Lead 6 (voice)",
+    "family": "electronic",
+    "region": null,
+    "register": [
+      "low-mid",
+      "mid",
+      "high-mid",
+      "high"
+    ],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [
+      "lead",
+      "stab"
+    ],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "General MIDI program 86 (seed §1, Synth lead).",
+    "promptPhrase": "voice synth lead",
+    "commonNames": [
+      "Lead 6 (voice)"
+    ]
+  },
+  {
+    "id": "lead-7-fifths",
+    "name": "Lead 7 (fifths)",
+    "family": "electronic",
+    "region": null,
+    "register": [
+      "low-mid",
+      "mid",
+      "high-mid",
+      "high"
+    ],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [
+      "lead",
+      "stab"
+    ],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "General MIDI program 87 (seed §1, Synth lead).",
+    "promptPhrase": "fifths synth lead",
+    "commonNames": [
+      "Lead 7 (fifths)"
+    ]
+  },
+  {
+    "id": "lead-8-bass-lead",
+    "name": "Lead 8 (bass + lead)",
+    "family": "electronic",
+    "region": null,
+    "register": [
+      "low-mid",
+      "mid",
+      "high-mid",
+      "high"
+    ],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [
+      "lead",
+      "stab"
+    ],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "General MIDI program 88 (seed §1, Synth lead).",
+    "promptPhrase": "bass + synth lead lead",
+    "commonNames": [
+      "Lead 8 (bass + lead)"
+    ]
+  },
+  {
+    "id": "pad-1-new-age",
+    "name": "Pad 1 (new age)",
+    "family": "electronic",
+    "region": null,
+    "register": [
+      "low-mid",
+      "mid",
+      "high-mid",
+      "high"
+    ],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [
+      "pad",
+      "drone",
+      "texture"
+    ],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "General MIDI program 89 (seed §1, Synth pad).",
+    "promptPhrase": "new age synth pad",
+    "commonNames": [
+      "Pad 1 (new age)"
+    ]
+  },
+  {
+    "id": "pad-2-warm",
+    "name": "Pad 2 (warm)",
+    "family": "electronic",
+    "region": null,
+    "register": [
+      "low-mid",
+      "mid",
+      "high-mid",
+      "high"
+    ],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [
+      "pad",
+      "drone",
+      "texture"
+    ],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "General MIDI program 90 (seed §1, Synth pad).",
+    "promptPhrase": "warm synth pad",
+    "commonNames": [
+      "Pad 2 (warm)"
+    ]
+  },
+  {
+    "id": "pad-3-polysynth",
+    "name": "Pad 3 (polysynth)",
+    "family": "electronic",
+    "region": null,
+    "register": [
+      "low-mid",
+      "mid",
+      "high-mid",
+      "high"
+    ],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [
+      "pad",
+      "drone",
+      "texture"
+    ],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "General MIDI program 91 (seed §1, Synth pad).",
+    "promptPhrase": "polysynth synth pad",
+    "commonNames": [
+      "Pad 3 (polysynth)"
+    ]
+  },
+  {
+    "id": "pad-4-choir",
+    "name": "Pad 4 (choir)",
+    "family": "electronic",
+    "region": null,
+    "register": [
+      "low-mid",
+      "mid",
+      "high-mid",
+      "high"
+    ],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [
+      "pad",
+      "drone",
+      "texture"
+    ],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "General MIDI program 92 (seed §1, Synth pad).",
+    "promptPhrase": "choir synth pad",
+    "commonNames": [
+      "Pad 4 (choir)"
+    ]
+  },
+  {
+    "id": "pad-5-bowed",
+    "name": "Pad 5 (bowed)",
+    "family": "electronic",
+    "region": null,
+    "register": [
+      "low-mid",
+      "mid",
+      "high-mid",
+      "high"
+    ],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [
+      "pad",
+      "drone",
+      "texture"
+    ],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "General MIDI program 93 (seed §1, Synth pad).",
+    "promptPhrase": "bowed synth pad",
+    "commonNames": [
+      "Pad 5 (bowed)"
+    ]
+  },
+  {
+    "id": "pad-6-metallic",
+    "name": "Pad 6 (metallic)",
+    "family": "electronic",
+    "region": null,
+    "register": [
+      "low-mid",
+      "mid",
+      "high-mid",
+      "high"
+    ],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [
+      "pad",
+      "drone",
+      "texture"
+    ],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "General MIDI program 94 (seed §1, Synth pad).",
+    "promptPhrase": "metallic synth pad",
+    "commonNames": [
+      "Pad 6 (metallic)"
+    ]
+  },
+  {
+    "id": "pad-7-halo",
+    "name": "Pad 7 (halo)",
+    "family": "electronic",
+    "region": null,
+    "register": [
+      "low-mid",
+      "mid",
+      "high-mid",
+      "high"
+    ],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [
+      "pad",
+      "drone",
+      "texture"
+    ],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "General MIDI program 95 (seed §1, Synth pad).",
+    "promptPhrase": "halo synth pad",
+    "commonNames": [
+      "Pad 7 (halo)"
+    ]
+  },
+  {
+    "id": "pad-8-sweep",
+    "name": "Pad 8 (sweep)",
+    "family": "electronic",
+    "region": null,
+    "register": [
+      "low-mid",
+      "mid",
+      "high-mid",
+      "high"
+    ],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [
+      "pad",
+      "drone",
+      "texture"
+    ],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "General MIDI program 96 (seed §1, Synth pad).",
+    "promptPhrase": "sweep synth pad",
+    "commonNames": [
+      "Pad 8 (sweep)"
+    ]
+  },
+  {
+    "id": "fx-1-rain",
+    "name": "FX 1 (rain)",
+    "family": "electronic",
+    "region": null,
+    "register": [
+      "sub",
+      "bass",
+      "low-mid",
+      "mid",
+      "high-mid",
+      "high"
+    ],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [
+      "texture",
+      "drone"
+    ],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "General MIDI program 97 (seed §1, Synth effects).",
+    "promptPhrase": "rain synth effect",
+    "commonNames": [
+      "FX 1 (rain)"
+    ]
+  },
+  {
+    "id": "fx-2-soundtrack",
+    "name": "FX 2 (soundtrack)",
+    "family": "electronic",
+    "region": null,
+    "register": [
+      "sub",
+      "bass",
+      "low-mid",
+      "mid",
+      "high-mid",
+      "high"
+    ],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [
+      "texture",
+      "drone"
+    ],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "General MIDI program 98 (seed §1, Synth effects).",
+    "promptPhrase": "soundtrack synth effect",
+    "commonNames": [
+      "FX 2 (soundtrack)"
+    ]
+  },
+  {
+    "id": "fx-3-crystal",
+    "name": "FX 3 (crystal)",
+    "family": "electronic",
+    "region": null,
+    "register": [
+      "sub",
+      "bass",
+      "low-mid",
+      "mid",
+      "high-mid",
+      "high"
+    ],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [
+      "texture",
+      "drone"
+    ],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "General MIDI program 99 (seed §1, Synth effects).",
+    "promptPhrase": "crystal synth effect",
+    "commonNames": [
+      "FX 3 (crystal)"
+    ]
+  },
+  {
+    "id": "fx-4-atmosphere",
+    "name": "FX 4 (atmosphere)",
+    "family": "electronic",
+    "region": null,
+    "register": [
+      "sub",
+      "bass",
+      "low-mid",
+      "mid",
+      "high-mid",
+      "high"
+    ],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [
+      "texture",
+      "drone"
+    ],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "General MIDI program 100 (seed §1, Synth effects).",
+    "promptPhrase": "atmosphere synth effect",
+    "commonNames": [
+      "FX 4 (atmosphere)"
+    ]
+  },
+  {
+    "id": "fx-5-brightness",
+    "name": "FX 5 (brightness)",
+    "family": "electronic",
+    "region": null,
+    "register": [
+      "sub",
+      "bass",
+      "low-mid",
+      "mid",
+      "high-mid",
+      "high"
+    ],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [
+      "texture",
+      "drone"
+    ],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "General MIDI program 101 (seed §1, Synth effects).",
+    "promptPhrase": "brightness synth effect",
+    "commonNames": [
+      "FX 5 (brightness)"
+    ]
+  },
+  {
+    "id": "fx-6-goblins",
+    "name": "FX 6 (goblins)",
+    "family": "electronic",
+    "region": null,
+    "register": [
+      "sub",
+      "bass",
+      "low-mid",
+      "mid",
+      "high-mid",
+      "high"
+    ],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [
+      "texture",
+      "drone"
+    ],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "General MIDI program 102 (seed §1, Synth effects).",
+    "promptPhrase": "goblins synth effect",
+    "commonNames": [
+      "FX 6 (goblins)"
+    ]
+  },
+  {
+    "id": "fx-7-echoes",
+    "name": "FX 7 (echoes)",
+    "family": "electronic",
+    "region": null,
+    "register": [
+      "sub",
+      "bass",
+      "low-mid",
+      "mid",
+      "high-mid",
+      "high"
+    ],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [
+      "texture",
+      "drone"
+    ],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "General MIDI program 103 (seed §1, Synth effects).",
+    "promptPhrase": "echoes synth effect",
+    "commonNames": [
+      "FX 7 (echoes)"
+    ]
+  },
+  {
+    "id": "fx-8-sci-fi",
+    "name": "FX 8 (sci-fi)",
+    "family": "electronic",
+    "region": null,
+    "register": [
+      "sub",
+      "bass",
+      "low-mid",
+      "mid",
+      "high-mid",
+      "high"
+    ],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [
+      "texture",
+      "drone"
+    ],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "General MIDI program 104 (seed §1, Synth effects).",
+    "promptPhrase": "sci-fi synth effect",
+    "commonNames": [
+      "FX 8 (sci-fi)"
+    ]
+  },
+  {
+    "id": "tinkle-bell",
+    "name": "Tinkle Bell",
+    "family": "percussion",
+    "region": null,
+    "register": [],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [
+      "rhythm",
+      "texture"
+    ],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "General MIDI program 113 (seed §1, Percussive).",
+    "promptPhrase": "tinkle bell",
+    "commonNames": [
+      "Tinkle Bell"
+    ]
+  },
+  {
+    "id": "agogo",
+    "name": "Agogo",
+    "family": "percussion",
+    "region": null,
+    "register": [],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [
+      "rhythm",
+      "texture"
+    ],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "General MIDI program 114 (seed §1, Percussive).",
+    "promptPhrase": "agogo",
+    "commonNames": [
+      "Agogo"
+    ]
+  },
+  {
+    "id": "steel-drums",
+    "name": "Steel Drums",
+    "family": "percussion",
+    "region": null,
+    "register": [],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [
+      "rhythm",
+      "texture"
+    ],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "General MIDI program 115 (seed §1, Percussive).",
+    "promptPhrase": "steel drums",
+    "commonNames": [
+      "Steel Drums"
+    ]
+  },
+  {
+    "id": "woodblock",
+    "name": "Woodblock",
+    "family": "percussion",
+    "region": null,
+    "register": [],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [
+      "rhythm",
+      "texture"
+    ],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "General MIDI program 116 (seed §1, Percussive).",
+    "promptPhrase": "woodblock",
+    "commonNames": [
+      "Woodblock"
+    ]
+  },
+  {
+    "id": "melodic-tom",
+    "name": "Melodic Tom",
+    "family": "percussion",
+    "region": null,
+    "register": [],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [
+      "rhythm",
+      "texture"
+    ],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "General MIDI program 118 (seed §1, Percussive).",
+    "promptPhrase": "melodic tom",
+    "commonNames": [
+      "Melodic Tom"
+    ]
+  },
+  {
+    "id": "synth-drum",
+    "name": "Synth Drum",
+    "family": "percussion",
+    "region": null,
+    "register": [],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [
+      "rhythm",
+      "texture"
+    ],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "General MIDI program 119 (seed §1, Percussive).",
+    "promptPhrase": "synth drum",
+    "commonNames": [
+      "Synth Drum"
+    ]
+  },
+  {
+    "id": "reverse-cymbal",
+    "name": "Reverse Cymbal",
+    "family": "percussion",
+    "region": null,
+    "register": [],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [
+      "rhythm",
+      "texture"
+    ],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "General MIDI program 120 (seed §1, Percussive).",
+    "promptPhrase": "reverse cymbal",
+    "commonNames": [
+      "Reverse Cymbal"
+    ]
+  },
+  {
+    "id": "guitar-fret-noise",
+    "name": "Guitar Fret Noise",
+    "family": "other",
+    "region": null,
+    "register": [],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [
+      "texture"
+    ],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "General MIDI program 121 (seed §1, Sound effects).",
+    "promptPhrase": "guitar fret noise",
+    "commonNames": [
+      "Guitar Fret Noise"
+    ]
+  },
+  {
+    "id": "breath-noise",
+    "name": "Breath Noise",
+    "family": "other",
+    "region": null,
+    "register": [],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [
+      "texture"
+    ],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "General MIDI program 122 (seed §1, Sound effects).",
+    "promptPhrase": "breath noise",
+    "commonNames": [
+      "Breath Noise"
+    ]
+  },
+  {
+    "id": "seashore",
+    "name": "Seashore",
+    "family": "other",
+    "region": null,
+    "register": [],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [
+      "texture"
+    ],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "General MIDI program 123 (seed §1, Sound effects).",
+    "promptPhrase": "seashore",
+    "commonNames": [
+      "Seashore"
+    ]
+  },
+  {
+    "id": "bird-tweet",
+    "name": "Bird Tweet",
+    "family": "other",
+    "region": null,
+    "register": [],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [
+      "texture"
+    ],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "General MIDI program 124 (seed §1, Sound effects).",
+    "promptPhrase": "bird tweet",
+    "commonNames": [
+      "Bird Tweet"
+    ]
+  },
+  {
+    "id": "telephone-ring",
+    "name": "Telephone Ring",
+    "family": "other",
+    "region": null,
+    "register": [],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [
+      "texture"
+    ],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "General MIDI program 125 (seed §1, Sound effects).",
+    "promptPhrase": "telephone ring",
+    "commonNames": [
+      "Telephone Ring"
+    ]
+  },
+  {
+    "id": "helicopter",
+    "name": "Helicopter",
+    "family": "other",
+    "region": null,
+    "register": [],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [
+      "texture"
+    ],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "General MIDI program 126 (seed §1, Sound effects).",
+    "promptPhrase": "helicopter",
+    "commonNames": [
+      "Helicopter"
+    ]
+  },
+  {
+    "id": "applause",
+    "name": "Applause",
+    "family": "other",
+    "region": null,
+    "register": [],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [
+      "texture"
+    ],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "General MIDI program 127 (seed §1, Sound effects).",
+    "promptPhrase": "applause",
+    "commonNames": [
+      "Applause"
+    ]
+  },
+  {
+    "id": "gunshot",
+    "name": "Gunshot",
+    "family": "other",
+    "region": null,
+    "register": [],
+    "timbre": [],
+    "articulationIds": [],
+    "playStyles": [],
+    "idiomaticRoles": [
+      "texture"
+    ],
+    "aliases": {},
+    "reliability": {
+      "suno": "unverified",
+      "eleven": "unverified",
+      "flow": "unverified"
+    },
+    "bundleIds": [],
+    "description": "General MIDI program 128 (seed §1, Sound effects).",
+    "promptPhrase": "gunshot",
+    "commonNames": [
+      "Gunshot"
+    ]
+  }
+]

@@ -10,8 +10,8 @@ conflict, `CLAUDE.md` wins. The skill index is `SKILLS.md`.
 One Next.js 16 app (App Router, Turbopack) with a pure TypeScript core at
 `src/core/musicspec/`. The core is where the IR, engine profiles, serializers and linter
 live, and it is compiled into engine input fields. The app layer (`src/app/`,
-`src/lib/`, `src/proxy.ts`) wraps it with Supabase Auth and, later, the composer and
-library UI. EVAWAVE never generates audio and never calls the engines.
+`src/lib/`, `src/proxy.ts`, `src/components/`) wraps it with Supabase Auth and the composer
+UI (`src/components/composer/`); the library UI follows in S4. EVAWAVE never generates audio and never calls the engines.
 
 ## Commands
 
@@ -19,8 +19,12 @@ library UI. EVAWAVE never generates audio and never calls the engines.
   `.npmrc` sets `engine-strict`.
 - `npm run dev`: dev server on http://localhost:3000.
 - `npm run lint` · `npm run typecheck` · `npm test` · `npm run build`
+- `npx playwright test`: e2e on a Pixel 7 viewport against `next start` (build first).
 - `bash scripts/gate.sh`: the full gate CI runs (standards, lint, typecheck, unit, build,
-  client-bundle check, audit).
+  e2e, client-bundle check, audit).
+- `node scripts/sync-ir-types.mjs` after editing the IR block in `docs/SPEC.md`;
+  `node scripts/build-instrument-bank.mjs` after the instrument seed changes. Both have a
+  `--check` mode, and tests run it.
 
 ## Non-obvious gotchas
 
@@ -38,6 +42,12 @@ library UI. EVAWAVE never generates audio and never calls the engines.
   statically, so code review covers deliberate obfuscation.
   `tests/unit/import-boundary.test.ts` proves the rule. Never disable either. The
   path-scoped hard rules are in `.claude/rules/musicspec-core.md`.
+- **Playwright needs its own Chromium.** CI runs `npx playwright install --with-deps chromium`.
+  Where that browser cannot be downloaded, set `PLAYWRIGHT_CHROMIUM_EXECUTABLE` to an
+  installed Chromium (`playwright.config.ts` passes it as `executablePath`).
+- **Generated files are never edited by hand:** `src/core/musicspec/ir/types.ts` (from the
+  SPEC) and `src/data/taxonomy/instruments/*.json` (from the seed). Curated instruments
+  live in `src/data/taxonomy/instruments.json` and always win over generated ones.
 - **`next lint` does not exist in Next 16.** `npm run lint` calls ESLint directly.
 - **ESLint stays on 9.** `eslint-config-next@16.3.6` crashes under ESLint 10.
 - **Session refresh is `src/proxy.ts`, not `middleware.ts`.** It passes requests through
