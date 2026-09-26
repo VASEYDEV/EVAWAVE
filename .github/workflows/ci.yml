@@ -25,5 +25,7 @@ jobs:
           cache: npm
       - name: Install from lockfile
         run: npm ci
+      - name: Install the Playwright browser
+        run: npx playwright install --with-deps chromium
       - name: Run verification gate
         run: bash scripts/gate.sh
