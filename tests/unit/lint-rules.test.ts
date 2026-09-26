@@ -38,12 +38,12 @@ function run(spec: MusicSpec, options: { profile?: EngineProfile; catalog?: Cata
 const only = (results: LintResult[], ruleId: LintRuleId) => results.filter((r) => r.ruleId === ruleId);
 
 describe("lint", () => {
-  it("registers every S1 and S2 rule once, in id order", () => {
+  it("registers every spec-level rule once, in id order", () => {
     const ids = RULES.map((rule) => rule.id);
     expect(ids).toEqual([...ids].sort());
     expect(ids).toEqual([
       "BG-1", "BG-2", "BT-1", "CP-1", "CP-2", "CP-3", "CV-1", "CV-2", "LN-1", "ML-1", "ML-2",
-      "ML-3", "ML-4", "OV-1", "PB-1", "PB-2", "RB-1", "RB-2", "RB-3", "SC-1", "SC-2", "TQ-1",
+      "ML-3", "ML-4", "OV-1", "PB-1", "PB-2", "PT-1", "PT-2", "RB-1", "RB-2", "RB-3", "SC-1", "SC-2", "TQ-1",
     ]);
   });
 

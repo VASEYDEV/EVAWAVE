@@ -21,6 +21,8 @@ import { ML4 } from "./rules/ml-4";
 import { OV1 } from "./rules/ov-1";
 import { PB1 } from "./rules/pb-1";
 import { PB2 } from "./rules/pb-2";
+import { PT1 } from "./rules/pt-1";
+import { PT2 } from "./rules/pt-2";
 import { RB1 } from "./rules/rb-1";
 import { RB2 } from "./rules/rb-2";
 import { RB3 } from "./rules/rb-3";
@@ -30,8 +32,12 @@ import { TQ1 } from "./rules/tq-1";
 
 export type { LintContext, LintRule } from "./context";
 
-/** Every rule scheduled through S2, in rule-id order. */
-export const RULES: readonly LintRule[] = [BG1, BG2, BT1, CP1, CP2, CP3, CV1, CV2, LN1, ML1, ML2, ML3, ML4, OV1, PB1, PB2, RB1, RB2, RB3, SC1, SC2, TQ1];
+/** Every spec-level rule, in rule-id order. PV-1 reads a StyleProfile: see `lintStyleProfile`. */
+export const RULES: readonly LintRule[] = [BG1, BG2, BT1, CP1, CP2, CP3, CV1, CV2, LN1, ML1, ML2, ML3, ML4, OV1, PB1, PB2, PT1, PT2, RB1, RB2, RB3, SC1, SC2, TQ1];
+
+export { lowConfidenceOps } from "./rules/pt-1";
+export { protectedOps } from "./rules/pt-2";
+export { lintStyleProfile } from "./rules/pv-1";
 
 export interface LintOptions {
   /** The song's target overrides, for LN-1 and OV-1. */

@@ -367,12 +367,4 @@ export function aliasCoverage(ctx: SerializeContext): Record<string, Rendering> 
   );
 }
 
-/** Every string inside a JSON value run through `scrub`, structure unchanged. */
-export function scrubDeep<T>(value: T, scrub: (text: string) => string): T {
-  if (typeof value === "string") return scrub(value) as T;
-  if (Array.isArray(value)) return value.map((item: unknown) => scrubDeep(item, scrub)) as T;
-  if (typeof value === "object" && value !== null) {
-    return Object.fromEntries(Object.entries(value).map(([key, item]) => [key, scrubDeep(item, scrub)])) as T;
-  }
-  return value;
-}
+export { scrubDeep } from "../lineage";
