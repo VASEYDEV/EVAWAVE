@@ -377,6 +377,14 @@ S5 per SPEC §3. The methods are listed in SPEC §3 S5 "Delivered".
     keeps the listed copy and another account's copy. Leaving the tab's keys out fails
     it. The reconcile tests run on a fresh module, so copies left by earlier tests do
     not join them.
+- **Thirty-first review: no size cap.** This was listed as a known limit. The picker and
+  drop target took a file of any size, and the whole file was buffered and copied before
+  decoding, which can crash a phone tab. `importAudio` now refuses a file over
+  `IMPORT_MAX_BYTES` (100 MiB) before reading it, with an `ImportTooLargeError` that the
+  page shows as is. 100 MiB is about 9.9 minutes of 16-bit 44.1 kHz stereo WAV, 6 minutes
+  at 24-bit 48 kHz, and any compressed track of normal length. A test refuses a file
+  over the limit without reading it and reads one at the limit. Dropping the check
+  fails it. A streaming decoder (WebCodecs) would lift the cap.
 
 ## Decisions
 

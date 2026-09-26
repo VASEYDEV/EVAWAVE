@@ -227,8 +227,9 @@ end-to-end Jinn rebuild through the UI with an A/B Suno render.
 - **Import size.** Web Audio decodes the whole file before analysis. A 3-minute 44.1 kHz
   stereo track is about 64 MB of decoded samples plus a 32 MB mono mix. Analysis adds
   about 21 MB of peak memory on top (measured in Node; it was about 220 MB before the frame
-  pass stopped keeping spectra). There is no size cap yet; a cap or a streaming decoder
-  (WebCodecs) is the upgrade.
+  pass stopped keeping spectra). Imports refuse files over 100 MiB before reading them:
+  about 9.9 minutes of 16-bit 44.1 kHz stereo WAV, 6 minutes at 24-bit 48 kHz, and any
+  compressed track of normal length. A streaming decoder (WebCodecs) would lift the cap.
 - **Lockup**: `EVAWAVE` vs `EVA/WAVE`.
 
 ---
@@ -1541,8 +1542,8 @@ Delivered:
 - **Lint:** PT-1 and PT-2 are spec-level rules and also run per patch
   (`lowConfidenceOps`, `protectedOps`). PV-1 is `lintStyleProfile`.
 - **App:**
-  - `/import`: file picker or drop, hashing, Web Audio decoding, then analysis in the
-    worker. A newer file choice, or leaving the page, aborts the import in flight at its
+  - `/import`: file picker or drop (files up to 100 MiB), hashing, Web Audio decoding,
+    then analysis in the worker. A newer file choice, or leaving the page, aborts the import in flight at its
     next stage and terminates the worker. It shows the measured features, then a
     per-field review with low-confidence suggestions left unticked. Create makes the
     profile in memory, with the PV-1 badge, a device-made id and a name capped at 200
