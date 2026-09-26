@@ -139,6 +139,9 @@ export interface Click {
   /** 0 on the beat; 1…subdivision−1 between beats. */
   step: number;
   accent: "bar" | "beat" | "sub";
+  /** Audio time and length of the beat the click belongs to, as scheduled (see cursorAfter). */
+  beatTime: number;
+  beatSec: number;
 }
 
 export interface MetronomeCursor {
@@ -158,6 +161,14 @@ export interface MetronomeCursor {
 /** A cursor whose first click, a downbeat, falls at `time`. */
 export function startCursor(time: number): MetronomeCursor {
   return { beatTime: time, beatSec: 0, beat: 0, lastTime: Number.NEGATIVE_INFINITY };
+}
+
+/**
+ * The cursor as it stood right after `click` was scheduled. The metronome restarts from the
+ * last click that has sounded when it drops clicks queued on settings that have changed.
+ */
+export function cursorAfter(click: Click): MetronomeCursor {
+  return { beatTime: click.beatTime, beatSec: click.beatSec, beat: click.beat, lastTime: click.time };
 }
 
 /** Rounding slack when mapping a time back onto the step grid. */
@@ -211,7 +222,7 @@ export function scheduleClicks(cursor: MetronomeCursor, until: number, settings:
     // any meter of three or more.
     const inBar = beat >= settings.beatsPerBar ? 0 : beat;
     const accentBeat = inBar === 0 || (settings.halfTimeAccent && inBar === 2);
-    clicks.push({ time, beat: inBar, step, accent: step !== 0 ? "sub" : accentBeat ? "bar" : "beat" });
+    clicks.push({ time, beat: inBar, step, accent: step !== 0 ? "sub" : accentBeat ? "bar" : "beat", beatTime, beatSec });
     lastTime = time;
     step += 1;
   }
