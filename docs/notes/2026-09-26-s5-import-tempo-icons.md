@@ -463,6 +463,23 @@ S5 per SPEC §3. The methods are listed in SPEC §3 S5 "Delivered".
   the tempo goes. The S5 e2e now does the same through the page: it unticks the tempo and
   renames after Create, sees "not set", downloads again, and reads the file. The old
   component fails that e2e, still showing "140 BPM (analysis)".
+- **Thirty-seventh review.** Both confirmed. Each fix ships with a test that fails under a
+  mutation.
+  - **An unknown length skipped both guards.** When the media element could not give a
+    finite duration, the import decoded anyway, and a metadata-less file under 100 MiB can
+    hold hours. `probeDuration` is now required, and an unknown or non-finite length
+    refuses the import (`ImportLengthUnknownError`) before the file is read. Checked in
+    Chromium before choosing to refuse: a MediaRecorder WebM, once the known case for an
+    infinite duration, now reports a finite one at `loadedmetadata` (1.44 s for a 1.5 s
+    recording), so browser recordings still import. A test refuses undefined, infinite and
+    NaN lengths without reading the file. Dropping the check fails it.
+  - **7.1 was not an upper bound.** AAC with a program config element can carry up to 24
+    channels, so assuming 8 let a 150 s file decode to about 691 MB. The import now assumes
+    32, the most a Web Audio buffer holds. Chromium refuses a 33-channel `AudioBuffer`
+    (checked), and 32 is the spec's minimum. So a file whose header does not say takes up
+    to 37.5 s. The same Chromium check ran `channelCount` on real MediaRecorder output: a
+    WebM (Opus) and a fragmented MP4 (Opus, `dOps`) both read 2, as their decoded buffers
+    have.
 
 ## Decisions
 

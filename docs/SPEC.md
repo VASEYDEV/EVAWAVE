@@ -237,9 +237,10 @@ end-to-end Jinn rebuild through the UI with an A/B Suno render.
   samples, so 5.1 runs to 200 seconds and 7.1 to 150. The channel count comes from the
   container header (`analysis/channels.ts`: WAV, RF64, BW64, AIFF, FLAC, Ogg Opus, Vorbis
   and FLAC, MP3, ADTS, MP4 with AAC, ALAC, Opus, FLAC or PCM, CAF, Matroska and WebM).
-  When the header does not say, the import assumes 7.1. When the metadata cannot tell the
-  duration, only the byte cap applies. A streaming decoder (WebCodecs) would lift the
-  caps.
+  When the header does not say, the import assumes 32 channels, the most a Web Audio buffer
+  holds (Chromium refuses 33), so such a recording takes up to 37.5 seconds. A recording
+  whose metadata gives no finite duration is refused, since nothing else bounds its decode.
+  A streaming decoder (WebCodecs) would lift the caps.
 - **Compound meters.** The analysis cannot name 6/8 or 12/8. Autocorrelation at 43 frames per
   second is too spiky for the 3-against-6-beat comparison that would tell 3/4 from a 6/8
   bar; two variants were tried and both misread plain meters. Intake therefore proposes 3/4
@@ -1578,8 +1579,9 @@ Delivered:
     proposed or not accepted is absent, not a default (`StyleProfileSpec`, §2.2). The
     profile follows the review and the name after Create, keeping its id
     (`profileFromReview`), so Save and Download send what the page shows.
-    Recordings over 10 minutes by their metadata, or over 20 channel-minutes by the
-    channel count their header declares, are refused before they are read. Decoding runs
+    Recordings over 10 minutes by their metadata, of a length the metadata does not give,
+    or over 20 channel-minutes by the channel count their header declares, are refused
+    before they are read. Decoding runs
     at a fixed 48 kHz. Import, Create and Download store nothing: the file goes to OPFS (or an
     in-tab fallback) only after a library save succeeds, because a library record is the
     one reference the app can later remove it by, so no stored blob is ever unreachable.
