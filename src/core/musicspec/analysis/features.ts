@@ -24,6 +24,13 @@ const MAJOR = [6.35, 2.23, 3.48, 2.33, 4.38, 4.09, 2.52, 5.19, 2.39, 3.66, 2.29,
 const MINOR = [6.33, 2.68, 3.52, 5.38, 2.6, 3.53, 2.54, 4.75, 3.98, 2.69, 3.34, 3.17];
 
 const ANALYSIS_RATE = 22050;
+/**
+ * The least spread (standard deviation) of the onset envelope that counts as onsets. A steady
+ * tone measures 0.01 to 2 at any level; a click track at −40 dBFS measures about 50.
+ */
+const ONSET_MIN_SD = 5;
+/** The normalised autocorrelation at which a tempo's confidence may reach 1. */
+const PERIODIC_STRENGTH = 0.5;
 const FRAME = 2048;
 const HOP = 512;
 
@@ -141,7 +148,20 @@ function estimateTempo(env: Float64Array, frameRate: number): AudioFeatures["bpm
       bestLag = lag;
     }
   }
-  if (!bestLag || bestScore <= 0) return { value: 0, confidence: 0, halfTimeCandidate: 0, doubleTimeCandidate: 0, lag: 0 };
+  const none = { value: 0, confidence: 0, halfTimeCandidate: 0, doubleTimeCandidate: 0, lag: 0 };
+  if (!bestLag || bestScore <= 0) return none;
+  // A flux that barely moves has no onsets to time: a steady tone's frame-to-frame jitter
+  // is periodic in the hop, not in any beat, however strong its autocorrelation.
+  if (Math.sqrt(autocorrelation(centred, 0)) < ONSET_MIN_SD) return none;
+  // The prior can pick a lag on a slope of the raw autocorrelation (a swell's flux falls
+  // steadily); only a raw peak within two lags of it is evidence of a beat.
+  const raw = (lag: number) => autocorrelation(centred, lag) / zero;
+  let periodicity = 0;
+  for (let lag = Math.max(1, bestLag - 2); lag <= bestLag + 2; lag++) {
+    const r = raw(lag);
+    if (r > periodicity && r >= raw(lag - 1) && r >= raw(lag + 1)) periodicity = r;
+  }
+  if (periodicity <= 0) return none;
   // Parabolic interpolation for a sub-frame lag, only where the raw autocorrelation peaks: the
   // prior can pick a lag on a slope (a swell's flux falls steadily), where the fitted vertex
   // can land at zero or a negative lag and the fold below would never end. The clamp keeps
@@ -156,7 +176,10 @@ function estimateTempo(env: Float64Array, frameRate: number): AudioFeatures["bpm
   while (value > 200) value /= 2;
   const lag = (60 * frameRate) / value;
   const median = percentile(scores, 50);
-  const confidence = Math.max(0, Math.min(1, (bestScore - median) / (Math.abs(bestScore) + 1e-9)));
+  // How far the winner stands out, capped by how periodic the envelope is: a weak peak (a beat
+  // under noise, or noise itself) cannot claim more than its strength allows.
+  const standout = (bestScore - median) / (Math.abs(bestScore) + 1e-9);
+  const confidence = Math.max(0, Math.min(1, standout, periodicity / PERIODIC_STRENGTH));
   return { value, confidence, halfTimeCandidate: value / 2, doubleTimeCandidate: value * 2, lag };
 }
 

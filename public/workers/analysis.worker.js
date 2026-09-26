@@ -131,6 +131,13 @@ const MINOR = [
 	3.17
 ];
 const ANALYSIS_RATE = 22050;
+/**
+* The least spread (standard deviation) of the onset envelope that counts as onsets. A steady
+* tone measures 0.01 to 2 at any level; a click track at −40 dBFS measures about 50.
+*/
+const ONSET_MIN_SD = 5;
+/** The normalised autocorrelation at which a tempo's confidence may reach 1. */
+const PERIODIC_STRENGTH = .5;
 const FRAME = 2048;
 const HOP = 512;
 function framePass(samples, sampleRate) {
@@ -220,13 +227,22 @@ function estimateTempo(env, frameRate) {
 			bestLag = lag;
 		}
 	}
-	if (!bestLag || bestScore <= 0) return {
+	const none = {
 		value: 0,
 		confidence: 0,
 		halfTimeCandidate: 0,
 		doubleTimeCandidate: 0,
 		lag: 0
 	};
+	if (!bestLag || bestScore <= 0) return none;
+	if (Math.sqrt(autocorrelation(centred, 0)) < ONSET_MIN_SD) return none;
+	const raw = (lag) => autocorrelation(centred, lag) / zero;
+	let periodicity = 0;
+	for (let lag = Math.max(1, bestLag - 2); lag <= bestLag + 2; lag++) {
+		const r = raw(lag);
+		if (r > periodicity && r >= raw(lag - 1) && r >= raw(lag + 1)) periodicity = r;
+	}
+	if (periodicity <= 0) return none;
 	const y0 = autocorrelation(centred, bestLag - 1), y1 = autocorrelation(centred, bestLag), y2 = autocorrelation(centred, bestLag + 1);
 	const peak = Math.min(maxLag, Math.max(minLag, bestLag + parabolicPeakOffset(y0, y1, y2)));
 	let value = 60 * frameRate / peak;
@@ -234,7 +250,8 @@ function estimateTempo(env, frameRate) {
 	while (value > 200) value /= 2;
 	const lag = 60 * frameRate / value;
 	const median = percentile(scores, 50);
-	const confidence = Math.max(0, Math.min(1, (bestScore - median) / (Math.abs(bestScore) + 1e-9)));
+	const standout = (bestScore - median) / (Math.abs(bestScore) + 1e-9);
+	const confidence = Math.max(0, Math.min(1, standout, periodicity / PERIODIC_STRENGTH));
 	return {
 		value,
 		confidence,

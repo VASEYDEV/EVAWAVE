@@ -4,7 +4,7 @@ import { fft, parabolicPeakOffset } from "@/core/musicspec/analysis/dsp";
 import { analyseAudio } from "@/core/musicspec/analysis/features";
 import { decodeWav, encodeWav, WavError } from "@/core/musicspec/analysis/wav";
 
-import { clickTrack, mix, sine, swell, triad } from "../support/signals";
+import { clickTrack, mix, noise, sine, swell, triad } from "../support/signals";
 
 describe("fft", () => {
   it("puts a pure tone in its bin", () => {
@@ -161,14 +161,32 @@ describe("tempo and meter", () => {
     expect(meter.signature).toBe("unknown");
   });
 
-  it("ends on a swell with no beat, keeping the tempo finite and in range", () => {
-    // Before the fit was limited to local maxima, these three swells put the fitted peak at a
-    // negative lag, and folding the resulting tempo into 60–200 BPM never ended.
+  it("claims no tempo for a swell with no beat, and ends", () => {
+    // These swells once put the fitted peak at a negative lag, and folding the tempo into
+    // 60–200 BPM never ended. Their winning lag sits on a slope with no raw peak near it.
     for (const seed of [1, 2, 3]) {
       const { bpm } = analyseAudio(swell(440, 12, 1, 22050, seed), 22050);
-      expect(bpm.value).toBeGreaterThanOrEqual(60);
-      expect(bpm.value).toBeLessThanOrEqual(200);
+      expect(bpm).toEqual({ value: 0, confidence: 0, halfTimeCandidate: 0, doubleTimeCandidate: 0 });
     }
+  });
+
+  it("claims no tempo for a steady tone, loud or quiet, a fade or a sustained chord", () => {
+    // Their flux is frame jitter, periodic in the hop: it once read 112.5 BPM at confidence 1.
+    const n = 22050 * 8;
+    const fade = Float32Array.from({ length: n }, (_, i) => (i / n) * Math.sin((2 * Math.PI * 440 * i) / 22050));
+    for (const signal of [sine(440, -6, 10, 22050), sine(440, -40, 10, 22050), fade, triad(62, true, 12, 22050)]) {
+      expect(analyseAudio(signal, 22050).bpm.value).toBe(0);
+    }
+  });
+
+  it("lets a beat under noise keep its tempo, with confidence as strong as the beat shows", () => {
+    const clicks = clickTrack(120, 20, 22050);
+    const audible = analyseAudio(mix(clicks, noise(20, 22050, 0.1, 5)), 22050).bpm;
+    expect(Math.abs(audible.value - 120)).toBeLessThan(1.5);
+    expect(audible.confidence).toBeGreaterThanOrEqual(0.5);
+    // Buried in noise, or noise alone: whatever lag wins, it starts unticked.
+    expect(analyseAudio(mix(clicks, noise(20, 22050, 0.3, 5)), 22050).bpm.confidence).toBeLessThan(0.5);
+    expect(analyseAudio(noise(10, 22050, 0.5, 5), 22050).bpm.confidence).toBeLessThan(0.5);
   });
 
   it("reports no tempo in silence", () => {
