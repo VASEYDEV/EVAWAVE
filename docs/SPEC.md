@@ -215,8 +215,11 @@ end-to-end Jinn rebuild through the UI with an A/B Suno render.
 - **Tagging model** for audio import (§1.7 step 3). v1 ships the null tagger (`tags: []`).
 - **Share-sheet import** (§1.7 step 1) needs a PWA manifest with `share_target`. The PWA
   tooling is not set up (A15), so S5 ships file picker and drag and drop only.
-- **Analysis off the main thread.** S5 analyses on the main thread after the status
-  paints. A Web Worker is the upgrade once Turbopack worker bundling is verified.
+- ~~**Analysis off the main thread.**~~ Resolved in S5. Analysis runs in a Web Worker.
+  Turbopack (Next 16.3.6) copies a `new URL("./x.ts", import.meta.url)` worker as a raw
+  asset instead of bundling it, so `scripts/build-analysis-worker.mjs` bundles it into
+  `public/workers/analysis.worker.js` (generated, with `--check`). Revisit when Turbopack
+  bundles workers.
 - **Loudness at rates other than 48 kHz** uses the RBJ equivalents of the K-weighting
   filters, as pyloudnorm does: within 0.2 LU of the 48 kHz reference in the tests.
 - **iOS PWA storage**: OPFS quota and eviction for reference audio. Browsers without OPFS
@@ -1507,7 +1510,9 @@ Delivered:
   - a WAV decoder and encoder.
 
   Memory stays bounded: the frame pass keeps running sums, not spectra, and loudness
-  keeps one energy sum per 100 ms. Tempo, key and spectrum read the mono mix unless phase
+  keeps one energy sum per 100 ms. In the browser the analysis runs in a Web Worker
+  (`public/workers/analysis.worker.js`, bundled from `src/lib/audio/analysis.worker.ts`),
+  which a newer file choice terminates. Tempo, key and spectrum read the mono mix unless phase
   cancellation took most of its energy (under a quarter of the channels' mean); then they
   read the loudest channel.
 
@@ -1526,7 +1531,8 @@ Delivered:
   for the reset. Metronome clicks come from a 25 ms tick with 100 ms lookahead,
   accenting beat 1, or beats 1 and 3 in half-time mode, with optional 8th or 16th
   clicks. The cursor is anchored to its beat, so changing the subdivision or meter while
-  it runs keeps the beat grid in phase, and a second start while one is pending joins it.
+  it runs keeps the beat grid in phase; clicks missed during a stalled tick are skipped,
+  not played in a burst; and a second start while one is pending joins it.
   The controls sit in module 1 and `Assign` writes the rounded BPM with `source: 'tap'`.
 - **Lint:** PT-1 and PT-2 are spec-level rules and also run per patch
   (`lowConfidenceOps`, `protectedOps`). PV-1 is `lintStyleProfile`.

@@ -164,3 +164,17 @@ S5 per SPEC §3. The methods are listed in SPEC §3 S5 "Delivered".
   cursor now carries its beat's time, and each tick re-derives the next click from that
   beat under the current settings. Tests pin the times for 16ths to 8ths and 8ths to
   16ths; they fail on the old scheduler.
+- **Tenth review.**
+  - **Analysis on the UI thread (P1).** The analysis now runs in a Web Worker, which an
+    abort terminates, and the sample buffers are transferred, not copied. Turbopack in
+    Next 16.3.6 does not bundle `new Worker(new URL("./analysis.worker.ts",
+    import.meta.url))`; two builds copied the raw `.ts` file as a static asset.
+    `scripts/build-analysis-worker.mjs` (rolldown, now a direct devDependency) bundles it
+    into `public/workers/analysis.worker.js` instead. A `--check` test keeps that bundle
+    in sync with the source. The S5 e2e records every worker the page starts: exactly
+    `/workers/analysis.worker.js`, and the import still reads 140 BPM. With the worker
+    removed, the e2e fails.
+  - **Stale metronome clicks after a stalled tick** were scheduled in the past and
+    played in a burst. `scheduleClicks` now takes `now` and skips to the first grid step
+    at or after it, keeping the bar position. A test stalls from 0.3 s to 10 s and gets
+    one downbeat at 10 s; it fails on the old scheduler.

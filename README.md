@@ -40,7 +40,8 @@ Nothing in the app is usable yet. What exists today:
   level security keeps each user to their own rows, and a test proves it against the real
   migrations. It needs a Supabase project: see
   [`docs/runbooks/supabase.md`](docs/runbooks/supabase.md).
-- Audio import, from S5, at `/import`. A reference track is analysed on this device:
+- Audio import, from S5, at `/import`. A reference track is analysed on this device, in a
+  background worker so the page stays responsive:
   tempo, meter, key, BS.1770 loudness, energy and spectrum. EVAWAVE proposes a style
   profile field by field, you accept what you want, and the profile is saved to the
   library or downloaded. The audio never leaves the device, and a test proves no request

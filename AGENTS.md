@@ -54,7 +54,11 @@ UI (`src/components/composer/`); the library UI follows in S4. EVAWAVE never gen
   SPEC) and `src/data/taxonomy/instruments/*.json` (from the seed), and
   `supabase/migrations/20260926000100_seed_genres.sql` (from `genres.json`, by
   `node scripts/build-genre-seed.mjs`), and `assets/icons/modules/*.svg` (from
-  `assets/icons/modules.json`, by `node scripts/build-module-icons.mjs`).
+  `assets/icons/modules.json`, by `node scripts/build-module-icons.mjs`), and
+  `public/workers/analysis.worker.js` (from `src/lib/audio/analysis.worker.ts` and the
+  analysis core, by `node scripts/build-analysis-worker.mjs`). Any change under
+  `src/core/musicspec/analysis/` needs that bundle rebuilt; its `--check` test fails
+  otherwise.
 - **Audio never leaves the device (A6).** Import steps are injected (`src/lib/audio/import.ts`),
   so `tests/unit/audio-import.test.ts` can record every request. Keep new persistence
   inside `saveImport`-style functions that send metadata only. Curated instruments
