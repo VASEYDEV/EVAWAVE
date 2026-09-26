@@ -11,6 +11,7 @@ const LEVEL: Record<Click["accent"], number> = { bar: 1, beat: 0.6, sub: 0.3 };
 export class Metronome {
   private context: AudioContext | null = null;
   private timer: ReturnType<typeof setInterval> | null = null;
+  private starting: Promise<void> | null = null;
   private cursor: MetronomeCursor = { nextTime: 0, beat: 0, step: 0 };
 
   constructor(
@@ -27,11 +28,25 @@ export class Metronome {
     this.volume = volume;
   }
 
+  /**
+   * Starts the clicks. A second call while the first awaits `resume()` joins it, so a double
+   * tap never makes two contexts and two schedulers.
+   */
   async start(): Promise<void> {
     if (this.running) return;
-    this.context = new AudioContext();
-    await this.context.resume();
-    this.cursor = { nextTime: this.context.currentTime + 0.05, beat: 0, step: 0 };
+    this.starting ??= this.begin().finally(() => {
+      this.starting = null;
+    });
+    return this.starting;
+  }
+
+  private async begin(): Promise<void> {
+    const context = new AudioContext();
+    this.context = context;
+    await context.resume();
+    // Stopped while resuming: stop() already closed this context.
+    if (this.context !== context) return;
+    this.cursor = { nextTime: context.currentTime + 0.05, beat: 0, step: 0 };
     this.timer = setInterval(() => this.tick(), METRONOME_TICK_MS);
     this.tick();
   }
