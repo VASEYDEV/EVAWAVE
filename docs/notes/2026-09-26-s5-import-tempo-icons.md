@@ -235,6 +235,18 @@ S5 per SPEC §3. The methods are listed in SPEC §3 S5 "Delivered".
     libebur128 (`ebur128_loudness_range_multiple`: `minus_twenty_decibels * stl_power`).
     A new test uses a signal where the two anchors disagree (10 s at −23 LUFS, then 30 s at
     about −46): the range reads about 23 LU, and the suggested gate fails it.
+- **Twentieth review.**
+  - **A repeated delete of the same file.** Two quick activations both read the copy and
+    removed it; one record delete succeeded, and the other removed no row, failed, and
+    restored a copy nothing referred to. `deleteWithLocalAudio` now joins a delete already
+    in flight for the same owner and hash. A test runs two at once: the record delete runs
+    once and no copy comes back. It fails on the old code. **Listed, not fixed:** two tabs
+    deleting the same record at the same moment can still restore an orphan; the Web
+    Locks API could serialise them.
+  - **A stale in-tab copy after OPFS recovers.** A save that fell back to memory and was
+    retried into OPFS kept the in-tab blob for the life of the tab. A successful OPFS
+    write now drops it. A test stores through the fallback, then into OPFS, and checks the
+    tab no longer holds it; it fails on the old code.
 
 ## Decisions
 
