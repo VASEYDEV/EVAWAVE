@@ -6,7 +6,17 @@ import { decodeWav, encodeWav, WavError, type PcmAudio } from "@/core/musicspec/
 import { applyReviewedPatch, audioProfileBase, AUDIO_DRAFT_MODEL, reviewPatch } from "@/core/musicspec/intake";
 import { lintStyleProfile } from "@/core/musicspec/lint";
 import { blobInTab, deleteWithLocalAudio, inTurnForLocalAudio, keepAudioFor, removeLocalAudio, storeInOpfs } from "@/lib/audio/browser";
-import { IMPORT_MAX_BYTES, IMPORT_MAX_SECONDS, importAudio, ImportTooLargeError, ImportTooLongError, sha256Hex, type ImportDeps } from "@/lib/audio/import";
+import {
+  IMPORT_ASSUMED_CHANNELS,
+  IMPORT_MAX_BYTES,
+  IMPORT_MAX_CHANNEL_SECONDS,
+  IMPORT_MAX_SECONDS,
+  importAudio,
+  ImportTooLargeError,
+  ImportTooLongError,
+  sha256Hex,
+  type ImportDeps,
+} from "@/lib/audio/import";
 import { deleteFile, hasFileRecord, LibraryError, saveImport, saveImportAndKeepAudio, type ImportRecord } from "@/lib/library/repository";
 import type { Database } from "@/lib/library/schema";
 
@@ -215,6 +225,69 @@ describe("a superseded import", () => {
       await importAudio(ok, withLength(seconds));
       expect(read).toHaveBeenCalledTimes(1);
     }
+  });
+
+  it("bounds a multichannel recording's length by its channels, reading only the header", async () => {
+    // A 16-bit six-channel WAV: the header says 6 channels, so 5.1 takes up to 200 seconds.
+    const frames = 2205;
+    const pcm = new DataView(new ArrayBuffer(frames * 6 * 2));
+    for (let i = 0; i < frames * 6; i++) pcm.setInt16(i * 2, Math.round(8000 * Math.sin((2 * Math.PI * 440 * Math.floor(i / 6)) / 22050)), true);
+    const header = new DataView(new ArrayBuffer(44));
+    [..."RIFF"].forEach((c, i) => header.setUint8(i, c.charCodeAt(0)));
+    header.setUint32(4, 36 + pcm.byteLength, true);
+    [..."WAVEfmt "].forEach((c, i) => header.setUint8(8 + i, c.charCodeAt(0)));
+    header.setUint32(16, 16, true);
+    header.setUint16(20, 1, true);
+    header.setUint16(22, 6, true);
+    header.setUint32(24, 22050, true);
+    header.setUint32(28, 22050 * 12, true);
+    header.setUint16(32, 12, true);
+    header.setUint16(34, 16, true);
+    [..."data"].forEach((c, i) => header.setUint8(36 + i, c.charCodeAt(0)));
+    header.setUint32(40, pcm.byteLength, true);
+    const surround = () => new File([header, pcm], "surround.wav", { type: "audio/wav" });
+    const withLength = (seconds: number) => ({ ...nodeDeps(), probeDuration: async () => seconds });
+    const limit = IMPORT_MAX_CHANNEL_SECONDS / 6;
+    expect(limit).toBe(200);
+
+    const over = surround();
+    const readOver = vi.spyOn(over, "arrayBuffer");
+    const refused = importAudio(over, withLength(limit + 1));
+    await expect(refused).rejects.toBeInstanceOf(ImportTooLongError);
+    await expect(refused).rejects.toThrow("This recording has 6 channels and runs 3.4 minutes; imports take 6-channel recordings up to 3.3 minutes for now.");
+    expect(readOver).not.toHaveBeenCalled();
+
+    const at = surround();
+    const readAt = vi.spyOn(at, "arrayBuffer");
+    const result = await importAudio(at, withLength(limit));
+    expect(readAt).toHaveBeenCalledTimes(1);
+    expect(result.asset.bytes).toBe(44 + pcm.byteLength);
+  });
+
+  it("assumes 7.1 when the header does not say how many channels a recording has", async () => {
+    const limit = IMPORT_MAX_CHANNEL_SECONDS / IMPORT_ASSUMED_CHANNELS;
+    expect(limit).toBe(150);
+    // Bytes no header reader knows, which the injected decoder reads as the mono WAV.
+    const opaque = () => new File([new Uint8Array(64).fill(7)], "field-recording.bin");
+    const deps = (seconds: number): ImportDeps => ({ ...nodeDeps(), decode: async () => decodeWav(wav), probeDuration: async () => seconds });
+    const refused = importAudio(opaque(), deps(limit + 30));
+    await expect(refused).rejects.toThrow(
+      "This recording runs 3 minutes, and its file does not say how many channels it has; imports take such recordings up to 2.5 minutes for now.",
+    );
+    await expect(importAudio(opaque(), deps(limit))).resolves.toMatchObject({ asset: { filename: "field-recording.bin" } });
+  });
+
+  it("stops before reading the file when a newer choice aborts it during the header read", async () => {
+    const controller = new AbortController();
+    const target = new File([wav], "desert-loop.wav", { type: "audio/wav" });
+    const slice = target.slice.bind(target);
+    vi.spyOn(target, "slice").mockImplementation((...args) => {
+      controller.abort();
+      return slice(...args);
+    });
+    const read = vi.spyOn(target, "arrayBuffer");
+    await expect(importAudio(target, { ...nodeDeps(), probeDuration: async () => 60 }, controller.signal)).rejects.toThrow(/abort/i);
+    expect(read).not.toHaveBeenCalled();
   });
 
   it("never reads the file when a newer choice aborted it before it started", async () => {

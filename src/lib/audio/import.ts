@@ -6,6 +6,7 @@
  * stored blob is ever unreachable. The steps that touch the platform are injected, so tests
  * can run the same pipeline and prove no request carries audio.
  */
+import { channelCount } from "@/core/musicspec/analysis/channels";
 import { analyseAudio } from "@/core/musicspec/analysis/features";
 import type { PcmAudio } from "@/core/musicspec/analysis/wav";
 import { draftFromAudio } from "@/core/musicspec/intake";
@@ -20,17 +21,48 @@ import type { AudioFeatures, IRPatch } from "@/core/musicspec/ir/types";
 export const IMPORT_MAX_BYTES = 100 * 1024 * 1024;
 
 /**
- * The longest recording an import decodes: 10 minutes. Web Audio decodes to 32-bit float at
- * the device rate, so the bytes a file takes say little about the memory its decode takes
- * (a 100 MiB MP3 can hold an hour and a half). Ten minutes of stereo at 48 kHz is about
- * 230 MB of samples.
+ * The longest recording an import decodes: 10 minutes. Web Audio decodes to 32-bit float, so
+ * the bytes a file takes say little about the memory its decode takes (a 100 MiB MP3 can hold
+ * an hour and a half). Ten minutes of stereo at DECODE_SAMPLE_RATE is about 230 MB of samples.
  */
 export const IMPORT_MAX_SECONDS = 600;
 
-/** The recording is longer than IMPORT_MAX_SECONDS; nothing was read or decoded. */
+/**
+ * The rate an import decodes at, whatever the device runs at (an audio interface can run at
+ * 192 kHz), so the decoded size depends only on duration and channels. BS.1770 K-weighting is
+ * exact at 48 kHz.
+ */
+export const DECODE_SAMPLE_RATE = 48000;
+
+/**
+ * Channels × seconds an import decodes: ten minutes of stereo, about 230 MB of samples at
+ * DECODE_SAMPLE_RATE, and the mix of a multichannel file adds one channel more. Mono and
+ * stereo keep the whole IMPORT_MAX_SECONDS; 5.1 runs to 200 seconds, 7.1 to 150.
+ */
+export const IMPORT_MAX_CHANNEL_SECONDS = 2 * IMPORT_MAX_SECONDS;
+
+/** The channels an import assumes when the file's header does not say: 7.1. */
+export const IMPORT_ASSUMED_CHANNELS = 8;
+
+const minutes = (seconds: number) => {
+  const value = Number((seconds / 60).toFixed(1));
+  return `${value} minute${value === 1 ? "" : "s"}`;
+};
+
+/**
+ * The recording is longer than an import decodes: IMPORT_MAX_SECONDS, or less for a file with
+ * more than two channels (`channels`, or "unknown" when its header does not say). Nothing was
+ * read beyond the header, and nothing was decoded.
+ */
 export class ImportTooLongError extends Error {
-  constructor(seconds: number) {
-    super(`This recording is ${Math.round(seconds / 60)} minutes long; imports take recordings up to ${IMPORT_MAX_SECONDS / 60} minutes for now.`);
+  constructor(seconds: number, limitSeconds = IMPORT_MAX_SECONDS, channels?: number | "unknown") {
+    super(
+      channels === "unknown"
+        ? `This recording runs ${minutes(seconds)}, and its file does not say how many channels it has; imports take such recordings up to ${minutes(limitSeconds)} for now.`
+        : channels !== undefined
+          ? `This recording has ${channels} channels and runs ${minutes(seconds)}; imports take ${channels}-channel recordings up to ${minutes(limitSeconds)} for now.`
+          : `This recording is ${Math.round(seconds / 60)} minutes long; imports take recordings up to ${IMPORT_MAX_SECONDS / 60} minutes for now.`,
+    );
     this.name = "ImportTooLongError";
   }
 }
@@ -44,7 +76,7 @@ export class ImportTooLargeError extends Error {
 }
 
 export interface ImportDeps {
-  /** Decodes the file's bytes to PCM, keeping the channels (Web Audio in the browser). */
+  /** Decodes the file's bytes to PCM, keeping the channels (Web Audio at DECODE_SAMPLE_RATE in the browser). */
   decode(bytes: ArrayBuffer): Promise<PcmAudio>;
   /** Hex sha256 of the bytes, for dedupe and as the local key. */
   digest(bytes: ArrayBuffer): Promise<string>;
@@ -90,7 +122,14 @@ export async function importAudio(file: File, deps: ImportDeps, signal?: AbortSi
   if (file.size > IMPORT_MAX_BYTES) throw new ImportTooLargeError(file.size);
   const seconds = await deps.probeDuration?.(file);
   signal?.throwIfAborted();
-  if (seconds !== undefined && seconds > IMPORT_MAX_SECONDS) throw new ImportTooLongError(seconds);
+  if (seconds !== undefined) {
+    if (seconds > IMPORT_MAX_SECONDS) throw new ImportTooLongError(seconds);
+    // Web Audio decodes every channel at once, so the channel count bounds the length too.
+    const channels = await channelCount(headerReader(file), file.size);
+    signal?.throwIfAborted();
+    const limit = IMPORT_MAX_CHANNEL_SECONDS / (channels ?? IMPORT_ASSUMED_CHANNELS);
+    if (seconds > limit) throw new ImportTooLongError(seconds, limit, channels ?? "unknown");
+  }
   const bytes = await file.arrayBuffer();
   signal?.throwIfAborted();
   const sha256 = await deps.digest(bytes);
@@ -107,6 +146,11 @@ export async function importAudio(file: File, deps: ImportDeps, signal?: AbortSi
     patch,
     analysedOn,
   };
+}
+
+/** Reads byte ranges of `file` without loading the rest of it. */
+function headerReader(file: File) {
+  return async (offset: number, length: number) => new Uint8Array(await file.slice(offset, offset + length).arrayBuffer());
 }
 
 /** Hex sha256 with Web Crypto, available in browsers and Node 22+. */
