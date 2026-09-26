@@ -37,6 +37,9 @@ function moodWords(features: AudioFeatures): string[] {
   return words;
 }
 
+/** The most a 3/4 reading is trusted: below PT-1's 0.5, so it starts unticked. */
+export const THREE_BEAT_CONFIDENCE = 0.4;
+
 export interface DraftMeta {
   /** When the analysis ran; the core never reads the clock. */
   createdAt: string;
@@ -56,7 +59,11 @@ export function draftFromAudio(features: AudioFeatures, meta: DraftMeta, lineage
       op("/D6/tempo", { bpm: Math.round(bpm.value), source: "analysis" }, bpm.confidence, `Onset autocorrelation measures ${round(bpm.value)} BPM (half-time ${round(bpm.halfTimeCandidate)}, double-time ${round(bpm.doubleTimeCandidate)}).`, "merge"),
     );
   }
-  if (meter.signature !== "unknown") {
+  if (meter.signature === "3/4") {
+    // A three-beat grouping is also half a 6/8 bar counted in eighths, which the analysis
+    // cannot tell apart, so 3/4 starts unticked (PT-1) and says so.
+    ops.push(op("/D6/meterLock/signature", "3/4", Math.min(meter.confidence, THREE_BEAT_CONFIDENCE), "Accents group in threes: 3/4, or 6/8 counted in eighths, which the analysis cannot tell apart."));
+  } else if (meter.signature !== "unknown") {
     ops.push(op("/D6/meterLock/signature", meter.signature, meter.confidence, `Accent periodicity suggests ${meter.signature}.`));
   }
   if (key.confidence > 0) {

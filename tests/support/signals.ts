@@ -20,6 +20,21 @@ export function clickTrack(bpm: number, seconds: number, sampleRate: number, bea
   return out;
 }
 
+/** Clicks on every beat, with each beat's level taken in turn from `levels` (one bar's pattern). */
+export function accentedClicks(bpm: number, seconds: number, sampleRate: number, levels: readonly number[]): Float32Array {
+  const out = new Float32Array(Math.round(seconds * sampleRate));
+  const beatSamples = (60 / bpm) * sampleRate;
+  const clickLength = Math.round(0.03 * sampleRate);
+  for (let beat = 0; beat * beatSamples < out.length; beat++) {
+    const start = Math.round(beat * beatSamples);
+    const amp = levels[beat % levels.length] as number;
+    for (let i = 0; i < clickLength && start + i < out.length; i++) {
+      out[start + i] = (out[start + i] as number) + amp * Math.exp(-i / (0.004 * sampleRate)) * Math.sin((2 * Math.PI * 1500 * i) / sampleRate);
+    }
+  }
+  return out;
+}
+
 const midiHz = (note: number) => 440 * 2 ** ((note - 69) / 12);
 
 /** A sustained triad (with its root an octave down), e.g. D minor = 62, minor. */

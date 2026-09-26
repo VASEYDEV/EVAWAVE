@@ -1,14 +1,14 @@
 import { describe, expect, it } from "vitest";
 
 import { analyseAudio } from "@/core/musicspec/analysis/features";
-import { applyReviewedPatch, audioProfileBase, audioProfileSpec, AUDIO_DRAFT_MODEL, draftFromAudio, reviewPatch } from "@/core/musicspec/intake";
+import { applyReviewedPatch, audioProfileBase, audioProfileSpec, AUDIO_DRAFT_MODEL, draftFromAudio, reviewPatch, THREE_BEAT_CONFIDENCE } from "@/core/musicspec/intake";
 import { defaultMusicSpec } from "@/core/musicspec/ir/defaults";
 import type { AudioFeatures, IRPatch, StyleProfile } from "@/core/musicspec/ir/types";
 import { lint, lintStyleProfile, lowConfidenceOps, protectedOps } from "@/core/musicspec/lint";
 import { getProfile } from "@/core/musicspec/engines";
 import { catalog } from "@/data/taxonomy";
 
-import { clickTrack, mix, triad } from "../support/signals";
+import { accentedClicks, clickTrack, mix, triad } from "../support/signals";
 
 const features = analyseAudio(mix(clickTrack(140, 16, 22050), triad(62, true, 16, 22050)), 22050);
 const meta = { createdAt: "2026-09-26T12:00:00Z", sourceRef: "a".repeat(64) };
@@ -39,6 +39,21 @@ describe("draftFromAudio (§1.7 step 4)", () => {
   it("runs the lineage pass on every value and rationale", () => {
     const scrubbed = draftFromAudio(features, meta, ["Chroma", "brooding"]);
     expect(JSON.stringify(scrubbed)).not.toMatch(/chroma|brooding/i);
+  });
+
+  it("does not assert 3/4 by default: a 6/8 bar counted in eighths reads as three-beat groupings", () => {
+    // Eighths at 150 with 6/8 accents (strong 1, medium 4): the analysis hears threes.
+    const sixEight = analyseAudio(accentedClicks(150, 24, 22050, [0.9, 0.35, 0.35, 0.6, 0.35, 0.35]), 22050);
+    const op = opAt(draftFromAudio(sixEight, meta), "/D6/meterLock/signature");
+    expect(op?.value).toBe("3/4");
+    expect(op?.confidence).toBeLessThanOrEqual(THREE_BEAT_CONFIDENCE);
+    expect(op?.confidence).toBeLessThan(0.5);
+    expect(op?.rationale).toMatch(/6\/8/);
+    // A four-beat reading keeps the analyser's own confidence.
+    const fourFour = draftFromAudio(analyseAudio(clickTrack(120, 24, 22050, 4), 22050), meta);
+    const four = opAt(fourFour, "/D6/meterLock/signature");
+    expect(four?.value).toBe("4/4");
+    expect(four?.confidence).toBeGreaterThanOrEqual(0.5);
   });
 
   it("proposes no tempo, meter or key from silence", () => {
