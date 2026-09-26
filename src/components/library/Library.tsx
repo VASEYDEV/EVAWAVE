@@ -8,6 +8,7 @@ import { useEffect, useId, useMemo, useState } from "react";
 
 import type { MusicSpec } from "@/core/musicspec/ir/types";
 import { deleteWithLocalAudio, reconcileLocalAudio } from "@/lib/audio/browser";
+import { readComposer } from "@/lib/composer/storage";
 import { createLibraryClient } from "@/lib/library/client";
 import {
   createStyleProfile,
@@ -23,17 +24,9 @@ import {
 } from "@/lib/library/repository";
 import { clampProfileName } from "@/lib/library/schema";
 
-const COMPOSER_KEY = "evawave:composer:v1";
-
 /** The composer's working spec from this browser, if there is one. */
 function composerSpec(): MusicSpec | null {
-  try {
-    const saved = window.localStorage.getItem(COMPOSER_KEY);
-    const parsed = saved ? (JSON.parse(saved) as { spec?: MusicSpec }) : null;
-    return parsed?.spec?.irVersion === 1 ? parsed.spec : null;
-  } catch {
-    return null;
-  }
+  return readComposer()?.spec ?? null;
 }
 
 function Links({ legend, options, selected, onToggle }: { legend: string; options: { id: string; label: string }[]; selected: readonly string[]; onToggle: (id: string, on: boolean) => void }) {

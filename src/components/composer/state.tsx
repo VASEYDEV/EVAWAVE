@@ -13,8 +13,7 @@ import { defaultMusicSpec } from "@/core/musicspec/ir/defaults";
 import type { Catalog, MusicSpec, PatchOp } from "@/core/musicspec/ir/types";
 import { PatchError } from "@/core/musicspec/patch";
 import { catalog } from "@/data/taxonomy";
-
-const STORAGE_KEY = "evawave:composer:v1";
+import { readComposer, writeComposer } from "@/lib/composer/storage";
 
 type Action =
   | { type: "edit"; ops: PatchOp[]; label: string; coalesce?: string }
@@ -68,32 +67,17 @@ export function op(kind: PatchOp["op"], path: string, value?: unknown): PatchOp 
   return kind === "remove" ? { op: kind, path, confidence: 1, rationale: "composer edit" } : { op: kind, path, value, confidence: 1, rationale: "composer edit" };
 }
 
-function isStep(value: unknown): value is Step<MusicSpec> {
-  if (typeof value !== "object" || value === null) return false;
-  const v = value as { spec?: { irVersion?: unknown }; history?: { nodes?: unknown; cursor?: unknown } };
-  return v.spec?.irVersion === 1 && Array.isArray(v.history?.nodes) && typeof v.history?.cursor === "number";
-}
-
 export function ComposerProvider({ children }: { children: ReactNode }) {
   const [state, dispatch] = useReducer(reducer, undefined, () => ({ history: emptyHistory(), spec: defaultMusicSpec() }));
 
   // Loaded after mount so the server render and the first client render agree.
   useEffect(() => {
-    try {
-      const saved = window.localStorage.getItem(STORAGE_KEY);
-      const parsed: unknown = saved ? JSON.parse(saved) : null;
-      if (isStep(parsed)) dispatch({ type: "load", step: parsed });
-    } catch {
-      // Storage can be unavailable (private mode, blocked site data); the composer still works.
-    }
+    const saved = readComposer();
+    if (saved) dispatch({ type: "load", step: saved });
   }, []);
 
   useEffect(() => {
-    try {
-      window.localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-    } catch {
-      // Persisting is a convenience until S4; a full or blocked store must not break editing.
-    }
+    writeComposer(state);
   }, [state]);
 
   const edit = useCallback((ops: PatchOp[], label: string, coalesce?: string) => dispatch({ type: "edit", ops, label, ...(coalesce ? { coalesce } : {}) }), []);
