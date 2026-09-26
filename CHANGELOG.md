@@ -14,7 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - `intake.ts`: the features → `IRPatch` draft, per-field review, and apply-only-accepted with a PT-2 guard.
   - `tempo.ts`: tap tempo (last 4 taps, no reading before the fourth, ±25% outlier discard, a new sequence after two discards in a row, 2 s reset) and metronome lookahead scheduling that survives subdivision and meter changes while running.
   - Lint rules PT-1, PT-2 and PV-1.
-  - `/import`: file picker and drag and drop, OPFS storage once a profile is saved or downloaded, review diff, profile creation, save to the library, and download.
+  - `/import`: file picker and drag and drop, OPFS storage once a profile is saved or downloaded (and removal when its `/library` record is deleted), review diff, profile creation, save to the library, and download.
   - Tap tempo and a Web Audio metronome in module 1.
   - Module hue tokens and provisional monoline icons (`assets/icons/modules.json`, generated SVGs).
 - Tests:

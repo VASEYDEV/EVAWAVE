@@ -146,3 +146,15 @@ S5 per SPEC §3. The methods are listed in SPEC §3 S5 "Delivered".
   sha256. Create is synchronous again, so the fifth review's Create lock guarded nothing
   and is gone. The e2e checks OPFS: nothing after import, nothing after Create, and the
   blob with the download. Storing at Create fails the check.
+- **Eighth review.**
+  - **Stage checks for aborts.** The abort signal is now checked after the read, after
+    the hash and after the decode, so a superseded large import stops at its next stage
+    instead of running alongside the new one. Web Audio's decode itself cannot be
+    cancelled. A test aborts during the hash and asserts the decode never runs; it fails
+    on the old code.
+  - **Deleting a `/library` file record** left its local copy behind, a consequence of S5
+    storing blobs. The delete now also calls `removeLocalAudio(sha256)`, which is
+    unit-tested on a fake OPFS and on the in-tab fallback. The one-line wiring in
+    `Library.tsx` has no automated test: the library needs a live Supabase session, which
+    no test here has. OPFS is per origin, so another account on the same browser that
+    imported the same file loses its local copy too, and can import it again.
