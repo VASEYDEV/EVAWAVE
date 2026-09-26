@@ -292,6 +292,14 @@ describe("local audio on the device", () => {
     expect(files.has("locked-sha")).toBe(true);
   });
 
+  it("rejects when OPFS itself fails, but not when a private window refuses it", async () => {
+    const refusing = (name: string) => vi.stubGlobal("navigator", { storage: { getDirectory: async () => Promise.reject(new DOMException("no", name)) } });
+    refusing("UnknownError");
+    await expect(removeLocalAudio("any-sha")).rejects.toThrow("no");
+    refusing("SecurityError");
+    await expect(removeLocalAudio("any-sha")).resolves.toBeUndefined();
+  });
+
   it("removes the in-tab copy where OPFS is missing", async () => {
     expect(await storeInOpfs("tab-sha", new Blob([wav]))).toBe("memory");
     expect(blobInTab("tab-sha")).toBeDefined();

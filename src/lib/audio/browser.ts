@@ -90,28 +90,30 @@ export async function storeInOpfs(sha256: string, file: Blob): Promise<"opfs" | 
   }
 }
 
-const isNotFound = (error: unknown) => error instanceof DOMException && error.name === "NotFoundError";
+const isDomError = (error: unknown, name: string) => error instanceof DOMException && error.name === name;
 
 /**
  * Removes the local copy of `sha256` (OPFS and the in-tab fallback), for when its library
- * record is deleted. No OPFS, or nothing stored under the hash, is not an error; any other
- * failure (a lock, an I/O error) rejects, so the caller can keep the record and retry. OPFS is
+ * record is deleted. No OPFS API, a private window's refusal (storeInOpfs could keep nothing
+ * there either), or nothing stored under the hash is not an error; any other failure (a lock,
+ * an I/O error) rejects, so the caller can keep the record and retry. OPFS is
  * per origin, so another account on this browser that imported the same file shares the copy;
  * it can import the file again.
  */
 export async function removeLocalAudio(sha256: string): Promise<void> {
   tabMemory.delete(sha256);
+  if (typeof navigator === "undefined" || typeof navigator.storage?.getDirectory !== "function") return;
   let root: FileSystemDirectoryHandle;
   try {
     root = await navigator.storage.getDirectory();
-  } catch {
-    // No OPFS here (or a private window refuses it): storeInOpfs kept nothing in it.
-    return;
+  } catch (error) {
+    if (isDomError(error, "SecurityError")) return;
+    throw error;
   }
   try {
     await (await root.getDirectoryHandle("audio")).removeEntry(sha256);
   } catch (error) {
-    if (!isNotFound(error)) throw error;
+    if (!isDomError(error, "NotFoundError")) throw error;
   }
 }
 
