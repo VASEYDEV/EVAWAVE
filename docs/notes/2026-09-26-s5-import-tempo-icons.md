@@ -253,6 +253,23 @@ S5 per SPEC §3. The methods are listed in SPEC §3 S5 "Delivered".
   nothing. Where the API is missing, the delete runs as before. A test loads the module
   twice, one instance per tab, over one fake OPFS and lock manager. One delete succeeds,
   the other fails, and no copy is left; without the lock it leaves one.
+- **Twenty-second review.** Each fix ships with a test that fails on the old code.
+  - **Tap tempo stuck after a move to double time.** From 120 to 240 BPM, the first
+    250 ms tap was discarded, but the next sat 500 ms after the last kept tap, fitted, and
+    cleared the discard, so the reading stayed at 120. The state now keeps the discarded
+    tap's time. A later tap that fits the old grid starts again from the discarded tap
+    when two things hold: its gap from that tap misses the band, and it matches the gap
+    that tap left. A test moves from 120 to 240 and reads 240. A stray tap between beats
+    still keeps 120; its own test fails if the gap-match condition is dropped.
+  - **A save racing a delete of the same file.** The save path did not take the file's
+    lock, so a delete in another tab could land between the database save and the local
+    store. That left a stored blob with no row. The lock is now
+    `inTurnForLocalAudio`, and `/import` holds it across the save and the store. A test
+    overlaps a slow delete with a save: the row and the copy agree at the end. Without
+    the lock they do not.
+  - **Quad weights.** Four channels now weigh L R Ls Rs as 1, 1, 1.41, 1.41. That is Web
+    Audio's quad layout and libebur128's default map for four channels. The layout test
+    covers quad.
 
 ## Decisions
 

@@ -1503,8 +1503,8 @@ Delivered:
   - meter: an accent envelope at 4-beat against 3-beat lags;
   - key: chroma against the Krumhansl–Kessler profiles;
   - loudness: BS.1770 K-weighting per channel, summed with the channel weights (1.41 on
-    5.0 and 5.1 surrounds and 7.1 side surrounds, LFE left out), with gating, and the
-    loudness range from 3 s windows;
+    quad, 5.0 and 5.1 surrounds and 7.1 side surrounds, LFE left out), with gating, and the
+    loudness range from 3 s windows gated per EBU Tech 3342;
   - energy per 4 bars of the detected meter, sections by energy change, and spectral
     descriptors;
   - a WAV decoder and encoder.
@@ -1528,7 +1528,9 @@ Delivered:
   reads (or can be assigned) until 4 taps are in. An interval more than ±25 % off the
   running mean is discarded, and a 2 s gap resets. A second discard in a row starts a
   new sequence from that tap, so a tempo change or a late tap recovers without waiting
-  for the reset. Metronome clicks come from a 25 ms tick with 100 ms lookahead,
+  for the reset. So does a move to double time, whose every other tap lands on the old
+  grid: a tap after a discard that fits the old grid, but keeps the discarded tap's
+  new, off-grid interval, starts again from the discarded tap. Metronome clicks come from a 25 ms tick with 100 ms lookahead,
   accenting beat 1, or beats 1 and 3 in half-time mode, with optional 8th or 16th
   clicks. The cursor is anchored to its beat, so changing the subdivision or meter while
   it runs keeps the beat grid in phase; a tempo change takes effect at the next beat;
