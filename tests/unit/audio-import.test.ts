@@ -20,6 +20,7 @@ import { clickTrack, mix, triad } from "../support/signals";
 const wav = encodeWav(mix(clickTrack(140, 12, 22050), triad(62, true, 12, 22050)), 22050);
 const wavBytes = new Uint8Array(wav);
 const file = new File([wav], "desert-loop.wav", { type: "audio/wav" });
+const PROFILE_ID = "5f0c6a52-2f7e-4d4b-9a51-0b8e6d3c1a27";
 
 interface Recorded {
   url: string;
@@ -89,7 +90,7 @@ describe("audio import (§1.7)", () => {
     const client = createClient<Database>("https://project.supabase.test", "anon-key-for-tests", { global: { fetch: fetchMock }, auth: { persistSession: false } });
     const saved = await saveImport(client, {
       file: { filename: imported.asset.filename, mime: imported.asset.mime, bytes: imported.asset.bytes, sha256: imported.asset.sha256, features: imported.features },
-      profile: { name: "Desert loop", spec, analysedOn: imported.analysedOn, model: AUDIO_DRAFT_MODEL },
+      profile: { id: PROFILE_ID, name: "Desert loop", spec, analysedOn: imported.analysedOn, model: AUDIO_DRAFT_MODEL },
     });
     expect(saved).toEqual({ fileId: "file-1", profileId: "profile-1" });
 
@@ -102,8 +103,12 @@ describe("audio import (§1.7)", () => {
     const sent = requests.reduce((n, r) => n + (r.body?.length ?? 0), 0);
     expect(sent).toBeLessThan(wav.byteLength / 20);
 
+    // The profile is upserted by the id made on the device, so a second save writes the same row.
+    expect(new URL(requests[1]?.url ?? "").searchParams.get("on_conflict")).toBe("id");
+
     // The saved profile row names its provenance and cites the file, not the audio.
-    const profileRow = JSON.parse(requests[1]?.body ?? "{}") as { provenance: { kind: string; sourceRef: string; model: string } };
+    const profileRow = JSON.parse(requests[1]?.body ?? "{}") as { id: string; provenance: { kind: string; sourceRef: string; model: string } };
+    expect(profileRow.id).toBe(PROFILE_ID);
     expect(profileRow.provenance).toEqual({ kind: "audio-analysis", sourceRef: "file-1", analysedOn: "2026-09-26T12:00:00.000Z", model: AUDIO_DRAFT_MODEL });
     expect(lintStyleProfile({ id: "profile-1", ownerId: "u", name: "Desert loop", provenance: profileRow.provenance as never, spec, features: imported.features, genreIds: [], tags: [], createdAt: "", updatedAt: "" })).toEqual([]);
   });

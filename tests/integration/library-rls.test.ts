@@ -191,6 +191,19 @@ describe("library access for other roles and tables", () => {
     ]);
   });
 
+  it("keeps a repeated profile save to one row, and never lets another owner reuse the id", async () => {
+    // The statement PostgREST runs for saveImport's profile upsert with on_conflict=id.
+    const id = "5f0c6a52-2f7e-4d4b-9a51-0b8e6d3c1a27";
+    const upsert =
+      "insert into public.style_profiles (id, name, provenance, spec) values ($1, $2, '{\"kind\":\"audio-analysis\"}', '{}') on conflict (id) do update set name = excluded.name returning id";
+    await as(A, () => rows(upsert, [id, "Desert loop"]));
+    await as(A, () => rows(upsert, [id, "Desert loop"]));
+    expect(await truth("style_profiles", "id = $1", [id])).toHaveLength(1);
+    await expect(as(B, () => rows(upsert, [id, "stolen"]))).rejects.toThrow(/row-level security/);
+    const [row] = await truth("style_profiles", "id = $1", [id]);
+    expect([row?.owner_id, row?.name]).toEqual([A, "Desert loop"]);
+  });
+
   it("stamps updated_at when an owner edits a profile", async () => {
     const [before] = await truth("style_profiles", "id = $1", [ids.profile]);
     await as(A, () => rows("update public.style_profiles set name = 'A profile, renamed' where id = $1", [ids.profile]));

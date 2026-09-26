@@ -127,13 +127,15 @@ export async function setLink(client: LibraryClient, table: LinkTable, ownerKey:
 /** File metadata and an audio-analysis profile from an import (docs/SPEC.md §1.7). Never the audio. */
 export interface ImportRecord {
   file: { filename: string; mime: string; bytes: number; sha256: string; features: AudioFeatures };
-  profile: { name: string; spec: StyleProfile["spec"]; analysedOn: string; model: string };
+  /** `id` is generated on the device when the profile is created, so saving is idempotent. */
+  profile: { id: string; name: string; spec: StyleProfile["spec"]; analysedOn: string; model: string };
 }
 
 /**
  * Saves an import: the file's metadata (upserted by sha256, so a re-import reuses the row),
- * then the style profile that cites it. Only these JSON rows are sent; the blob stays on the
- * device (A6).
+ * then the style profile that cites it, upserted by its id, so a repeated save of the same
+ * profile (a double click) writes one row. RLS keeps another owner's id from being reused.
+ * Only these JSON rows are sent; the blob stays on the device (A6).
  */
 export async function saveImport(client: LibraryClient, record: ImportRecord): Promise<{ fileId: string; profileId: string }> {
   const file = check(
@@ -148,7 +150,7 @@ export async function saveImport(client: LibraryClient, record: ImportRecord): P
   const profile = check(
     await client
       .from("style_profiles")
-      .insert({ name: record.profile.name, spec: record.profile.spec, provenance, features: record.file.features })
+      .upsert({ id: record.profile.id, name: record.profile.name, spec: record.profile.spec, provenance, features: record.file.features }, { onConflict: "id" })
       .select("id")
       .single(),
     "save style profile",

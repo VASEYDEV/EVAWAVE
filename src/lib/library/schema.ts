@@ -118,7 +118,7 @@ export type Database = {
   public: {
     Tables: {
       genres: Table<GenreRow, never>;
-      style_profiles: Table<StyleProfileRow, { name: string; provenance: Provenance; spec?: StyleProfile["spec"]; features?: AudioFeatures | null }>;
+      style_profiles: Table<StyleProfileRow, { id?: string; name: string; provenance: Provenance; spec?: StyleProfile["spec"]; features?: AudioFeatures | null }>;
       files: Table<FileRow, { kind: FileRow["kind"]; filename: string; mime: string; bytes: number; sha256: string; features?: AudioFeatures | null; palette?: PaletteSwatch[] | null }>;
       tags: Table<TagRow, { label: string; colour?: string | null }>;
       style_profile_genres: Table<LinkRow<"profile_id" | "genre_id">, { profile_id: string; genre_id: string }>;

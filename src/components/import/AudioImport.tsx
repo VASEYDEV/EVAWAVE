@@ -48,13 +48,15 @@ export function AudioImport() {
   const [profile, setProfile] = useState<StyleProfile | null>(null);
   const [dragging, setDragging] = useState(false);
   const [source, setSource] = useState<File | null>(null);
+  // While a profile is being created (and its blob stored), no new file may replace it.
+  const [creating, setCreating] = useState(false);
   // A newer file choice aborts the import in flight, so its analysis never lands.
   const inFlight = useRef<AbortController | null>(null);
 
   const lowConfidence = useMemo(() => new Set(result ? lowConfidenceOps(result.patch, "").map((r) => Number(r.path.split("/").pop())) : []), [result]);
 
   const handle = async (file: File | undefined) => {
-    if (!file) return;
+    if (!file || creating) return;
     inFlight.current?.abort();
     const controller = new AbortController();
     inFlight.current = controller;
@@ -85,16 +87,24 @@ export function AudioImport() {
   };
 
   const createProfile = async () => {
-    if (!result || !source) return;
-    const controller = inFlight.current;
+    if (!result || !source || creating) return;
+    setCreating(true);
+    try {
+      await keepProfile(result, source);
+    } finally {
+      setCreating(false);
+    }
+  };
+
+  const keepProfile = async (result: ImportResult, source: File) => {
     const reviewed = reviewPatch(result.patch, accepted);
     const { doc } = applyReviewedPatch(audioProfileBase(), reviewed);
     // The blob is kept on the device only now, when the person keeps a profile from it (§1.7,
     // A6), so abandoned, failed or superseded imports leave nothing in storage.
     const storedIn = await storeInOpfs(result.asset.sha256, source);
-    if (controller?.signal.aborted) return;
     setProfile({
-      id: `local-${result.asset.sha256.slice(0, 12)}`,
+      // Made here, so saving the same profile twice upserts one library row.
+      id: crypto.randomUUID(),
       ownerId: "local",
       name: name.trim() || result.asset.filename,
       provenance: { kind: "audio-analysis", sourceRef: result.asset.sha256, analysedOn: result.analysedOn, model: AUDIO_DRAFT_MODEL },
@@ -126,7 +136,7 @@ export function AudioImport() {
       const { asset, features, analysedOn } = result;
       await saveImport(client, {
         file: { filename: asset.filename, mime: asset.mime, bytes: asset.bytes, sha256: asset.sha256, features },
-        profile: { name: profile.name, spec: profile.spec, analysedOn, model: AUDIO_DRAFT_MODEL },
+        profile: { id: profile.id, name: profile.name, spec: profile.spec, analysedOn, model: AUDIO_DRAFT_MODEL },
       });
       setStatus(`Saved "${profile.name}" and the file's metadata to your library.`);
     } catch (error) {
@@ -149,7 +159,7 @@ export function AudioImport() {
         onDrop={onDrop}
       >
         <label htmlFor={inputId}>Choose an audio file, or drop one here</label>
-        <input id={inputId} type="file" accept="audio/*,.wav,.mp3,.m4a,.aac,.flac,.ogg" onChange={(e) => void handle(e.target.files?.[0])} />
+        <input id={inputId} type="file" accept="audio/*,.wav,.mp3,.m4a,.aac,.flac,.ogg" disabled={creating} onChange={(e) => void handle(e.target.files?.[0])} />
       </div>
       <p role="status" aria-live="polite">
         {status}
@@ -231,7 +241,7 @@ export function AudioImport() {
           <div className="add-row">
             <label htmlFor={nameId}>Profile name</label>
             <input id={nameId} type="text" value={name} onChange={(e) => setName(e.target.value)} />
-            <button type="button" onClick={() => void createProfile()}>
+            <button type="button" disabled={creating} onClick={() => void createProfile()}>
               Create style profile
             </button>
           </div>
