@@ -508,6 +508,19 @@ S5 per SPEC §3. The methods are listed in SPEC §3 S5 "Delivered".
   keeps no decoded audio alive. A test holds the first decode open and supersedes it twice:
   the second import never reads, and the third reads only after the first decode ends.
   Without the turn it fails.
+- **Forty-first review: clicks already queued on old settings.** Confirmed. `update` only
+  swapped the settings, but up to 100 ms of oscillators were already on the audio graph.
+  So after the scheduler fix, a click queued in a beat not yet begun still sounded on the
+  old grid. At 16ths and 300 BPM, a change to 150 at 0.23 s still played the 0.3 s 16th.
+  - The metronome now keeps its queued clicks.
+  - A change of settings or volume disconnects those not yet sounding and schedules again
+    from the last click that has sounded (`cursorAfter`), or from the start if none has.
+    Each `Click` carries its beat's time and length for this.
+  - Unchanged settings, which `TempoTools` passes on every render, re-time nothing.
+
+  A test drives the metronome on a recording stand-in context. The heard clicks are 0.05
+  to 0.25, then 0.35 and 0.45; the old 0.25 and 0.3 clicks are silenced. The previous
+  metronome fails it, sounding 0.3 and 0.4.
 
 ## Decisions
 

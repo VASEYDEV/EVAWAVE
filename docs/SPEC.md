@@ -1566,7 +1566,8 @@ Delivered:
   clicks, counted in note values against the meter's beat unit (16ths are 2 per beat in
   6/8, and 8ths there are the beat itself). The cursor is anchored to its beat, so changing the subdivision or meter while
   it runs keeps the beat grid in phase; a tempo change takes effect at the next beat to
-  sound, even one whose downbeat the lookahead has already scheduled;
+  sound, even one whose downbeat the lookahead has already scheduled, since a settings
+  change drops the clicks queued on the old settings and schedules again;
   clicks missed during a stalled tick are skipped, not played in a burst; and a second
   start while one is pending joins it.
   The controls sit in module 1 and `Assign` writes the rounded BPM with `source: 'tap'`.
