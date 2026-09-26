@@ -5,13 +5,14 @@ import { analyseAudio } from "@/core/musicspec/analysis/features";
 import { decodeWav, encodeWav, WavError, type PcmAudio } from "@/core/musicspec/analysis/wav";
 import { applyReviewedPatch, audioProfileBase, AUDIO_DRAFT_MODEL, reviewPatch } from "@/core/musicspec/intake";
 import { lintStyleProfile } from "@/core/musicspec/lint";
-import { blobInTab, deleteWithLocalAudio, inTurnForLocalAudio, keepAudioFor, removeLocalAudio, storeInOpfs } from "@/lib/audio/browser";
+import { blobInTab, decodeWithWebAudio, deleteWithLocalAudio, inTurnForLocalAudio, keepAudioFor, removeLocalAudio, storeInOpfs } from "@/lib/audio/browser";
 import {
   IMPORT_ASSUMED_CHANNELS,
   IMPORT_MAX_BYTES,
-  IMPORT_MAX_CHANNEL_SECONDS,
+  IMPORT_MAX_DECODE_BYTES,
   IMPORT_MAX_SECONDS,
   importAudio,
+  importLimitSeconds,
   ImportLengthUnknownError,
   ImportTooLargeError,
   ImportTooLongError,
@@ -274,14 +275,15 @@ describe("a superseded import", () => {
     header.setUint32(40, pcm.byteLength, true);
     const surround = () => new File([header, pcm], "surround.wav", { type: "audio/wav" });
     const withLength = (seconds: number) => ({ ...nodeDeps(), probeDuration: async () => seconds });
-    const limit = IMPORT_MAX_CHANNEL_SECONDS / 6;
-    expect(limit).toBe(200);
+    // Six channels and their mix are seven buffers: 1800 buffer-seconds / 7.
+    const limit = importLimitSeconds(6, 44 + pcm.byteLength);
+    expect(limit).toBeCloseTo(1800 / 7, 9);
 
     const over = surround();
     const readOver = vi.spyOn(over, "arrayBuffer");
-    const refused = importAudio(over, withLength(limit + 1));
+    const refused = importAudio(over, withLength(limit + 30));
     await expect(refused).rejects.toBeInstanceOf(ImportTooLongError);
-    await expect(refused).rejects.toThrow("This recording has 6 channels and runs 3.4 minutes; imports take 6-channel recordings up to 3.3 minutes for now.");
+    await expect(refused).rejects.toThrow("This recording has 6 channels and runs 4.8 minutes; imports take 6-channel recordings up to 4.3 minutes for now.");
     expect(readOver).not.toHaveBeenCalled();
 
     const at = surround();
@@ -291,15 +293,59 @@ describe("a superseded import", () => {
     expect(result.asset.bytes).toBe(44 + pcm.byteLength);
   });
 
+  it("fits every buffer live at the decode's peak inside the budget", () => {
+    const perSecond = 48000 * 4;
+    for (let channels = 1; channels <= IMPORT_ASSUMED_CHANNELS; channels++) {
+      for (const fileBytes of [0, 1_000_000, IMPORT_MAX_BYTES]) {
+        const seconds = importLimitSeconds(channels, fileBytes);
+        // While decoding: the encoded file and every channel. Afterwards: the channels and,
+        // for more than one, their mono mix.
+        expect(fileBytes + channels * seconds * perSecond).toBeLessThanOrEqual(IMPORT_MAX_DECODE_BYTES + 1e-6);
+        expect((channels + (channels > 1 ? 1 : 0)) * seconds * perSecond).toBeLessThanOrEqual(IMPORT_MAX_DECODE_BYTES + 1e-6);
+      }
+    }
+    // Mono and stereo keep ten minutes at the byte cap; a large 7.1 file gets less than a small one.
+    expect(importLimitSeconds(1, IMPORT_MAX_BYTES)).toBe(IMPORT_MAX_SECONDS);
+    expect(importLimitSeconds(2, IMPORT_MAX_BYTES)).toBe(IMPORT_MAX_SECONDS);
+    expect(importLimitSeconds(8, 0)).toBe(200);
+    expect(importLimitSeconds(8, IMPORT_MAX_BYTES)).toBeLessThan(200);
+  });
+
+  it("hands the Web Audio decoder the file's bytes without a copy, at the fixed rate", async () => {
+    const seen: { rate: number; bytes: ArrayBuffer }[] = [];
+    vi.stubGlobal(
+      "OfflineAudioContext",
+      class {
+        constructor(
+          _channels: number,
+          _length: number,
+          readonly sampleRate: number,
+        ) {}
+        async decodeAudioData(bytes: ArrayBuffer) {
+          seen.push({ rate: this.sampleRate, bytes });
+          const left = new Float32Array([0.5, -0.5]);
+          const right = new Float32Array([0.25, 0.25]);
+          return { numberOfChannels: 2, sampleRate: this.sampleRate, length: 2, getChannelData: (c: number) => (c === 0 ? left : right) };
+        }
+      },
+    );
+    const bytes = new ArrayBuffer(8);
+    const pcm = await decodeWithWebAudio(bytes);
+    expect(seen).toHaveLength(1);
+    expect(seen[0]?.bytes).toBe(bytes);
+    expect(seen[0]?.rate).toBe(48000);
+    expect(Array.from(pcm.samples)).toEqual([0.375, -0.125]);
+  });
+
   it("assumes the most channels Web Audio decodes when the header does not say how many a recording has", async () => {
-    const limit = IMPORT_MAX_CHANNEL_SECONDS / IMPORT_ASSUMED_CHANNELS;
-    expect(limit).toBe(37.5);
+    const limit = importLimitSeconds(IMPORT_ASSUMED_CHANNELS, 64);
+    expect(limit).toBeCloseTo(1800 / 33, 9);
     // Bytes no header reader knows, which the injected decoder reads as the mono WAV.
     const opaque = () => new File([new Uint8Array(64).fill(7)], "field-recording.bin");
     const deps = (seconds: number): ImportDeps => ({ ...nodeDeps(), decode: async () => decodeWav(wav), probeDuration: async () => seconds });
     const refused = importAudio(opaque(), deps(limit + 30));
     await expect(refused).rejects.toThrow(
-      "This recording runs 67.5 seconds, and its file does not say how many channels it has; imports take such recordings up to 37.5 seconds for now.",
+      "This recording runs 84.5 seconds, and its file does not say how many channels it has; imports take such recordings up to 54.5 seconds for now.",
     );
     await expect(importAudio(opaque(), deps(limit))).resolves.toMatchObject({ asset: { filename: "field-recording.bin" } });
   });

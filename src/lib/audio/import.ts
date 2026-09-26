@@ -35,19 +35,35 @@ export const IMPORT_MAX_SECONDS = 600;
  */
 export const DECODE_SAMPLE_RATE = 48000;
 
+/** Bytes a second of one decoded channel takes: 32-bit floats at DECODE_SAMPLE_RATE. */
+const CHANNEL_BYTES_PER_SECOND = DECODE_SAMPLE_RATE * 4;
+
 /**
- * Channels × seconds an import decodes: ten minutes of stereo, about 230 MB of samples at
- * DECODE_SAMPLE_RATE, and the mix of a multichannel file adds one channel more. Mono and
- * stereo keep the whole IMPORT_MAX_SECONDS; 5.1 runs to 200 seconds, 7.1 to 150.
+ * The memory an import's decode may hold at its peak: ten minutes of stereo with its mono mix,
+ * three buffers of 32-bit samples at DECODE_SAMPLE_RATE, about 346 MB. See importLimitSeconds.
  */
-export const IMPORT_MAX_CHANNEL_SECONDS = 2 * IMPORT_MAX_SECONDS;
+export const IMPORT_MAX_DECODE_BYTES = 3 * IMPORT_MAX_SECONDS * CHANNEL_BYTES_PER_SECOND;
 
 /**
  * The channels an import assumes when the file's header does not say: the most a Web Audio
  * buffer holds, so the bound holds whatever the file carries (Chromium refuses a 33-channel
- * AudioBuffer; 32 is also the spec's minimum). Such a recording runs to 37.5 seconds.
+ * AudioBuffer; 32 is also the spec's minimum).
  */
 export const IMPORT_ASSUMED_CHANNELS = 32;
+
+/**
+ * The longest recording of `channels` channels, in a file of `fileBytes`, an import decodes.
+ * Every buffer live at the peak counts: while decoding, the encoded file and every decoded
+ * channel; afterwards, the channels and, for more than one, their mono mix. Each stage must fit
+ * IMPORT_MAX_DECODE_BYTES. Mono and stereo keep the whole IMPORT_MAX_SECONDS at any size the
+ * byte cap allows; 5.1 runs to about 257 seconds and 7.1 to 200, less for a large file.
+ */
+export function importLimitSeconds(channels: number, fileBytes: number): number {
+  const buffers = channels + (channels > 1 ? 1 : 0);
+  const whileDecoding = (IMPORT_MAX_DECODE_BYTES - fileBytes) / (channels * CHANNEL_BYTES_PER_SECOND);
+  const afterDecoding = IMPORT_MAX_DECODE_BYTES / (buffers * CHANNEL_BYTES_PER_SECOND);
+  return Math.max(0, Math.min(IMPORT_MAX_SECONDS, whileDecoding, afterDecoding));
+}
 
 /** A length for a message: seconds under a minute and a half, minutes above. */
 const span = (seconds: number) => {
@@ -90,7 +106,11 @@ export class ImportTooLargeError extends Error {
 }
 
 export interface ImportDeps {
-  /** Decodes the file's bytes to PCM, keeping the channels (Web Audio at DECODE_SAMPLE_RATE in the browser). */
+  /**
+   * Decodes the file's bytes to PCM, keeping the channels (Web Audio at DECODE_SAMPLE_RATE in
+   * the browser). It may detach `bytes`: the import reads nothing from them afterwards, so the
+   * decoder can take them without a copy.
+   */
   decode(bytes: ArrayBuffer): Promise<PcmAudio>;
   /** Hex sha256 of the bytes, for dedupe and as the local key. */
   digest(bytes: ArrayBuffer): Promise<string>;
@@ -153,7 +173,7 @@ export async function importAudio(file: File, deps: ImportDeps, signal?: AbortSi
   // Web Audio decodes every channel at once, so the channel count bounds the length too.
   const channels = await channelCount(headerReader(file), file.size);
   signal?.throwIfAborted();
-  const limit = IMPORT_MAX_CHANNEL_SECONDS / (channels ?? IMPORT_ASSUMED_CHANNELS);
+  const limit = importLimitSeconds(channels ?? IMPORT_ASSUMED_CHANNELS, file.size);
   if (seconds > limit) throw new ImportTooLongError(seconds, limit, channels ?? "unknown");
   const decoded = decodeTurn.then(async () => {
     // An import superseded while it waited never reads the file.
@@ -162,7 +182,9 @@ export async function importAudio(file: File, deps: ImportDeps, signal?: AbortSi
     signal?.throwIfAborted();
     const sha256 = await deps.digest(bytes);
     signal?.throwIfAborted();
-    return { byteLength: bytes.byteLength, sha256, pcm: await deps.decode(bytes) };
+    // Read the length first: the decode may detach the bytes.
+    const byteLength = bytes.byteLength;
+    return { byteLength, sha256, pcm: await deps.decode(bytes) };
   });
   decodeTurn = decoded.then(
     () => undefined,

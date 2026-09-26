@@ -11,11 +11,12 @@ import { DECODE_SAMPLE_RATE, sha256Hex, type ImportDeps } from "./import";
 /**
  * Decodes with Web Audio. An offline context resamples to its own rate, DECODE_SAMPLE_RATE,
  * where a live one would decode at the device's rate, which the import's length limits do not
- * assume. It holds no audio device, so there is nothing to close.
+ * assume. It holds no audio device, so there is nothing to close. The decoder takes `bytes`
+ * as they are, detaching them, rather than a copy the size of the file.
  */
 export async function decodeWithWebAudio(bytes: ArrayBuffer): Promise<PcmAudio> {
   const context = new OfflineAudioContext(1, 1, DECODE_SAMPLE_RATE);
-  const buffer = await context.decodeAudioData(bytes.slice(0));
+  const buffer = await context.decodeAudioData(bytes);
   const channelData = Array.from({ length: buffer.numberOfChannels }, (_, c) => buffer.getChannelData(c));
   let samples = channelData[0] ?? new Float32Array(0);
   if (channelData.length > 1) {
