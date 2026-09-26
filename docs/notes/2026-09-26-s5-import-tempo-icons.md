@@ -81,6 +81,18 @@ S5 per SPEC §3. The methods are listed in SPEC §3 S5 "Delivered".
 - **A reading after two taps** (second review). SPEC §1.8 defines BPM over the last 4
   taps, but one interval already read and could be assigned. Nothing reads now until the
   fourth tap.
+- **A write superseded mid-flight** (third review). This was the third orphan finding in
+  the same place, so the root cause is fixed instead of the window. Import no longer
+  stores anything. The screen keeps the blob when the person creates a profile from it,
+  so abandoned, failed and superseded imports never reach storage. The e2e checks OPFS in
+  Chromium: nothing is stored after import, and the blob is there after Create. Storing
+  at import fails that check.
+- **Phase cancellation in the analysis mix** (third review). Loudness already read the
+  channels, but tempo, key and spectrum read the mono mix, which is silent for
+  phase-opposed or side-only stereo. When the mix keeps under a quarter of the channels'
+  mean energy, those features read the loudest channel. Uncorrelated stereo keeps half,
+  so ordinary material still reads the mix. A test proves phase-opposed stereo reads
+  140 BPM and the right key; it fails on the old code.
 
 ## Decisions
 

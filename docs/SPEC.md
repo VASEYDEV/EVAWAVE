@@ -1505,7 +1505,9 @@ Delivered:
   - a WAV decoder and encoder.
 
   Memory stays bounded: the frame pass keeps running sums, not spectra, and loudness
-  keeps one energy sum per 100 ms.
+  keeps one energy sum per 100 ms. Tempo, key and spectrum read the mono mix unless phase
+  cancellation took most of its energy (under a quarter of the channels' mean); then they
+  read the loudest channel.
 
   Vectors: a −20 dBFS 1 kHz sine at 48 kHz reads −23.01 LUFS; click tracks give their
   tempo within 1.5 BPM and their 4/4 or 3/4 accents; triads give their key.
@@ -1527,9 +1529,10 @@ Delivered:
 - **Lint:** PT-1 and PT-2 are spec-level rules and also run per patch
   (`lowConfidenceOps`, `protectedOps`). PV-1 is `lintStyleProfile`.
 - **App:**
-  - `/import`: file picker or drop, hashing, and Web Audio decoding. The file goes to
-    OPFS (or an in-tab fallback) only once it has decoded and analysed. A newer file
-    choice aborts the import in flight before anything is stored. It shows the measured features, then a per-field review with
+  - `/import`: file picker or drop, hashing, and Web Audio decoding. Import stores
+    nothing. The file goes to OPFS (or an in-tab fallback) when the person creates a
+    profile from it, so abandoned, failed or superseded imports leave nothing behind. A
+    newer file choice aborts the analysis in flight. It shows the measured features, then a per-field review with
     low-confidence suggestions left unticked. The resulting profile carries the PV-1
     badge, can be saved to the library (file metadata and the profile only, through
     `saveImport`) or downloaded.
