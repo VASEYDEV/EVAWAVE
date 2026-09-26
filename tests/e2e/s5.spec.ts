@@ -175,23 +175,25 @@ test("tap tempo reads 140 BPM from taps 428 ms apart and assigns it", async ({ p
   await expect(page.getByTestId("tap-reading")).toHaveText("Tap four times on the beat.");
 });
 
-test("every module header shows its hue and icon", async ({ page }) => {
+test("every module header shows its icon in the brand's Turquoise", async ({ page }) => {
+  // One icon per module (SPEC §1.9), all drawn in CORE Turquoise: the per-module hue table
+  // was retired by ADR 0005, so the icon colour is the same token everywhere.
   await page.goto("/");
   const expected = ["form", "key", "drums", "bundle", "instruments", "technique", "textures", "transitions", "sections", "mood", "output"];
   const modules = page.locator("section[data-module]");
   await expect(modules).toHaveCount(expected.length);
   for (const [i, key] of expected.entries()) {
     const section = page.locator(`section[data-module="${i + 1}"]`);
-    await expect(section).toHaveAttribute("data-hue", key);
+    await expect(section).toHaveAttribute("data-icon", key);
     await expect(section.locator(`summary svg[data-module-icon="${key}"]`)).toBeVisible();
-    const [iconColour, hueColour] = await section.evaluate((el, name) => {
+    const [iconColour, turquoise] = await section.evaluate((el) => {
       const probe = document.createElement("span");
-      probe.style.color = `var(--mod-${name})`;
+      probe.style.color = "var(--vm-turquoise)";
       document.body.append(probe);
-      const hue = getComputedStyle(probe).color;
+      const token = getComputedStyle(probe).color;
       probe.remove();
-      return [getComputedStyle(el.querySelector("summary svg") as Element).color, hue];
-    }, key);
-    expect(iconColour).toBe(hueColour);
+      return [getComputedStyle(el.querySelector("summary svg") as Element).color, token];
+    });
+    expect(iconColour).toBe(turquoise);
   }
 });

@@ -1,0 +1,141 @@
+/*
+ * Pages: the header lockup, the composer workspace and the single-column pages. The header
+ * carries the page's one BEAM element (the kicker's slash) and the 25° beam divider, the
+ * only diagonal in the system.
+ */
+.app-header {
+  position: relative;
+  overflow: hidden;
+  padding: var(--space-5) var(--space-4) var(--space-3);
+  border-bottom: 1px solid var(--structure);
+}
+
+@media (min-width: 64rem) {
+  .app-header {
+    padding-inline: var(--space-7);
+  }
+}
+
+@media (min-width: 90rem) {
+  .app-header {
+    padding-inline: var(--space-9);
+  }
+}
+
+/*
+ * The beam: a Turquoise rule leaving the header's baseline and rising to the right at 25°,
+ * the way the house slash leans. Anchored at its left end so the rise stays inside the
+ * header; the negative rotation is what makes it climb. Never mirrored.
+ */
+.app-header::after {
+  content: "";
+  position: absolute;
+  right: -4%;
+  bottom: -1px;
+  width: 36%;
+  height: 3px;
+  background: var(--vm-turquoise);
+  transform-origin: left bottom;
+  transform: rotate(calc(-1 * var(--beam-angle)));
+  pointer-events: none;
+}
+
+.kicker .beam {
+  color: var(--vm-beam);
+}
+
+.app-header .tagline {
+  margin-top: var(--space-2);
+}
+
+.app-header nav ul {
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-4);
+  margin: var(--space-3) 0 0;
+  padding: 0;
+}
+
+.app-header nav a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 0 var(--space-1);
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--text);
+  text-decoration: none;
+  border-bottom: 2px solid transparent;
+  transition:
+    color var(--dur-quick) var(--ease-standard),
+    border-color var(--dur-quick) var(--ease-standard);
+}
+
+.app-header nav a:hover {
+  color: var(--action);
+  border-bottom-color: var(--action);
+}
+
+/* Composer: modules and panels, one column widening to two at 64 rem, 1440 max. */
+.workspace {
+  display: grid;
+  gap: var(--space-4);
+  grid-template-columns: minmax(0, 1fr);
+  max-width: 1440px;
+  margin-inline: auto;
+}
+
+@media (min-width: 64rem) {
+  .workspace {
+    grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
+    align-items: start;
+  }
+
+  .panels {
+    position: sticky;
+    top: var(--space-4);
+    max-height: calc(100vh - var(--space-6));
+    overflow-y: auto;
+  }
+}
+
+.modules,
+.panels {
+  display: grid;
+  gap: var(--gap);
+  min-width: 0;
+}
+
+/* Single-column pages: Import, Library, Sign-in */
+.page {
+  display: grid;
+  gap: var(--gap);
+  max-width: 60rem;
+}
+
+.page h2 {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.page-head {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--gap);
+}
+
+.stack {
+  display: grid;
+  gap: var(--gap);
+  max-width: 28rem;
+}
+
+.library,
+.import {
+  display: grid;
+  gap: var(--gap);
+}

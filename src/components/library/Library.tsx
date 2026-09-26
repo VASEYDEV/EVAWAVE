@@ -115,6 +115,7 @@ export function Library() {
           <input id={nameId} type="text" value={profileName} onChange={(e) => setProfileName(clampProfileName(e.target.value))} />
           <button
             type="button"
+            className="primary"
             disabled={!profileName.trim()}
             onClick={() => {
               const spec = composerSpec();

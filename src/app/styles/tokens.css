@@ -1,0 +1,80 @@
+/*
+ * Design tokens: the Vasey Multimedia Brand System v2.0 applied to EVAWAVE (ADR 0005,
+ * docs/design/brand-application.md). CORE is five chromatic values and two bookends; the
+ * VASEY/AI signature, BEAM, appears once per page. Colours are hex literals only:
+ * tests/unit/brand-tokens.test.ts parses this file and checks every designed pairing
+ * against the WCAG 2.x relative-luminance formula, as the guide's own matrix does.
+ */
+:root {
+  color-scheme: dark;
+
+  /* CORE palette (guide §03). Hues run 189°–240°. */
+  --vm-turquoise: #00b8d9;
+  --vm-teal: #397281;
+  --vm-field: #052e3a;
+  --vm-navy: #191970;
+  --vm-accent-blue: #454cfc;
+  --vm-silver: #c9d0d3;
+  --vm-charcoal: #29363f;
+
+  /* The VASEY/AI signature (guide §04): accent and glow only, at most once per composition. */
+  --vm-beam: #22e8f5;
+
+  /* The one surface tint (guide §03: "anything between the bookends is a surface tint, not
+   * a colour"): Silver 50 % into Charcoal. It measures 3.20:1 on Charcoal and 3.72:1 on the
+   * field, so a border alone can bound a control (WCAG 1.4.11). */
+  --vm-line: #798389;
+
+  /* The beam (guide §07): the only diagonal in the system. Never mirrored. */
+  --beam-angle: 25deg;
+
+  /* Roles. Turquoise fills carry Charcoal ink (white on Turquoise fails at 2.37:1). */
+  --bg: var(--vm-field);
+  --surface: var(--vm-charcoal);
+  --well: var(--vm-field);
+  --text: var(--vm-silver);
+  --heading: var(--vm-turquoise);
+  --action: var(--vm-turquoise);
+  --action-ink: var(--vm-charcoal);
+  --structure: var(--vm-teal);
+  --line: var(--vm-line);
+  --focus: var(--vm-turquoise);
+
+  /* Space (guide §06): a 4 px base. */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+  --space-7: 48px;
+  --space-8: 64px;
+  --space-9: 96px;
+  --space-10: 128px;
+  --space-11: 192px;
+  --gap: var(--space-3);
+
+  /* Radii (guide §06): inputs and badges 2–4, buttons 8, cards 12, panels 16–24, pill for
+   * status only. */
+  --radius-input: 4px;
+  --radius-button: 8px;
+  --radius-card: 12px;
+  --radius-panel: 16px;
+  --radius-pill: 999px;
+
+  /* Motion (guide §07). Nothing bounces; motion describes signal travel. */
+  --dur-instant: 120ms;
+  --dur-quick: 200ms;
+  --dur-base: 320ms;
+  --dur-slow: 560ms;
+  --dur-beam: 1200ms;
+  --ease-standard: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-entrance: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-exit: cubic-bezier(0.4, 0, 1, 1);
+
+  /* Type families (guide §06, three and closed). next/font/local sets the --font-* variables
+   * in src/app/fonts.ts; the named fallbacks cover tooling that renders without them. */
+  --font: var(--font-sans, "Reddit Sans", system-ui, sans-serif);
+  --font-display: var(--font-bebas, "Bebas Neue", Impact, sans-serif);
+  --mono: var(--font-jetbrains, "JetBrains Mono", ui-monospace, monospace);
+}

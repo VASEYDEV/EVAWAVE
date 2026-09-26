@@ -260,7 +260,7 @@ export function AudioImport() {
           <div className="add-row">
             <label htmlFor={nameId}>Profile name</label>
             <input id={nameId} type="text" value={name} onChange={(e) => setName(clampProfileName(e.target.value))} />
-            <button type="button" onClick={createProfile}>
+            <button type="button" className="primary" onClick={createProfile}>
               Create style profile
             </button>
           </div>
@@ -288,7 +288,7 @@ export function AudioImport() {
             </p>
           ))}
           <div className="row-actions">
-            <button type="button" onClick={() => void save()}>
+            <button type="button" className="primary" onClick={() => void save()}>
               Save to library
             </button>
             <button type="button" onClick={downloadProfile}>
