@@ -1555,8 +1555,9 @@ Delivered:
     It returns the owner the rows were written for, and the audio is kept only when that
     is the account whose turn the save holds. Filenames are cut to the library's 255
     characters, counted as code points and keeping the extension, and a MIME type over
-    120 characters becomes `application/octet-stream`. When a record is deleted, other
-    tabs are told (BroadcastChannel) to drop any in-memory copy they hold.
+    120 characters becomes `application/octet-stream`. When a record is deleted, or
+    OPFS takes a file, other tabs are told (BroadcastChannel) to drop any in-memory copy
+    they hold.
     Deleting a file record in `/library` removes its local copy first, keeping the record
     if that fails, and restores the copy if deleting the record then fails, saying so if
     it can only be put back in this tab. Deletes of the

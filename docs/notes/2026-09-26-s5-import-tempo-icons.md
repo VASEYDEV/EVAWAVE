@@ -330,7 +330,21 @@ S5 per SPEC §3. The methods are listed in SPEC §3 S5 "Delivered".
     happens on the half beat. The grid keeps its outward rounding, so edge tempos still
     show as true peaks. The value is then folded by octaves into 60–200: 58 reads 115.8,
     with 57.9 as its half-time candidate, and 59 reads 117.8. The probed tempos from 60 to
-    215 (60, 61, 90, 120, 140, 170, 198, 200, 205, 210, 215) read as before. A test covers 58 and 59; it fails on the old code.
+    215 (60, 61, 90, 120, 140, 170, 198, 200, 205, 210, 215) read as before. A test
+    covers 58 and 59; it fails on the old code.
+- **Twenty-seventh review.**
+  - **A fallback copy in another tab after OPFS recovers (fixed).** A successful OPFS
+    write dropped only its own tab's fallback copy. The write now announces the key on
+    the same channel as a delete, so other tabs drop theirs too. The message is now
+    `{ drop }` for both. A test with two module instances stores through one tab's
+    fallback, then into OPFS from the other, and checks the first tab lets go. It fails
+    without the announcement.
+  - **A superseded save reporting over a newer import (fixed).** A save that failed
+    after another file was chosen overwrote the new import's status with its error.
+    Every status the save sets after an `await` now goes through the same
+    newest-import guard as its success message. No automated test: the repo has no
+    component test harness, and the e2e cannot reach a failing save without a live
+    Supabase session.
 
 ## Decisions
 
