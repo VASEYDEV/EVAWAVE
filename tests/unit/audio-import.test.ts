@@ -251,6 +251,25 @@ describe("local audio on the device", () => {
     await expect(removeLocalAudio("opfs-sha")).resolves.toBeUndefined();
   });
 
+  it("rejects when OPFS refuses the removal, so the record can stay for a retry", async () => {
+    const files = fakeOpfs();
+    await storeInOpfs("locked-sha", new Blob([wav]));
+    const locked = new DOMException("the entry is locked", "NoModificationAllowedError");
+    vi.stubGlobal("navigator", {
+      storage: {
+        getDirectory: async () => ({
+          getDirectoryHandle: async () => ({
+            removeEntry: async () => {
+              throw locked;
+            },
+          }),
+        }),
+      },
+    });
+    await expect(removeLocalAudio("locked-sha")).rejects.toBe(locked);
+    expect(files.has("locked-sha")).toBe(true);
+  });
+
   it("removes the in-tab copy where OPFS is missing", async () => {
     expect(await storeInOpfs("tab-sha", new Blob([wav]))).toBe("memory");
     expect(blobInTab("tab-sha")).toBeDefined();

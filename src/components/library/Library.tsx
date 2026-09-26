@@ -158,8 +158,10 @@ export function Library() {
                   className="danger"
                   onClick={() =>
                     void run("Delete file record", async () => {
-                      await deleteFile(client, asset.id);
+                      // Local copy first: if it cannot be removed, the record (and its hash)
+                      // stays for a retry.
                       await removeLocalAudio(asset.sha256);
+                      await deleteFile(client, asset.id);
                     })
                   }
                 >
