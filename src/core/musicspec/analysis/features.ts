@@ -335,20 +335,45 @@ function spectralDescriptors(pass: FramePass, durationSec: number): AudioFeature
   };
 }
 
+/** Below this share of the channels' mean energy, the mix has lost the music to cancellation. */
+const MIX_ENERGY_FLOOR = 0.25;
+
+function energyOf(signal: Float32Array): number {
+  let sum = 0;
+  for (let i = 0; i < signal.length; i++) sum += (signal[i] as number) ** 2;
+  return sum;
+}
+
 /**
- * Analyses a recording. `samples` is the mono mix that tempo, meter, key, energy and spectrum
- * read. `channels` are the decoded channels, whose K-weighted energies loudness sums per
- * BS.1770; a mono source passes the mix as its one channel (the default). `tags` stays empty:
- * the v1 tagger is the null implementation (§1.7 step 3).
+ * The signal tempo, meter, key, energy and spectrum read: the mono mix, unless phase
+ * cancellation took most of its energy (side-only or phase-opposed channels), in which case
+ * the loudest channel, which still carries the music. Uncorrelated channels keep half their
+ * energy in the mix, so ordinary stereo always reads the mix.
+ */
+function analysisSignal(mix: Float32Array, channels: readonly Float32Array[]): Float32Array {
+  if (channels.length < 2) return mix;
+  const energies = channels.map(energyOf);
+  const mean = meanOf(energies);
+  if (mean === 0 || energyOf(mix) >= MIX_ENERGY_FLOOR * mean) return mix;
+  return channels[energies.indexOf(Math.max(...energies))] as Float32Array;
+}
+
+/**
+ * Analyses a recording. `samples` is the mono mix, which tempo, meter, key, energy and
+ * spectrum read unless phase cancellation emptied it (see `analysisSignal`). `channels` are
+ * the decoded channels, whose K-weighted energies loudness sums per BS.1770; a mono source
+ * passes the mix as its one channel (the default). `tags` stays empty: the v1 tagger is the
+ * null implementation (§1.7 step 3).
  */
 export function analyseAudio(samples: Float32Array, sampleRate: number, channels: readonly Float32Array[] = [samples]): AudioFeatures {
   if (!(sampleRate > 0)) throw new RangeError(`sampleRate must be positive, got ${sampleRate}`);
   if (!channels.length || channels.some((c) => c.length !== samples.length)) throw new RangeError("every channel must have the mix's length");
   const durationSec = samples.length / sampleRate;
-  const pass = framePass(samples, sampleRate);
+  const signal = analysisSignal(samples, channels);
+  const pass = framePass(signal, sampleRate);
   const tempo = estimateTempo(pass.flux, pass.frameRate);
   const { lag, ...bpm } = tempo;
-  const { curve, windowSec } = energyCurve(samples, sampleRate, bpm.value);
+  const { curve, windowSec } = energyCurve(signal, sampleRate, bpm.value);
   return {
     durationSec,
     bpm,

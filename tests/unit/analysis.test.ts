@@ -135,6 +135,25 @@ describe("energy, sections and spectrum", () => {
     expect(clicks.transientDensity).toBeLessThan(2.5);
   });
 
+  it("reads phase-opposed stereo from a channel, not from the silent mix", () => {
+    const music = mix(clickTrack(140, 12, 22050), triad(62, true, 12, 22050));
+    const opposed = music.map((v) => -v);
+    const features = analyseAudio(new Float32Array(music.length), 22050, [music, opposed]);
+    const reference = analyseAudio(music, 22050);
+    expect(Math.round(features.bpm.value)).toBe(140);
+    expect(features.key).toEqual(reference.key);
+    expect(features.spectral).toEqual(reference.spectral);
+  });
+
+  it("keeps reading the mix for ordinary stereo", () => {
+    const left = clickTrack(120, 8, 22050);
+    const right = triad(60, false, 8, 22050);
+    const both = left.map((v, i) => (v + (right[i] as number)) / 2);
+    // Loudness differs by design (it reads the channels); everything else reads the mix.
+    const withoutLoudness = (f: ReturnType<typeof analyseAudio>) => ({ ...f, loudness: null });
+    expect(withoutLoudness(analyseAudio(both, 22050, [left, right]))).toEqual(withoutLoudness(analyseAudio(both, 22050)));
+  });
+
   it("is deterministic and never tags (null tagger)", () => {
     const signal = mix(clickTrack(140, 8, 44100), triad(62, true, 8, 44100));
     const a = analyseAudio(signal, 44100);
