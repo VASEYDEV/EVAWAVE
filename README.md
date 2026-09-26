@@ -22,6 +22,11 @@ Nothing in the app is usable yet. What exists today:
   (`src/core/musicspec/engines/profiles/`). Udio is a halted stub (scope A12).
 - A lint-enforced import boundary that keeps the `src/core/` musicspec core free of React,
   Next.js, Supabase and app-layer imports, with tests that prove it fails violations.
+- The musicspec core from S1, with no UI yet. It has the IR v1 types, generated from the
+  spec; bar math; a linter covering the 19 S1 rules (meter lock, pickups, contrast phrases,
+  section caps, regional bundles, lineage and budgets); and a Suno v6 serializer. The
+  serializer compiles the Jinn v1.2 spec to the reference Style, Exclude and Lyrics fields
+  byte for byte. The linter blocks the Jinn v1.1 blueprint's meter drift.
 - The product spec, [`docs/SPEC.md`](docs/SPEC.md): scope and confirmed decisions,
   MusicSpec IR v1 as a complete type definition, and the build plan. The
   [instrument bank seed](docs/evawave/instrument-bank-seed-v0.1.md) and the Jinn reference
@@ -69,7 +74,7 @@ the gate fails if any of them appears in the client bundle.
 ## Architecture
 
 MusicSpec IR is the single source of truth. Engine profiles are data. Serializers are
-pure functions of (IR, profile), and the composer UI is a field library over the IR. See
+pure functions of (IR, profile, catalog), and the composer UI is a field library over the IR. See
 [`docs/architecture.md`](docs/architecture.md).
 
 ## Notes and updates

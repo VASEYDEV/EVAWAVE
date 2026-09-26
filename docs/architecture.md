@@ -16,8 +16,8 @@ two brands never conflate. Full scope: [`SPEC.md`](SPEC.md) §1.
 
 | Layer | Path | Rule | State |
 | --- | --- | --- | --- |
-| musicspec core | `src/core/musicspec/` | Pure TypeScript. No React, Next.js, Supabase or app-layer imports. ESLint enforces this, and `tests/unit/import-boundary.test.ts` proves it | Engine profiles (JSON) only. IR v1, linter and Suno serializer (S1), then the Eleven and Flow serializers with target switching (S2) follow |
-| Taxonomy data | `src/data/taxonomy/` | Curated JSON; ids unique across banks | Jinn catalog records (S1), instrument bank from the seed (S3) |
+| musicspec core | `src/core/musicspec/` | Pure TypeScript. No React, Next.js, Supabase or app-layer imports. ESLint enforces this, and `tests/unit/import-boundary.test.ts` proves it | IR v1 types (generated from SPEC §2.2 by `scripts/sync-ir-types.mjs`), defaults, bar math, the engine profile loader, the catalog builder, the lineage pass, the S1 linter (`lint/`, one module per rule) and the Suno serializer (`serialize/suno.ts`). The Eleven and Flow serializers with target switching (S2) follow |
+| Taxonomy data | `src/data/taxonomy/` | Curated JSON; ids unique across banks; built and checked by `buildCatalog` at import | The Jinn catalog records (S1). The instrument bank from the seed follows (S3). The lineage name list lives in `src/data/lineage/` |
 | App | `src/app/` | Next.js 16 App Router | Shell only. Composer (S3), library (S4), audio import, metronome and tap tempo (S5) follow |
 | Proxy | `src/proxy.ts` | Next.js 16 proxy (the successor to `middleware.ts`) | Supabase Auth session refresh. Passes through while Supabase is unconfigured |
 | Supabase clients | `src/lib/supabase/` | Browser client, server client, proxy session update | Present. Migrations and RLS arrive in S4 |

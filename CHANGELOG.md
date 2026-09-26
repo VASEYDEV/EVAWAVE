@@ -9,6 +9,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- S1, the musicspec core with no UI (SPEC §3):
+  - The IR v1 types, generated into `src/core/musicspec/ir/types.ts` from the SPEC §2.2 block by `scripts/sync-ir-types.mjs`. A test fails when the two drift.
+  - Defaults (`ir/defaults.ts`) and bar math (`barmath.ts`).
+  - A typed engine profile loader that validates all four profiles at import.
+  - `buildCatalog`, which checks id uniqueness, cross-references, `fourFourSafe` and lineage.
+  - The lineage find and scrub pass.
+  - The linter: 19 rules, one module per rule id.
+  - `compileSuno` for Style, Exclude Styles, Lyrics, Title and the Instrumental toggle.
+- The Jinn catalog records in `src/data/taxonomy/`: 24 instruments, 8 techniques, 6 rhythms, 13 modes, 4 genres, 2 drum patterns, 5 synth roles and the Egypt bundle. `src/data/lineage/` holds the curated name list.
+- The Jinn v1.2 golden test: the v1.2 spec compiles to the reference Style (998), Exclude (222) and Lyrics (1,559) fields byte for byte, and lints with no block.
+- The Jinn v1.1 negative test: the blueprint, encoded with its declared 4/4 lock, blocks on ML-1 (rubato, shuffled, shuffle, trance rhythm, two cycles per bar) and ML-2 (zar/ayyub, malfuf).
+- Unit tests for bar math, catalog and taxonomy enums, profile validation, lineage, every S1 lint rule and the Suno serializer contracts.
 - The Jinn reference drop-ins, filed byte-identically under the handoff package's target names in `docs/evawave/reference/`: `jinn-v1.1-egypt-blueprint.md` (S1's negative fixture), `jinn-v1.0-morocco.md` and `research-brief-2026-09-15.md`.
 - `docs/SPEC.md`, the single EVAWAVE spec (ADR 0004). It holds the product scope and confirmed decisions (A1–A16; Suno, ElevenLabs Music and Google Flow Music live, Udio halted), MusicSpec IR v1 as a complete, self-contained type definition that folds in all of the IR v0.3 delta, the "Defined, not inherited" list, the lint rules, and the build plan S1–S5.
 - ADR 0004: EVAWAVE owns MusicSpec IR, with no legacy compiler dependency. It supersedes ADR 0002 and carries its still-valid decisions forward.
@@ -27,6 +39,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- `docs/SPEC.md` for S1:
+  - `Section` gains `notes`, and `Catalog` gains `lineageNames`.
+  - §2.4 states the cue, pocket, contrast, transition and restatement rules, the four-step wording precedence, the lineage pass, and SC-1 counting (instruments ∪ synth roles; rhythms add nothing).
+  - §2.6 lists the full Style order, including D9 and D4.
+  - §2.7 records ML-4 as a warn with a fix patch.
+  - §2.8's Hook B silence is one beat, per the blueprint.
+  - §1.11's ML-2 item is resolved.
 - Scope v0.2, the IR v0.3 delta, the Build Brief v0.1 and the handoff README moved to `docs/archive/` as history. The engine profiles, the instrument bank seed and `docs/evawave/reference/` are unchanged.
 - `docs/archive/**` is excluded from `tsconfig.json`, ESLint and the gate's placeholder scan.
 - `CLAUDE.md` Project Notes: the spec pointer is `docs/SPEC.md`. The invariant that S1 waits on legacy IR v0.2 sources is replaced by two: EVAWAVE owns IR v1, and the Jinn files are ground truth that is never edited.
@@ -39,6 +58,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- The lineage scrub left a stray space or separator when it removed a name at the start or end of a bracket (`[Hook – full drums ]`). It now tidies bracket edges and dashes. The new lineage tests caught it.
 - `main` failed the gate after the 2026-09-26 upload. `musicspec-compiler.tsx` at the repo root failed typecheck (TS7006, TS7053) and lint (`prefer-const`), because the root is inside `tsconfig.json`'s include. The three legacy compiler files now live in `docs/archive/legacy/`, which is excluded from tsconfig, ESLint and the gate scan. The upload's two chat bootstrap files moved to `docs/archive/handoff-chat/`. Three exact duplicates of files already in `docs/evawave/reference/` were removed.
 - `scripts/gate.sh` failed on `main` after the handoff archive was uploaded (`cafe6f3`): the placeholder check matched the double-brace sequence inside the archive's compressed bytes. The check now skips binary files (`grep -I`) and still catches placeholders in text files.
 - The `src/core/**` import boundary matched specifier spellings only, so dynamic `import("next/server")`, computed `import()` specifiers, `import("…")` type queries and respelled paths such as `@/lib/./supabase/client` or `@//lib/../lib/supabase/client` got through. A local rule, `eslint-rules/core-boundary.mjs`, now checks the normalized target of every import form, with regression probes for each form and spelling. The same rule also rejects implicit dependencies in the core: JSX, `/// <reference>` directives and `declare module` augmentations of forbidden modules. Runtime loading is closed too: Node built-ins (including `createRequire` from `node:module`), `require`/`module`/`process` globals, their `globalThis.*` forms, `eval` and `new Function` are banned in `src/core`.
