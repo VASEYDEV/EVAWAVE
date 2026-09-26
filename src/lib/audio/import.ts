@@ -9,8 +9,9 @@
 import { channelCount } from "@/core/musicspec/analysis/channels";
 import { analyseAudio } from "@/core/musicspec/analysis/features";
 import type { PcmAudio } from "@/core/musicspec/analysis/wav";
-import { draftFromAudio } from "@/core/musicspec/intake";
-import type { AudioFeatures, IRPatch } from "@/core/musicspec/ir/types";
+import { AUDIO_DRAFT_MODEL, audioProfileSpec, draftFromAudio, reviewPatch } from "@/core/musicspec/intake";
+import type { AudioFeatures, IRPatch, StyleProfile } from "@/core/musicspec/ir/types";
+import { profileName } from "@/lib/library/schema";
 
 /**
  * The largest file an import reads: 100 MiB, about 9.9 minutes of 16-bit 44.1 kHz stereo WAV
@@ -145,6 +146,32 @@ export async function importAudio(file: File, deps: ImportDeps, signal?: AbortSi
     features,
     patch,
     analysedOn,
+  };
+}
+
+/**
+ * The StyleProfile a review makes: only the accepted fields (a rejected tempo, meter or key is
+ * absent, not a default), named `name` or after the file, with the `id` Create fixed. The
+ * import page derives it from the current review on every change, so what Save and Download
+ * send is always what the review shows.
+ */
+export function profileFromReview(result: ImportResult, accepted: ReadonlySet<string>, name: string, id: string): { profile: StyleProfile; acceptedCount: number } {
+  const reviewed = reviewPatch(result.patch, accepted);
+  const { doc } = audioProfileSpec(reviewed);
+  return {
+    acceptedCount: reviewed.acceptedPaths.length,
+    profile: {
+      id,
+      ownerId: "local",
+      name: profileName(name, result.asset.filename),
+      provenance: { kind: "audio-analysis", sourceRef: result.asset.sha256, analysedOn: result.analysedOn, model: AUDIO_DRAFT_MODEL },
+      spec: doc,
+      features: result.features,
+      genreIds: [],
+      tags: [],
+      createdAt: result.analysedOn,
+      updatedAt: result.analysedOn,
+    },
   };
 }
 

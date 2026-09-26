@@ -14,6 +14,7 @@ import {
   importAudio,
   ImportTooLargeError,
   ImportTooLongError,
+  profileFromReview,
   sha256Hex,
   type ImportDeps,
 } from "@/lib/audio/import";
@@ -129,6 +130,24 @@ describe("audio import (§1.7)", () => {
     expect(carriesAudio(JSON.stringify({ data: Buffer.from(wavBytes.subarray(1000)).toString("base64") }))).toBe(true);
     expect(carriesAudio(Buffer.from(wavBytes.subarray(2000)).toString("hex"))).toBe(true);
     expect(carriesAudio(JSON.stringify({ features: { bpm: 140 } }))).toBe(false);
+  });
+});
+
+describe("the profile a review makes", () => {
+  it("follows the current review and name, keeping the id Create fixed", async () => {
+    const result = await importAudio(file, nodeDeps());
+    const all = new Set(result.patch.ops.map((o) => o.path));
+    const created = profileFromReview(result, all, "Desert loop", "profile-1");
+    expect(created.profile.spec.D6?.tempo).toEqual({ bpm: 140, source: "analysis" });
+    expect(created.acceptedCount).toBe(all.size);
+    // Unticking the tempo and renaming after Create: the same profile, without the tempo.
+    const edited = profileFromReview(result, new Set([...all].filter((path) => path !== "/D6/tempo")), "Desert loop, no tempo", "profile-1");
+    expect(edited.profile.id).toBe("profile-1");
+    expect(edited.profile.name).toBe("Desert loop, no tempo");
+    expect(edited.profile.spec.D6?.tempo).toBeUndefined();
+    expect(edited.profile.spec.D6?.key).toEqual(created.profile.spec.D6?.key);
+    expect(edited.acceptedCount).toBe(all.size - 1);
+    expect(edited.profile.provenance).toMatchObject({ kind: "audio-analysis", sourceRef: result.asset.sha256, analysedOn: result.analysedOn });
   });
 });
 

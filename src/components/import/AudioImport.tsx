@@ -7,15 +7,14 @@
  */
 import { useEffect, useId, useMemo, useRef, useState, type DragEvent } from "react";
 
-import { AUDIO_DRAFT_MODEL, audioProfileSpec, reviewPatch } from "@/core/musicspec/intake";
-import type { StyleProfile } from "@/core/musicspec/ir/types";
+import { AUDIO_DRAFT_MODEL } from "@/core/musicspec/intake";
 import { lintStyleProfile, lowConfidenceOps } from "@/core/musicspec/lint";
 import { catalog } from "@/data/taxonomy";
 import { browserImportDeps, inTurnForLocalAudio, keepAudioFor } from "@/lib/audio/browser";
-import { importAudio, ImportTooLargeError, ImportTooLongError, type ImportResult } from "@/lib/audio/import";
+import { importAudio, ImportTooLargeError, ImportTooLongError, profileFromReview, type ImportResult } from "@/lib/audio/import";
 import { createLibraryClient } from "@/lib/library/client";
 import { saveImportAndKeepAudio } from "@/lib/library/repository";
-import { PROFILE_NAME_MAX, profileName, recordFilename, recordMime } from "@/lib/library/schema";
+import { PROFILE_NAME_MAX, recordFilename, recordMime } from "@/lib/library/schema";
 import { getSupabasePublicConfig } from "@/lib/supabase/config";
 
 function formatSec(sec: number): string {
@@ -46,7 +45,9 @@ export function AudioImport() {
   const [result, setResult] = useState<ImportResult | null>(null);
   const [accepted, setAccepted] = useState<Set<string>>(new Set());
   const [name, setName] = useState("");
-  const [profile, setProfile] = useState<StyleProfile | null>(null);
+  // Set by Create. The profile itself is derived from the current review and name, so an
+  // edit after Create reaches what Save and Download send.
+  const [profileId, setProfileId] = useState<string | null>(null);
   const [dragging, setDragging] = useState(false);
   const [source, setSource] = useState<File | null>(null);
   // A newer file choice aborts the import in flight, so its analysis never lands.
@@ -57,6 +58,8 @@ export function AudioImport() {
     return () => flight.current?.abort();
   }, []);
 
+  const profile = useMemo(() => (result && profileId ? profileFromReview(result, accepted, name, profileId).profile : null), [result, accepted, name, profileId]);
+
   const lowConfidence = useMemo(() => new Set(result ? lowConfidenceOps(result.patch, "").map((r) => Number(r.path.split("/").pop())) : []), [result]);
 
   const handle = async (file: File | undefined) => {
@@ -65,7 +68,7 @@ export function AudioImport() {
     const controller = new AbortController();
     inFlight.current = controller;
     setResult(null);
-    setProfile(null);
+    setProfileId(null);
     setSource(null);
     setStatus(`Analysing ${file.name} on this device…`);
     // Let the status paint before the analysis takes the main thread.
@@ -96,23 +99,11 @@ export function AudioImport() {
 
   const createProfile = () => {
     if (!result) return;
-    const reviewed = reviewPatch(result.patch, accepted);
-    // Only accepted fields: a rejected tempo, meter or key is absent, not a default.
-    const { doc } = audioProfileSpec(reviewed);
-    setProfile({
-      // Made here, so saving the same profile twice upserts one library row.
-      id: crypto.randomUUID(),
-      ownerId: "local",
-      name: profileName(name, result.asset.filename),
-      provenance: { kind: "audio-analysis", sourceRef: result.asset.sha256, analysedOn: result.analysedOn, model: AUDIO_DRAFT_MODEL },
-      spec: doc,
-      features: result.features,
-      genreIds: [],
-      tags: [],
-      createdAt: result.analysedOn,
-      updatedAt: result.analysedOn,
-    });
-    setStatus(`Style profile created from ${reviewed.acceptedPaths.length} accepted field(s). Save it to the library to keep it and its audio, or download it.`);
+    // Made here, so saving the same profile twice upserts one library row.
+    const id = crypto.randomUUID();
+    setProfileId(id);
+    const { acceptedCount } = profileFromReview(result, accepted, name, id);
+    setStatus(`Style profile created from ${acceptedCount} accepted field(s). Save it to the library to keep it and its audio, or download it.`);
   };
 
   // A download keeps no audio on the device: nothing in the app could reach or remove it.

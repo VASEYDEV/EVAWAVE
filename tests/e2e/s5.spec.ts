@@ -1,4 +1,6 @@
 
+import { readFile } from "node:fs/promises";
+
 import AxeBuilder from "@axe-core/playwright";
 import { expect, test } from "@playwright/test";
 
@@ -95,9 +97,26 @@ test("imports a WAV into a reviewed audio-analysis style profile, sending no aud
 
   const downloaded = page.waitForEvent("download");
   await page.getByRole("button", { name: "Download profile JSON" }).click();
-  expect((await downloaded).suggestedFilename()).toBe("desert-loop-style-profile.json");
+  const first = await downloaded;
+  expect(first.suggestedFilename()).toBe("desert-loop-style-profile.json");
   await expect(page.getByRole("status")).toContainText("Only a library save keeps the audio on this device.");
   expect(await kept()).toBe(false);
+  const created = JSON.parse(await readFile(await first.path(), "utf8")) as { id: string; spec: { D6?: { tempo?: unknown } } };
+  expect(created.spec.D6?.tempo).toEqual({ bpm: 140, source: "analysis" });
+
+  // Edits after Create reach the profile: unticking the tempo and renaming change what a
+  // download (or a save) sends, and the profile keeps its id.
+  await page.getByLabel("Accept /D6/tempo").uncheck();
+  await page.getByLabel("Profile name").fill("Desert loop without tempo");
+  await expect(page.getByTestId("profile-tempo")).toHaveText("not set");
+  await expect(page.getByRole("heading", { name: "Desert loop without tempo" })).toBeVisible();
+  const redownloaded = page.waitForEvent("download");
+  await page.getByRole("button", { name: "Download profile JSON" }).click();
+  const second = await redownloaded;
+  expect(second.suggestedFilename()).toBe("desert-loop-without-tempo-style-profile.json");
+  const edited = JSON.parse(await readFile(await second.path(), "utf8")) as { id: string; name: string; spec: { D6?: { tempo?: unknown } } };
+  expect(edited).toMatchObject({ id: created.id, name: "Desert loop without tempo" });
+  expect(edited.spec.D6?.tempo).toBeUndefined();
 
   const results = await new AxeBuilder({ page }).withTags(TAGS).analyze();
   expect(results.violations.map((v) => v.id)).toEqual([]);
