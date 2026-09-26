@@ -33,6 +33,8 @@ test("refuses a recording longer than the import limit from its metadata, before
   await page.getByLabel("Choose an audio file, or drop one here").setInputFiles({ name: "long-take.wav", mimeType: "audio/wav", buffer: wav });
   await expect(page.getByRole("status")).toContainText("This recording is 11 minutes long; imports take recordings up to 10 minutes for now.", { timeout: 15_000 });
   expect(await page.evaluate(() => (window as unknown as { workersStarted: string[] }).workersStarted)).toEqual([]);
+  // The picker lets go of the file, so choosing the same one again (a retry) fires change.
+  await expect(page.getByLabel("Choose an audio file, or drop one here")).toHaveValue("");
 });
 
 test("imports a WAV into a reviewed audio-analysis style profile, sending no audio", async ({ page }) => {

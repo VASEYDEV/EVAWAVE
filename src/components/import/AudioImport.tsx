@@ -166,7 +166,17 @@ export function AudioImport() {
         onDrop={onDrop}
       >
         <label htmlFor={inputId}>Choose an audio file, or drop one here</label>
-        <input id={inputId} type="file" accept="audio/*,.wav,.mp3,.m4a,.aac,.flac,.ogg" onChange={(e) => void handle(e.target.files?.[0])} />
+        <input
+          id={inputId}
+          type="file"
+          accept="audio/*,.wav,.mp3,.m4a,.aac,.flac,.ogg"
+          onChange={(e) => {
+            const file = e.target.files?.[0];
+            // Cleared once taken, so choosing the same file again (a retry) fires change again.
+            e.target.value = "";
+            void handle(file);
+          }}
+        />
       </div>
       <p role="status" aria-live="polite">
         {status}
